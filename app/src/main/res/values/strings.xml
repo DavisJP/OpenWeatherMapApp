@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">WeatherMapApp</string>
+    <string name="action_settings">Settings</string>
+    <string name="open_weather_map">OpenWeatherMap</string>
+
+    <string name="celsius_label">Celsius (ºC)</string>
+    <string name="fahrenheit_label">Fahrenheit (ºF)</string>
+
+    <string name="celsius">ºC</string>
+    <string name="fahrenheit">ºF</string>
+    <string name="format_temperature">%.1f</string>
+    <string name="temperature_unit">Temperature Unit</string>
+    <string name="choose_temperature_unit">Choose a Temperature Unit:</string>
+
+    <string name="please_check_your_network_status_or_try_again_later">Please check your network status or try again later.</string>
+
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">@color/dark_slate_gray</color>
+    <color name="colorPrimaryDark">@color/darker_slate_gray</color>
+    <color name="colorAccent">@color/dark_orange</color>
+
+    <color name="dark_orange">#ff8c18</color>
+    <color name="darker_slate_gray">#353432</color>
+    <color name="dark_slate_gray">#4e4d4a</color>
+</resources>

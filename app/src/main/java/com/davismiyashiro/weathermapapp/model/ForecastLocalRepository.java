@@ -49,6 +49,10 @@ public class ForecastLocalRepository implements Repository {
     public Observable<Place> loadData() {
         String value = sharedPreferences.getString(KEY_PLACE, "");
         Place place = new Gson().fromJson(value, Place.class);
+
+        if (place == null) {
+            place = new Place();
+        }
         return Observable.just(place);
     }
 

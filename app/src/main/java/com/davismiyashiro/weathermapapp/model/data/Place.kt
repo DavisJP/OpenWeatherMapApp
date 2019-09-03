@@ -22,19 +22,27 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.model;
+package com.davismiyashiro.weathermapapp.model.data
 
-import com.davismiyashiro.weathermapapp.model.data.Place;
-
-import io.reactivex.Observable;
+import com.google.gson.annotations.Expose
+import com.google.gson.annotations.SerializedName
 
 /**
  * Created by Davis Miyashiro.
  */
-
-public interface Repository {
-
-    Observable<Place> loadData ();
-
-    void storeData (Place place);
-}
+data class Place(
+        @SerializedName("cod")
+        @Expose
+        var cod: String? = null,
+        @SerializedName("message")
+        @Expose
+        var message: Double? = null,
+        @SerializedName("cnt")
+        @Expose
+        var cnt: Int? = null,
+        @SerializedName("list")
+        @Expose
+        var list: List<Conditions>? = null,
+        @SerializedName("city")
+        @Expose
+        var city: City? = null)

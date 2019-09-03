@@ -22,27 +22,24 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.model.data;
+package com.davismiyashiro.weathermapapp.model.data
 
 /**
  * Created by Davis Miyashiro.
  */
+import com.google.gson.annotations.Expose
+import com.google.gson.annotations.SerializedName
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
-public class Sys {
-
-    @SerializedName("pod")
-    @Expose
-    private String pod;
-
-    public String getPod() {
-        return pod;
-    }
-
-    public void setPod(String pod) {
-        this.pod = pod;
-    }
-
-}
+data class Weather(
+        @SerializedName("id")
+        @Expose
+        var id: Int? = null,
+        @SerializedName("main")
+        @Expose
+        var main: String? = null,
+        @SerializedName("description")
+        @Expose
+        var description: String? = null,
+        @SerializedName("icon")
+        @Expose
+        var icon: String? = null)

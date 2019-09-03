@@ -22,27 +22,15 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.model.data;
+package com.davismiyashiro.weathermapapp.model.data
+
+import com.google.gson.annotations.Expose
+import com.google.gson.annotations.SerializedName
 
 /**
  * Created by Davis Miyashiro.
  */
-
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
-public class Clouds {
-
-    @SerializedName("all")
+data class Snow (
+    @SerializedName("3h")
     @Expose
-    private Integer all;
-
-    public Integer getAll() {
-        return all;
-    }
-
-    public void setAll(Integer all) {
-        this.all = all;
-    }
-
-}
+    var _3h:Double? = null)

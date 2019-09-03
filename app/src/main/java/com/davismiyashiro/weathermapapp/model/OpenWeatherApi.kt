@@ -22,60 +22,26 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.model.data;
+package com.davismiyashiro.weathermapapp.model
+
+import com.davismiyashiro.weathermapapp.model.data.Place
+
+import io.reactivex.Observable
+import retrofit2.http.GET
+import retrofit2.http.Query
 
 /**
  * Created by Davis Miyashiro.
  */
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
+const val APP_ID = "3e29cf11d4eabe8eba6cf25d535eaac2"
+//http://api.openweathermap.org/data/2.5/forecast?q=London&appid=3e29cf11d4eabe8eba6cf25d535eaac2&cnt=5
+interface OpenWeatherApi {
 
-public class Weather {
+    @GET("forecast")
+    fun getWeatherFromPlace(@Query("q") place: String,
+                            @Query("appid") id: String): Observable<Place>
 
-    @SerializedName("id")
-    @Expose
-    private Integer id;
-    @SerializedName("main")
-    @Expose
-    private String main;
-    @SerializedName("description")
-    @Expose
-    private String description;
-    @SerializedName("icon")
-    @Expose
-    private String icon;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getMain() {
-        return main;
-    }
-
-    public void setMain(String main) {
-        this.main = main;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getIcon() {
-        return icon;
-    }
-
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
-
+    @GET("forecast?appid=$APP_ID")
+    fun getForecastById(@Query("id") place: Int): Observable<Place>
 }

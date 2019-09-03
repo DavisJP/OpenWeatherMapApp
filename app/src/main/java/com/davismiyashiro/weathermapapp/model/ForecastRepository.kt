@@ -22,71 +22,64 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.model;
+package com.davismiyashiro.weathermapapp.model
 
-import com.davismiyashiro.weathermapapp.model.data.Place;
-
-import javax.inject.Inject;
-
-import io.reactivex.Observable;
+import com.davismiyashiro.weathermapapp.model.data.Place
+import io.reactivex.Observable
+import javax.inject.Inject
 
 /**
  * Created by Davis Miyashiro.
  */
 
-public class ForecastRepository {
+class ForecastRepository @Inject
+internal constructor(private val openWeatherApi: OpenWeatherApi,
+                     private val localRepository: Repository) {
 
     //TODO: Hardcoded for now, change later
-    final public static int LONDON_ID = 2643743;
+    private val LONDON_ID = 2643743
 
-    OpenWeatherApi openWeatherApi;
+    private var place: Place? = null
+    internal var dataIsStale = false
 
-    Repository localRepository;
-
-    private Place place;
-    boolean dataIsStale = false;
-
-    @Inject
-    ForecastRepository (OpenWeatherApi remoteData, Repository localRepo) {
-        openWeatherApi = remoteData;
-        localRepository = localRepo;
-    }
-
-    public Observable<Place> loadWeatherData () {
+    fun loadWeatherData(): Observable<Place> {
         if (place != null && !dataIsStale) {
-            return Observable.just(place);
+            return Observable.just(place)
         } else {
-            place = new Place();
+            place = Place()
         }
 
-        Observable<Place> remoteData = getAndSaveRemoteData();
+        val remoteData = getAndSaveRemoteData()
 
-        if (dataIsStale) {
-            return remoteData;
+        return if (dataIsStale) {
+            remoteData
         } else {
-            Observable<Place> localData = getAndCacheLocalData();
-            return localData.publish(local -> Observable.merge(local, remoteData.takeUntil(local)))
+            getAndCacheLocalData()
+                    .publish { local -> Observable.merge(local, remoteData.takeUntil(local)) }
                     .firstOrError()
-                    .toObservable();
+                    .toObservable()
         }
     }
 
-    private Observable<Place> getAndCacheLocalData () {
+    private fun getAndCacheLocalData(): Observable<Place> {
         return localRepository.loadData()
-                .map(localPlace -> place = localPlace);
+                .map<Place> { placeParam ->
+                    place = placeParam
+                    placeParam
+                }
     }
 
-    private Observable<Place> getAndSaveRemoteData () {
+    private fun getAndSaveRemoteData(): Observable<Place> {
         return openWeatherApi.getForecastById(LONDON_ID)
-                .map(placeRemote -> {
-                    place = placeRemote;
-                    localRepository.storeData(placeRemote);
-                    return placeRemote;
-                })
-                .doOnComplete(() -> dataIsStale = false);
+                .map { placeRemote ->
+                    place = placeRemote
+                    localRepository.storeData(placeRemote)
+                    placeRemote
+                }
+                .doOnComplete { dataIsStale = false }
     }
 
-    public void refreshData() {
-        dataIsStale = true;
+    fun refreshData() {
+        dataIsStale = true
     }
 }

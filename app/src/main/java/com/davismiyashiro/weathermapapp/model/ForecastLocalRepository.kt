@@ -22,38 +22,37 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.model.data;
+package com.davismiyashiro.weathermapapp.model
+
+import android.content.SharedPreferences
+
+import com.davismiyashiro.weathermapapp.model.data.Place
+import com.google.gson.Gson
+
+import io.reactivex.Observable
 
 /**
  * Created by Davis Miyashiro.
  */
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
+class ForecastLocalRepository(private val sharedPreferences: SharedPreferences) : Repository {
 
-public class Coord {
+    private val KEY_PLACE = "KEY_PLACE"
+    private val gson = Gson()
 
-    @SerializedName("lon")
-    @Expose
-    private Double lon;
-    @SerializedName("lat")
-    @Expose
-    private Double lat;
+    override fun loadData(): Observable<Place> {
+        val value = sharedPreferences.getString(KEY_PLACE, "")
+        var place: Place? = gson.fromJson(value, Place::class.java)
 
-    public Double getLon() {
-        return lon;
+        if (place == null) {
+            place = Place()
+        }
+        return Observable.just(place)
     }
 
-    public void setLon(Double lon) {
-        this.lon = lon;
+    override fun storeData(place: Place) {
+        val editor = sharedPreferences.edit()
+        editor.putString(KEY_PLACE, gson.toJson(place))
+        editor.apply()
     }
-
-    public Double getLat() {
-        return lat;
-    }
-
-    public void setLat(Double lat) {
-        this.lat = lat;
-    }
-
 }

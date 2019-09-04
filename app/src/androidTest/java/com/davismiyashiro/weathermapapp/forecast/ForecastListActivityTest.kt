@@ -22,45 +22,41 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.forecast;
+package com.davismiyashiro.weathermapapp.forecast
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.ActivityTestRule;
-import android.support.test.runner.AndroidJUnit4;
-
-import com.davismiyashiro.weathermapapp.forecast.ForecastListActivity;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static org.junit.Assert.assertEquals;
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.ActivityTestRule
+import org.junit.Assert.assertEquals
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
  * Created by Davis Miyashiro on 18/12/2017.
  */
 
-@RunWith(AndroidJUnit4.class)
-public class ForecastListActivityTest {
+@RunWith(AndroidJUnit4::class)
+class ForecastListActivityTest {
 
-    @Rule
-    public final ActivityTestRule<ForecastListActivity> main = new ActivityTestRule<>(ForecastListActivity.class);
+    @get:Rule
+    val main = ActivityTestRule(ForecastListActivity::class.java)
 
     @Test
-    public void useAppContext() throws Exception {
+    @Throws(Exception::class)
+    fun useAppContext() {
         // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getTargetContext();
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
 
-        assertEquals("com.davismiyashiro.weathermapapp", appContext.getPackageName());
+        assertEquals("com.davismiyashiro.weathermapapp", appContext.packageName)
     }
 
     @Test
-    public void checkToolbarDisplaysTitle() {
-        onView(withText("OpenWeatherMap")).check(matches(isDisplayed()));
+    fun checkToolbarDisplaysTitle() {
+        onView(withText("OpenWeatherMap")).check(matches(isDisplayed()))
     }
 }

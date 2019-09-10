@@ -22,52 +22,50 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection;
+package com.davismiyashiro.weathermapapp.injection
 
-import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-
-import com.davismiyashiro.weathermapapp.model.ForecastLocalRepository;
-import com.davismiyashiro.weathermapapp.model.Repository;
-
-import javax.inject.Singleton;
-
-import dagger.Module;
-import dagger.Provides;
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import android.preference.PreferenceManager
+import com.davismiyashiro.weathermapapp.model.*
+import dagger.Module
+import dagger.Provides
+import javax.inject.Singleton
 
 /**
  * Created by Davis Miyashiro.
  */
 
 @Module
-public class ApplicationModule {
-    private Application application;
-
-    public ApplicationModule (Application app) {
-        application = app;
-    }
+class ApplicationModule(private val application: Application) {
 
     @Provides
-    public Application provideApplication () {
-        return application;
+    fun provideApplication(): Application {
+        return application
     }
 
     @Provides
     @ApplicationContext
-    Context provideContext() {
-        return application;
+    internal fun provideContext(): Context {
+        return application
     }
 
     @Provides
-    public SharedPreferences provideDefaultSharedPref () {
-        return PreferenceManager.getDefaultSharedPreferences(application);
+    fun provideDefaultSharedPref(): SharedPreferences {
+        return PreferenceManager.getDefaultSharedPreferences(application)
     }
 
     @Provides
     @Singleton
-    public Repository provideLocalRepository () {
-        return new ForecastLocalRepository(provideDefaultSharedPref());
+    fun provideLocalRepository(): Repository {
+        return ForecastLocalRepository(provideDefaultSharedPref())
+    }
+
+    @Provides
+    @Singleton
+    fun provideForecastRepository(openWeatherApi: OpenWeatherApi,
+                                  localRepository: Repository): RepositoryInterface {
+        return ForecastRepository(openWeatherApi, localRepository)
     }
 }

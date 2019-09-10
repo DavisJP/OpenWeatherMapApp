@@ -81,7 +81,9 @@ public class ForecastListActivity extends AppCompatActivity implements
         ButterKnife.bind(this);
 
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(R.string.open_weather_map);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(R.string.open_weather_map);
+        }
 
         //Listening to changes on Temperature Units
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);

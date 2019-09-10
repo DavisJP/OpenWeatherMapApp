@@ -22,44 +22,22 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp;
+package com.davismiyashiro.weathermapapp.injection
 
-import android.app.Application;
+import com.davismiyashiro.weathermapapp.forecast.ForecastListActivity
+import com.davismiyashiro.weathermapapp.model.ForecastRepository
 
-import com.davismiyashiro.weathermapapp.injection.ApplicationComponent;
-import com.davismiyashiro.weathermapapp.injection.ApplicationModule;
-import com.davismiyashiro.weathermapapp.injection.DaggerApplicationComponent;
-import com.jakewharton.threetenabp.AndroidThreeTen;
+import javax.inject.Singleton
 
-import timber.log.Timber;
+import dagger.Component
 
 /**
- * Created by Davis Miyashiro on 12/12/2017.
+ * Created by Davis Miyashiro.
  */
 
-public class App extends Application {
-
-    private ApplicationComponent component;
-
-    @Override
-    public void onCreate () {
-        super.onCreate();
-
-        if (BuildConfig.DEBUG) {
-            Timber.plant(new Timber.DebugTree());
-        }
-
-        component = getComponent();
-
-        AndroidThreeTen.init(this);
-    }
-
-    public ApplicationComponent getComponent () {
-        if (component == null) {
-            component = DaggerApplicationComponent.builder()
-                    .applicationModule(new ApplicationModule(this))
-                    .build();
-        }
-        return component;
-    }
+@Singleton
+@Component(modules = [ApplicationModule::class, NetworkModule::class])
+interface ApplicationComponent {
+    fun inject(activity: ForecastListActivity)
+    fun inject(repository: ForecastRepository)
 }

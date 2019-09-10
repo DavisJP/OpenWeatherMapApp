@@ -22,18 +22,43 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection;
+package com.davismiyashiro.weathermapapp
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import android.app.Application
 
-import javax.inject.Qualifier;
+import com.davismiyashiro.weathermapapp.injection.ApplicationComponent
+import com.davismiyashiro.weathermapapp.injection.ApplicationModule
+import com.davismiyashiro.weathermapapp.injection.DaggerApplicationComponent
+import com.jakewharton.threetenabp.AndroidThreeTen
+
+import timber.log.Timber
 
 /**
  * Created by Davis Miyashiro on 12/12/2017.
  */
 
-@Qualifier
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ApplicationContext {
+class App : Application() {
+
+    private var component: ApplicationComponent? = null
+
+    override fun onCreate() {
+        super.onCreate()
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
+
+        component = getComponent()
+
+        AndroidThreeTen.init(this)
+    }
+
+    fun getComponent(): ApplicationComponent? {
+        if (component == null) {
+            component = DaggerApplicationComponent.builder()
+                    .applicationModule(ApplicationModule(this))
+                    .build()
+        }
+        return component
+    }
 }

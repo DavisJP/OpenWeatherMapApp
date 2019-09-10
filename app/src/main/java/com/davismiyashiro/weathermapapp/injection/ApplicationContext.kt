@@ -22,22 +22,14 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection;
+package com.davismiyashiro.weathermapapp.injection
 
-import com.davismiyashiro.weathermapapp.forecast.ForecastListActivity;
-import com.davismiyashiro.weathermapapp.model.ForecastRepository;
-
-import javax.inject.Singleton;
-
-import dagger.Component;
+import javax.inject.Qualifier
 
 /**
- * Created by Davis Miyashiro.
+ * Created by Davis Miyashiro on 12/12/2017.
  */
 
-@Singleton
-@Component (modules = {ApplicationModule.class, NetworkModule.class} )
-public interface ApplicationComponent {
-    void inject (ForecastListActivity activity);
-    void inject (ForecastRepository repository);
-}
+@Qualifier
+@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
+annotation class ApplicationContext

@@ -22,52 +22,22 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection;
+package com.davismiyashiro.weathermapapp.injection
 
-import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import com.davismiyashiro.weathermapapp.forecast.ForecastListActivity
+import com.davismiyashiro.weathermapapp.model.ForecastRepository
 
-import com.davismiyashiro.weathermapapp.model.ForecastLocalRepository;
-import com.davismiyashiro.weathermapapp.model.Repository;
+import javax.inject.Singleton
 
-import javax.inject.Singleton;
-
-import dagger.Module;
-import dagger.Provides;
+import dagger.Component
 
 /**
  * Created by Davis Miyashiro.
  */
 
-@Module
-public class ApplicationModule {
-    private Application application;
-
-    public ApplicationModule (Application app) {
-        application = app;
-    }
-
-    @Provides
-    public Application provideApplication () {
-        return application;
-    }
-
-    @Provides
-    @ApplicationContext
-    Context provideContext() {
-        return application;
-    }
-
-    @Provides
-    public SharedPreferences provideDefaultSharedPref () {
-        return PreferenceManager.getDefaultSharedPreferences(application);
-    }
-
-    @Provides
-    @Singleton
-    public Repository provideLocalRepository () {
-        return new ForecastLocalRepository(provideDefaultSharedPref());
-    }
+@Singleton
+@Component(modules = [ApplicationModule::class, NetworkModule::class])
+interface ApplicationComponent {
+    fun inject(activity: ForecastListActivity)
+    fun inject(repository: ForecastRepository)
 }

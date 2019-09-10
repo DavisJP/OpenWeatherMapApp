@@ -22,18 +22,41 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection;
+package com.davismiyashiro.weathermapapp.forecast
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-import javax.inject.Qualifier;
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.ActivityTestRule
+import org.junit.Assert.assertEquals
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
- * Created by Davis Miyashiro on 12/12/2017.
+ * Created by Davis Miyashiro on 18/12/2017.
  */
 
-@Qualifier
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ApplicationContext {
+@RunWith(AndroidJUnit4::class)
+class ForecastListActivityTest {
+
+    @get:Rule
+    val main = ActivityTestRule(ForecastListActivity::class.java)
+
+    @Test
+    @Throws(Exception::class)
+    fun useAppContext() {
+        // Context of the app under test.
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+
+        assertEquals("com.davismiyashiro.weathermapapp", appContext.packageName)
+    }
+
+    @Test
+    fun checkToolbarDisplaysTitle() {
+        onView(withText("OpenWeatherMap")).check(matches(isDisplayed()))
+    }
 }

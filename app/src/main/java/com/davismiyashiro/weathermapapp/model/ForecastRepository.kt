@@ -33,8 +33,8 @@ import javax.inject.Inject
  */
 
 class ForecastRepository @Inject
-internal constructor(private val openWeatherApi: OpenWeatherApi,
-                     private val localRepository: Repository) {
+constructor(private val openWeatherApi: OpenWeatherApi,
+            private val localRepository: Repository) : RepositoryInterface {
 
     //TODO: Hardcoded for now, change later
     private val LONDON_ID = 2643743
@@ -42,7 +42,7 @@ internal constructor(private val openWeatherApi: OpenWeatherApi,
     private var place: Place? = null
     internal var dataIsStale = false
 
-    fun loadWeatherData(): Observable<Place> {
+    override fun loadWeatherData(): Observable<Place> {
         if (place != null && !dataIsStale) {
             return Observable.just(place)
         } else {
@@ -79,7 +79,7 @@ internal constructor(private val openWeatherApi: OpenWeatherApi,
                 .doOnComplete { dataIsStale = false }
     }
 
-    fun refreshData() {
+    override fun refreshData() {
         dataIsStale = true
     }
 }

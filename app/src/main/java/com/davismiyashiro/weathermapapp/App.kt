@@ -22,44 +22,43 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp;
+package com.davismiyashiro.weathermapapp
 
-import android.app.Application;
+import android.app.Application
 
-import com.davismiyashiro.weathermapapp.injection.ApplicationComponent;
-import com.davismiyashiro.weathermapapp.injection.ApplicationModule;
-import com.davismiyashiro.weathermapapp.injection.DaggerApplicationComponent;
-import com.jakewharton.threetenabp.AndroidThreeTen;
+import com.davismiyashiro.weathermapapp.injection.ApplicationComponent
+import com.davismiyashiro.weathermapapp.injection.ApplicationModule
+import com.davismiyashiro.weathermapapp.injection.DaggerApplicationComponent
+import com.jakewharton.threetenabp.AndroidThreeTen
 
-import timber.log.Timber;
+import timber.log.Timber
 
 /**
  * Created by Davis Miyashiro on 12/12/2017.
  */
 
-public class App extends Application {
+class App : Application() {
 
-    private ApplicationComponent component;
+    private var component: ApplicationComponent? = null
 
-    @Override
-    public void onCreate () {
-        super.onCreate();
+    override fun onCreate() {
+        super.onCreate()
 
         if (BuildConfig.DEBUG) {
-            Timber.plant(new Timber.DebugTree());
+            Timber.plant(Timber.DebugTree())
         }
 
-        component = getComponent();
+        component = getComponent()
 
-        AndroidThreeTen.init(this);
+        AndroidThreeTen.init(this)
     }
 
-    public ApplicationComponent getComponent () {
+    fun getComponent(): ApplicationComponent? {
         if (component == null) {
             component = DaggerApplicationComponent.builder()
-                    .applicationModule(new ApplicationModule(this))
-                    .build();
+                    .applicationModule(ApplicationModule(this))
+                    .build()
         }
-        return component;
+        return component
     }
 }

@@ -22,26 +22,17 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.forecast;
+package com.davismiyashiro.weathermapapp.forecast
 
-import java.util.List;
-import io.reactivex.annotations.NonNull;
+import com.davismiyashiro.weathermapapp.model.data.Conditions
 
 /**
  * Created by Davis Miyashiro.
  */
 
-public interface ForecastListInterfaces {
-
-    interface View {
-        void showForecastList(List<ForecastListItem> item);
-        void showErrorMsg ();
-        void setSwipeRefresh (boolean value);
-    }
-
-    interface Presenter {
-        void attachView (@NonNull ForecastListInterfaces.View mainView);
-        void dettachView ();
-        void loadWeatherData (boolean refreshData);
-    }
+class ForecastListItem(condition: Conditions) {
+    val main: String = condition.weather?.get(0)?.main ?: ""
+    val dt: Long = condition.dt ?: 0
+    val temp: Double = condition.main?.temp ?: 0.0
+    val imgIcon: String = condition.weather?.get(0)?.icon?.plus(".png") ?: ""
 }

@@ -22,41 +22,39 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.forecast;
+package com.davismiyashiro.weathermapapp.forecast
 
-import com.davismiyashiro.weathermapapp.model.data.Conditions;
+import android.app.AlertDialog
+import android.app.Dialog
+import android.os.Bundle
+import android.preference.PreferenceManager
+import androidx.fragment.app.DialogFragment
+import com.davismiyashiro.weathermapapp.R
 
 /**
  * Created by Davis Miyashiro.
  */
 
-public class ForecastListItem {
+class ForecastSettingsFragmentDialog : DialogFragment() {
 
-    private String main;
-    private long dt;
-    private Double temp;
-    private String imgIcon;
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
-    public ForecastListItem (Conditions condition) {
-        main = condition.getWeather().get(0).getMain();
-        dt = condition.getDt();
-        temp = condition.getMain().getTemp();
-        imgIcon = condition.getWeather().get(0).getIcon() + ".png";
+        val builder = AlertDialog.Builder(activity)
+        builder.setTitle(R.string.choose_temperature_unit)
+                .setItems(R.array.pref_temperature_units) { _, position ->
+                    val pref = PreferenceManager.getDefaultSharedPreferences(context)
+                    val edit = pref.edit()
+
+                    edit.putInt(TEMPERATURE_KEY, position)
+                    edit.apply()
+                }
+
+        return builder.create()
     }
 
-    public String getMain() {
-        return main;
-    }
-
-    public long getDt() {
-        return dt;
-    }
-
-    public Double getTemp() {
-        return temp;
-    }
-
-    public String getImgIcon() {
-        return imgIcon;
+    companion object {
+        fun newInstance(): DialogFragment {
+            return ForecastSettingsFragmentDialog()
+        }
     }
 }

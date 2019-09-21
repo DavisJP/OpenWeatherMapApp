@@ -38,6 +38,7 @@ import javax.inject.Singleton
 import dagger.Module
 import dagger.Provides
 import okhttp3.Cache
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
@@ -51,29 +52,38 @@ import retrofit2.converter.gson.GsonConverterFactory
 @Module
 class NetworkModule {
 
-    //http://api.openweathermap.org/data/2.5/weather?q=London,uk&appid=3e29cf11d4eabe8eba6cf25d535eaac2
-    val BASE_URL = "http://api.openweathermap.org/data/2.5/"
+    private val BASE_URL = "http://api.openweathermap.org/data/2.5/"
+    private val APP_ID_PARAM = "appid"
+    private val APP_ID = "3e29cf11d4eabe8eba6cf25d535eaac2"
 
     @Provides
     @Singleton
     fun provideOkHttpClient(application: Application): OkHttpClient {
-        val interceptor = HttpLoggingInterceptor()
-        interceptor.level = HttpLoggingInterceptor.Level.BODY
 
         val httpCacheDirectory = File(application.cacheDir, "responses")
         val cacheSize = 10 * 1024 * 1024 //10MB
         val cache = Cache(httpCacheDirectory, cacheSize.toLong())
 
-        return if (cache != null) {
-            OkHttpClient.Builder()
-                    .addNetworkInterceptor { chain ->
-                        val originalResponse: Response = chain.proceed(chain.request())
-                        addHttpClientHeader(application, originalResponse)
-                    }
-                    .cache(cache)
-                    .build()
-        } else OkHttpClient.Builder().addInterceptor(interceptor).build()
+        val urlBuilder = Interceptor { chain ->
+            chain.proceed(chain.request()
+                    .newBuilder()
+                    .url(chain.request()
+                            .url()
+                            .newBuilder()
+                            .addQueryParameter(APP_ID_PARAM, APP_ID)
+                            .build())
+                    .build())
+        }
 
+        return OkHttpClient.Builder()
+                .addNetworkInterceptor { chain ->
+                    val originalResponse: Response = chain.proceed(chain.request())
+                    addHttpClientHeader(application, originalResponse)
+                }
+                .addInterceptor(urlBuilder)
+                .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+                .cache(cache)
+                .build()
     }
 
     private fun addHttpClientHeader(application: Application, originalResponse: Response): Response {

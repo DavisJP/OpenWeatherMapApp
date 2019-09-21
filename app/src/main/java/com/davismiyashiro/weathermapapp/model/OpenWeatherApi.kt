@@ -34,7 +34,6 @@ import retrofit2.http.Query
  * Created by Davis Miyashiro.
  */
 
-const val APP_ID = "3e29cf11d4eabe8eba6cf25d535eaac2"
 //http://api.openweathermap.org/data/2.5/forecast?q=London&appid=3e29cf11d4eabe8eba6cf25d535eaac2&cnt=5
 interface OpenWeatherApi {
 
@@ -42,6 +41,6 @@ interface OpenWeatherApi {
     fun getWeatherFromPlace(@Query("q") place: String,
                             @Query("appid") id: String): Observable<Place>
 
-    @GET("forecast?appid=$APP_ID")
+    @GET("forecast")
     fun getForecastById(@Query("id") place: Int): Observable<Place>
 }

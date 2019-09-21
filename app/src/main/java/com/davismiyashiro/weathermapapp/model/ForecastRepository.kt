@@ -26,6 +26,7 @@ package com.davismiyashiro.weathermapapp.model
 
 import com.davismiyashiro.weathermapapp.model.data.Place
 import io.reactivex.Observable
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -57,6 +58,10 @@ constructor(private val openWeatherApi: OpenWeatherApi,
             getAndCacheLocalData()
                     .publish { local -> Observable.merge(local, remoteData.takeUntil(local)) }
                     .firstOrError()
+                    .doOnError { error ->
+                        Timber.e(error,"firstOrError chain")
+                        place = Place()
+                    }
                     .toObservable()
         }
     }
@@ -75,6 +80,10 @@ constructor(private val openWeatherApi: OpenWeatherApi,
                     place = placeRemote
                     localRepository.storeData(placeRemote)
                     placeRemote
+                }
+                .doOnError { error ->
+                    Timber.e(error, "remote error")
+                    place = Place()
                 }
                 .doOnComplete { dataIsStale = false }
     }

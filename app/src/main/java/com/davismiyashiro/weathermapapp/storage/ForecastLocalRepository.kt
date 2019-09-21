@@ -22,22 +22,37 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection
+package com.davismiyashiro.weathermapapp.storage
 
-import com.davismiyashiro.weathermapapp.presentation.ForecastListActivity
-import com.davismiyashiro.weathermapapp.domain.ForecastRepository
+import android.content.SharedPreferences
 
-import javax.inject.Singleton
+import com.davismiyashiro.weathermapapp.network.data.Place
+import com.google.gson.Gson
 
-import dagger.Component
+import io.reactivex.Observable
 
 /**
  * Created by Davis Miyashiro.
  */
 
-@Singleton
-@Component(modules = [ApplicationModule::class, NetworkModule::class])
-interface ApplicationComponent {
-    fun inject(activity: ForecastListActivity)
-    fun inject(repository: ForecastRepository)
+class ForecastLocalRepository(private val sharedPreferences: SharedPreferences) : Repository {
+
+    private val KEY_PLACE = "KEY_PLACE"
+    private val gson = Gson()
+
+    override fun loadData(): Observable<Place> {
+        val value = sharedPreferences.getString(KEY_PLACE, "")
+        var place: Place? = gson.fromJson(value, Place::class.java)
+
+        if (place == null) {
+            place = Place()
+        }
+        return Observable.just(place)
+    }
+
+    override fun storeData(place: Place) {
+        val editor = sharedPreferences.edit()
+        editor.putString(KEY_PLACE, gson.toJson(place))
+        editor.apply()
+    }
 }

@@ -22,22 +22,24 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection
-
-import com.davismiyashiro.weathermapapp.presentation.ForecastListActivity
-import com.davismiyashiro.weathermapapp.domain.ForecastRepository
-
-import javax.inject.Singleton
-
-import dagger.Component
+package com.davismiyashiro.weathermapapp.network.data
 
 /**
  * Created by Davis Miyashiro.
  */
+import com.google.gson.annotations.Expose
+import com.google.gson.annotations.SerializedName
 
-@Singleton
-@Component(modules = [ApplicationModule::class, NetworkModule::class])
-interface ApplicationComponent {
-    fun inject(activity: ForecastListActivity)
-    fun inject(repository: ForecastRepository)
-}
+data class Weather(
+        @SerializedName("id")
+        @Expose
+        var id: Int? = null,
+        @SerializedName("main")
+        @Expose
+        var main: String? = null,
+        @SerializedName("description")
+        @Expose
+        var description: String? = null,
+        @SerializedName("icon")
+        @Expose
+        var icon: String? = null)

@@ -92,7 +92,7 @@
                 android:textAppearance="?android:textAppearanceMedium"
                 tools:visibility="visible"
                 tools:text="32"/>
-            <com.davismiyashiro.weathermapapp.forecast.TemperatureTextView
+            <com.davismiyashiro.weathermapapp.presentation.TemperatureTextView
                 android:id="@+id/weather_temp_unit_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

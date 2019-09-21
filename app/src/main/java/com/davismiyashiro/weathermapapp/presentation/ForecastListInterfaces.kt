@@ -22,22 +22,25 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection
+package com.davismiyashiro.weathermapapp.presentation
 
-import com.davismiyashiro.weathermapapp.presentation.ForecastListActivity
-import com.davismiyashiro.weathermapapp.domain.ForecastRepository
-
-import javax.inject.Singleton
-
-import dagger.Component
+import io.reactivex.annotations.NonNull
 
 /**
  * Created by Davis Miyashiro.
  */
 
-@Singleton
-@Component(modules = [ApplicationModule::class, NetworkModule::class])
-interface ApplicationComponent {
-    fun inject(activity: ForecastListActivity)
-    fun inject(repository: ForecastRepository)
+interface ForecastListInterfaces {
+
+    interface View {
+        fun showForecastList(item: List<ForecastListItem>)
+        fun showErrorMsg()
+        fun setSwipeRefresh(value: Boolean)
+    }
+
+    interface Presenter {
+        fun attachView(@NonNull mainView: View)
+        fun dettachView()
+        fun loadWeatherData(refreshData: Boolean)
+    }
 }

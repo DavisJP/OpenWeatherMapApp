@@ -22,22 +22,18 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection
+package com.davismiyashiro.weathermapapp.storage
 
-import com.davismiyashiro.weathermapapp.presentation.ForecastListActivity
-import com.davismiyashiro.weathermapapp.domain.ForecastRepository
+import com.davismiyashiro.weathermapapp.network.data.Place
 
-import javax.inject.Singleton
-
-import dagger.Component
+import io.reactivex.Observable
 
 /**
  * Created by Davis Miyashiro.
  */
+interface Repository {
 
-@Singleton
-@Component(modules = [ApplicationModule::class, NetworkModule::class])
-interface ApplicationComponent {
-    fun inject(activity: ForecastListActivity)
-    fun inject(repository: ForecastRepository)
+    fun loadData(): Observable<Place>
+
+    fun storeData(place: Place)
 }

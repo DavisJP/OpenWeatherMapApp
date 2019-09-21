@@ -28,7 +28,11 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
-import com.davismiyashiro.weathermapapp.model.*
+import com.davismiyashiro.weathermapapp.domain.*
+import com.davismiyashiro.weathermapapp.network.OpenWeatherApi
+import com.davismiyashiro.weathermapapp.network.RepositoryInterface
+import com.davismiyashiro.weathermapapp.storage.ForecastLocalRepository
+import com.davismiyashiro.weathermapapp.storage.Repository
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton

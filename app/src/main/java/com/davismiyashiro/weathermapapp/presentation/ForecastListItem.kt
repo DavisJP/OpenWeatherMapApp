@@ -22,22 +22,17 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection
+package com.davismiyashiro.weathermapapp.presentation
 
-import com.davismiyashiro.weathermapapp.presentation.ForecastListActivity
-import com.davismiyashiro.weathermapapp.domain.ForecastRepository
-
-import javax.inject.Singleton
-
-import dagger.Component
+import com.davismiyashiro.weathermapapp.network.data.Conditions
 
 /**
  * Created by Davis Miyashiro.
  */
 
-@Singleton
-@Component(modules = [ApplicationModule::class, NetworkModule::class])
-interface ApplicationComponent {
-    fun inject(activity: ForecastListActivity)
-    fun inject(repository: ForecastRepository)
+class ForecastListItem(condition: Conditions) {
+    val main: String = condition.weather?.get(0)?.main ?: ""
+    val dt: Long = condition.dt ?: 0
+    val temp: Double = condition.main?.temp ?: 0.0
+    val imgIcon: String = condition.weather?.get(0)?.icon?.plus(".png") ?: ""
 }

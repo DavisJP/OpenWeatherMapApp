@@ -28,7 +28,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.davismiyashiro.weathermapapp.forecast.ForecastListActivity">
+    tools:context="com.davismiyashiro.weathermapapp.presentation.ForecastListActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"

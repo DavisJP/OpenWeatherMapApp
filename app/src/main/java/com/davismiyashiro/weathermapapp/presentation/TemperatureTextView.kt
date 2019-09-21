@@ -22,22 +22,30 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection
+package com.davismiyashiro.weathermapapp.presentation
 
-import com.davismiyashiro.weathermapapp.presentation.ForecastListActivity
-import com.davismiyashiro.weathermapapp.domain.ForecastRepository
-
-import javax.inject.Singleton
-
-import dagger.Component
+import android.content.Context
+import android.util.AttributeSet
+import androidx.appcompat.widget.AppCompatTextView
+import com.davismiyashiro.weathermapapp.R
 
 /**
  * Created by Davis Miyashiro.
  */
 
-@Singleton
-@Component(modules = [ApplicationModule::class, NetworkModule::class])
-interface ApplicationComponent {
-    fun inject(activity: ForecastListActivity)
-    fun inject(repository: ForecastRepository)
+class TemperatureTextView : AppCompatTextView {
+
+    constructor(context: Context) : super(context)
+
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+
+    fun setTemperatureUnit(temperatureUnit: Int) {
+        text = when (temperatureUnit) {
+            TEMPERATURE_CELSIUS -> context.getText(R.string.celsius)
+            TEMPERATURE_FAHRENHEIT -> context.getText(R.string.fahrenheit)
+            else -> "" //Default is Kelvin
+        }
+    }
 }

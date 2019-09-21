@@ -22,22 +22,41 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection
+package com.davismiyashiro.weathermapapp.presentation
 
-import com.davismiyashiro.weathermapapp.presentation.ForecastListActivity
-import com.davismiyashiro.weathermapapp.domain.ForecastRepository
-
-import javax.inject.Singleton
-
-import dagger.Component
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.ActivityTestRule
+import org.junit.Assert.assertEquals
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
- * Created by Davis Miyashiro.
+ * Created by Davis Miyashiro on 18/12/2017.
  */
 
-@Singleton
-@Component(modules = [ApplicationModule::class, NetworkModule::class])
-interface ApplicationComponent {
-    fun inject(activity: ForecastListActivity)
-    fun inject(repository: ForecastRepository)
+@RunWith(AndroidJUnit4::class)
+class ForecastListActivityTest {
+
+    @get:Rule
+    val main = ActivityTestRule(ForecastListActivity::class.java)
+
+    @Test
+    @Throws(Exception::class)
+    fun useAppContext() {
+        // Context of the app under test.
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+
+        assertEquals("com.davismiyashiro.weathermapapp", appContext.packageName)
+    }
+
+    @Test
+    fun checkToolbarDisplaysTitle() {
+        onView(withText("OpenWeatherMap")).check(matches(isDisplayed()))
+    }
 }

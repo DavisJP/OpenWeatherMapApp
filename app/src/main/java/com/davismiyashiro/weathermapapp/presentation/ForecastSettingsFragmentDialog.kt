@@ -22,22 +22,39 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection
+package com.davismiyashiro.weathermapapp.presentation
 
-import com.davismiyashiro.weathermapapp.presentation.ForecastListActivity
-import com.davismiyashiro.weathermapapp.domain.ForecastRepository
-
-import javax.inject.Singleton
-
-import dagger.Component
+import android.app.AlertDialog
+import android.app.Dialog
+import android.os.Bundle
+import android.preference.PreferenceManager
+import androidx.fragment.app.DialogFragment
+import com.davismiyashiro.weathermapapp.R
 
 /**
  * Created by Davis Miyashiro.
  */
 
-@Singleton
-@Component(modules = [ApplicationModule::class, NetworkModule::class])
-interface ApplicationComponent {
-    fun inject(activity: ForecastListActivity)
-    fun inject(repository: ForecastRepository)
+class ForecastSettingsFragmentDialog : DialogFragment() {
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+
+        val builder = AlertDialog.Builder(activity)
+        builder.setTitle(R.string.choose_temperature_unit)
+                .setItems(R.array.pref_temperature_units) { _, position ->
+                    val pref = PreferenceManager.getDefaultSharedPreferences(context)
+                    val edit = pref.edit()
+
+                    edit.putInt(TEMPERATURE_KEY, position)
+                    edit.apply()
+                }
+
+        return builder.create()
+    }
+
+    companion object {
+        fun newInstance(): DialogFragment {
+            return ForecastSettingsFragmentDialog()
+        }
+    }
 }

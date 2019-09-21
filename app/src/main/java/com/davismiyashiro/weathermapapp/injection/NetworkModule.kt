@@ -28,7 +28,7 @@ import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 
-import com.davismiyashiro.weathermapapp.model.OpenWeatherApi
+import com.davismiyashiro.weathermapapp.network.OpenWeatherApi
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 
 import java.io.File

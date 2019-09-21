@@ -22,22 +22,25 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.injection
+package com.davismiyashiro.weathermapapp.network
 
-import com.davismiyashiro.weathermapapp.presentation.ForecastListActivity
-import com.davismiyashiro.weathermapapp.domain.ForecastRepository
+import com.davismiyashiro.weathermapapp.network.data.Place
 
-import javax.inject.Singleton
-
-import dagger.Component
+import io.reactivex.Observable
+import retrofit2.http.GET
+import retrofit2.http.Query
 
 /**
  * Created by Davis Miyashiro.
  */
 
-@Singleton
-@Component(modules = [ApplicationModule::class, NetworkModule::class])
-interface ApplicationComponent {
-    fun inject(activity: ForecastListActivity)
-    fun inject(repository: ForecastRepository)
+//http://api.openweathermap.org/data/2.5/forecast?q=London&appid=3e29cf11d4eabe8eba6cf25d535eaac2&cnt=5
+interface OpenWeatherApi {
+
+    @GET("forecast")
+    fun getWeatherFromPlace(@Query("q") place: String,
+                            @Query("appid") id: String): Observable<Place>
+
+    @GET("forecast")
+    fun getForecastById(@Query("id") place: Int): Observable<Place>
 }

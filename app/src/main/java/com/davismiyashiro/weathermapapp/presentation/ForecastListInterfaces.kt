@@ -24,7 +24,8 @@
 
 package com.davismiyashiro.weathermapapp.presentation
 
-import io.reactivex.annotations.NonNull
+import androidx.annotation.NonNull
+
 
 /**
  * Created by Davis Miyashiro.

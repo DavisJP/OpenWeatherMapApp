@@ -32,7 +32,7 @@ import com.davismiyashiro.weathermapapp.network.data.Weather
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule

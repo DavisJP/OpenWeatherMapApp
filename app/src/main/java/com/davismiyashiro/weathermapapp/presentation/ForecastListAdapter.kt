@@ -27,14 +27,10 @@ package com.davismiyashiro.weathermapapp.presentation
 import android.content.Context
 import android.preference.PreferenceManager
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.davismiyashiro.weathermapapp.R
+import com.davismiyashiro.weathermapapp.databinding.RecyclerWeatherItemBinding
 import com.squareup.picasso.Picasso
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
@@ -62,27 +58,29 @@ class ForecastListAdapter(private val context: Context) : RecyclerView.Adapter<F
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeatherHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val root = inflater.inflate(R.layout.recycler_weather_item, parent, false)
-        return WeatherHolder(root)
+        val binding = RecyclerWeatherItemBinding.inflate(inflater, parent, false)
+        return WeatherHolder(binding)
     }
 
     override fun onBindViewHolder(holder: WeatherHolder, position: Int) {
         val item = forecastListItems[position]
 
-        holder.weatherDesc?.text = item.main
+        with(holder) {
+            binding.weatherDescText.text = item.main
 
-        holder.weatherDate?.text = getReadableDate(item.dt)
+            binding.weatherDateText.text = getReadableDate(item.dt)
 
-        val formatter = context.getString(R.string.format_temperature)
-        val formattedTemperature = String.format(formatter, convertTemperature(item.temp))
-        holder.weatherHighTemp?.text = formattedTemperature
+            val formatter = context.getString(R.string.format_temperature)
+            val formattedTemperature = String.format(formatter, convertTemperature(item.temp))
+            binding.weatherHighTempText.text = formattedTemperature
 
-        holder.weatherUnitTemp?.setTemperatureUnit(temperatureUnit)
+            binding.weatherTempUnitText.setTemperatureUnit(temperatureUnit)
 
-        Picasso.get()
-                .load(IMG_SRC_W_URL + item.imgIcon)
-                .placeholder(android.R.drawable.progress_indeterminate_horizontal)
-                .into(holder.weatherIcon)
+            Picasso.get()
+                    .load(IMG_SRC_W_URL + item.imgIcon)
+                    .placeholder(android.R.drawable.progress_indeterminate_horizontal)
+                    .into(binding.weatherImg)
+        }
     }
 
     override fun getItemCount(): Int {
@@ -122,26 +120,5 @@ class ForecastListAdapter(private val context: Context) : RecyclerView.Adapter<F
         notifyDataSetChanged()
     }
 
-    inner class WeatherHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-        @BindView(R.id.weather_img)
-        @JvmField
-        var weatherIcon: ImageView? = null //list.weather.icon
-        @BindView(R.id.weather_date_text)
-        @JvmField
-        var weatherDate: TextView? = null //list.dt (millis?) or list.dtTxt (Str)
-        @BindView(R.id.weather_desc_text)
-        @JvmField
-        var weatherDesc: TextView? = null //list.weather.main or description
-        @BindView(R.id.weather_high_temp_text)
-        @JvmField
-        var weatherHighTemp: TextView? = null //list.main.tempMax
-        @BindView(R.id.weather_temp_unit_text)
-        @JvmField
-        var weatherUnitTemp: TemperatureTextView? = null
-
-        init {
-            ButterKnife.bind(this, itemView)
-        }
-    }
+    class WeatherHolder(val binding: RecyclerWeatherItemBinding) : RecyclerView.ViewHolder(binding.root)
 }

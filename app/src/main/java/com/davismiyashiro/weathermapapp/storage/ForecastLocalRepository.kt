@@ -29,7 +29,7 @@ import android.content.SharedPreferences
 import com.davismiyashiro.weathermapapp.network.data.Place
 import com.google.gson.Gson
 
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 
 /**
  * Created by Davis Miyashiro.

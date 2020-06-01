@@ -28,8 +28,8 @@ import com.davismiyashiro.weathermapapp.network.data.Place
 import com.davismiyashiro.weathermapapp.network.OpenWeatherApi
 import com.davismiyashiro.weathermapapp.storage.Repository
 import com.nhaarman.mockitokotlin2.mock
-import io.reactivex.Observable
-import io.reactivex.observers.TestObserver
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.observers.TestObserver
 import junit.framework.Assert.*
 import org.junit.After
 import org.junit.Before
@@ -83,7 +83,7 @@ class ForecastRepositoryTest {
 
         placeTestObserver.assertValue(placeRemote)
 
-        assertEquals(1, placeTestObserver.valueCount())
+        placeTestObserver.assertValueCount(1)
         assertEquals(placeRemote, placeTestObserver.values()[0])
     }
 
@@ -107,7 +107,7 @@ class ForecastRepositoryTest {
 
         assertFalse(repository.dataIsStale)
 
-        assertEquals(1, placeTestObserver.valueCount())
+        placeTestObserver.assertValueCount(1)
         assertEquals(place, placeTestObserver.values()[0])
     }
 
@@ -131,7 +131,7 @@ class ForecastRepositoryTest {
 
         assertFalse(repository.dataIsStale)
 
-        assertEquals(1, placeTestObserver.valueCount())
+        placeTestObserver.assertValueCount(1)
         assertEquals(place, placeTestObserver.values()[0])
     }
 
@@ -170,7 +170,7 @@ class ForecastRepositoryTest {
 
         assertFalse(repository.dataIsStale)
 
-        assertEquals(1, placeTestObserver.valueCount())
+        placeTestObserver.assertValueCount(1)
         assertEquals(place, placeTestObserver.values()[0])
     }
 
@@ -189,7 +189,7 @@ class ForecastRepositoryTest {
 
         assertFalse(repository.dataIsStale)
 
-        assertEquals(1, placeTestObserver.valueCount())
+        placeTestObserver.assertValueCount(1)
         assertEquals(place, placeTestObserver.values()[0])
     }
 }

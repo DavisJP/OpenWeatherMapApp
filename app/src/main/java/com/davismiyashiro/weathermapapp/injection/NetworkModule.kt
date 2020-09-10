@@ -52,7 +52,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 @Module
 class NetworkModule {
 
-    private val BASE_URL = "http://api.openweathermap.org/data/2.5/"
+    private val BASE_URL = "https://api.openweathermap.org/data/2.5/"
     private val APP_ID_PARAM = "appid"
     private val APP_ID = "3e29cf11d4eabe8eba6cf25d535eaac2"
 

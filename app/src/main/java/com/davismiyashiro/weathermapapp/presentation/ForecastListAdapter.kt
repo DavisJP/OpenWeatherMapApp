@@ -41,7 +41,7 @@ import java.util.*
 /**
  * Created by Davis Miyashiro.
  */
-const val IMG_SRC_W_URL = "http://openweathermap.org/img/w/"
+const val IMG_SRC_W_URL = "https://openweathermap.org/img/w/"
 const val TEMPERATURE_CELSIUS = 0
 const val TEMPERATURE_FAHRENHEIT = 1
 

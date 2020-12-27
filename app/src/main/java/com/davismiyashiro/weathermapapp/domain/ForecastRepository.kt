@@ -28,7 +28,7 @@ import com.davismiyashiro.weathermapapp.network.data.Place
 import com.davismiyashiro.weathermapapp.network.OpenWeatherApi
 import com.davismiyashiro.weathermapapp.network.RepositoryInterface
 import com.davismiyashiro.weathermapapp.storage.Repository
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import timber.log.Timber
 import javax.inject.Inject
 

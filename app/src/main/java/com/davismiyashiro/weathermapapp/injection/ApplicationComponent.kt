@@ -39,5 +39,4 @@ import dagger.Component
 @Component(modules = [ApplicationModule::class, NetworkModule::class])
 interface ApplicationComponent {
     fun inject(activity: ForecastListActivity)
-    fun inject(repository: ForecastRepository)
 }

@@ -31,16 +31,11 @@ import android.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.davismiyashiro.weathermapapp.App
 import com.davismiyashiro.weathermapapp.R
+import com.davismiyashiro.weathermapapp.databinding.ActivityMainBinding
 import javax.inject.Inject
 
 /**
@@ -51,19 +46,6 @@ const val RECYCLER_STATE = "RECYCLER_STATE"
 
 class ForecastListActivity : AppCompatActivity(), ForecastListInterfaces.View, SharedPreferences.OnSharedPreferenceChangeListener {
 
-    @BindView(R.id.toolbar)
-    @JvmField
-    internal var toolbar: Toolbar? = null
-    @BindView(R.id.recycler_weather_list)
-    @JvmField
-    internal var recycler: RecyclerView? = null
-    @BindView(R.id.error_message_display)
-    @JvmField
-    internal var errorMsg: TextView? = null
-    @BindView(R.id.content_main_swipe_refresh_layout)
-    @JvmField
-    internal var swipeLayout: SwipeRefreshLayout? = null
-
     @Inject
     internal lateinit var presenter: ForecastListPresenter
 
@@ -71,38 +53,42 @@ class ForecastListActivity : AppCompatActivity(), ForecastListInterfaces.View, S
 
     private var savedState: Parcelable? = null
 
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        (application as App).getComponent()?.inject(this)
+
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        ButterKnife.bind(this)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        setSupportActionBar(toolbar)
+
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setTitle(R.string.open_weather_map)
 
         //Listening to changes on Temperature Units
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this)
 
-        (application as App).getComponent()?.inject(this)
-
         adapter = ForecastListAdapter(this)
 
-        recycler?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        recycler?.setHasFixedSize(true)
-        recycler?.adapter = adapter
+        binding.content.recyclerWeatherList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        binding.content.recyclerWeatherList.setHasFixedSize(true)
+        binding.content.recyclerWeatherList.adapter = adapter
 
         if (savedInstanceState != null) {
             savedState = savedInstanceState.getParcelable(RECYCLER_STATE)
         }
 
-        swipeLayout?.setOnRefreshListener {
+        binding.content.contentMainSwipeRefreshLayout.setOnRefreshListener {
             presenter.loadWeatherData(true)
             savedState = null
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putParcelable(RECYCLER_STATE, recycler!!.layoutManager!!.onSaveInstanceState())
+        outState.putParcelable(RECYCLER_STATE, binding.content.recyclerWeatherList.layoutManager?.onSaveInstanceState())
         super.onSaveInstanceState(outState)
     }
 
@@ -133,7 +119,7 @@ class ForecastListActivity : AppCompatActivity(), ForecastListInterfaces.View, S
     }
 
     override fun setSwipeRefresh(value: Boolean) {
-        swipeLayout?.isRefreshing = value
+        binding.content.contentMainSwipeRefreshLayout.isRefreshing = value
     }
 
     private fun showTemperatureOptions() {
@@ -142,17 +128,17 @@ class ForecastListActivity : AppCompatActivity(), ForecastListInterfaces.View, S
     }
 
     override fun showErrorMsg() {
-        errorMsg?.visibility = View.VISIBLE
-        recycler?.visibility = View.GONE
+        binding.content.errorMessageDisplay.visibility = View.VISIBLE
+        binding.content.recyclerWeatherList.visibility = View.GONE
     }
 
     override fun showForecastList(items: List<ForecastListItem>) {
         adapter.replaceData(items)
-        errorMsg?.visibility = View.GONE
-        recycler?.visibility = View.VISIBLE
+        binding.content.errorMessageDisplay.visibility = View.GONE
+        binding.content.recyclerWeatherList.visibility = View.VISIBLE
 
         if (savedState != null) {
-            recycler?.layoutManager?.onRestoreInstanceState(savedState)
+            binding.content.recyclerWeatherList.layoutManager?.onRestoreInstanceState(savedState)
         }
     }
 

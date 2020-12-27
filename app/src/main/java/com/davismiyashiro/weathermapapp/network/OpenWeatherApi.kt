@@ -26,7 +26,7 @@ package com.davismiyashiro.weathermapapp.network
 
 import com.davismiyashiro.weathermapapp.network.data.Place
 
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query
 

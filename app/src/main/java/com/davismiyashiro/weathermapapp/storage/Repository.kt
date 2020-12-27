@@ -26,7 +26,7 @@ package com.davismiyashiro.weathermapapp.storage
 
 import com.davismiyashiro.weathermapapp.network.data.Place
 
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 
 /**
  * Created by Davis Miyashiro.

@@ -22,37 +22,24 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.storage
-
-import android.content.SharedPreferences
-
-import com.davismiyashiro.weathermapapp.network.data.Place
-import com.google.gson.Gson
-
-import io.reactivex.rxjava3.core.Observable
+package com.davismiyashiro.weathermapapp.data
 
 /**
  * Created by Davis Miyashiro.
  */
+import com.google.gson.annotations.Expose
+import com.google.gson.annotations.SerializedName
 
-class ForecastLocalRepository(private val sharedPreferences: SharedPreferences) : Repository {
-
-    private val KEY_PLACE = "KEY_PLACE"
-    private val gson = Gson()
-
-    override fun loadData(): Observable<Place> {
-        val value = sharedPreferences.getString(KEY_PLACE, "")
-        var place: Place? = gson.fromJson(value, Place::class.java)
-
-        if (place == null) {
-            place = Place()
-        }
-        return Observable.just(place)
-    }
-
-    override fun storeData(place: Place) {
-        val editor = sharedPreferences.edit()
-        editor.putString(KEY_PLACE, gson.toJson(place))
-        editor.apply()
-    }
-}
+data class Weather(
+        @SerializedName("id")
+        @Expose
+        var id: Int? = null,
+        @SerializedName("main")
+        @Expose
+        var main: String? = null,
+        @SerializedName("description")
+        @Expose
+        var description: String? = null,
+        @SerializedName("icon")
+        @Expose
+        var icon: String? = null)

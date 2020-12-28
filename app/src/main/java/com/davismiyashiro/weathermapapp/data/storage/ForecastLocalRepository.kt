@@ -22,27 +22,38 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.network.data
+package com.davismiyashiro.weathermapapp.data.storage
 
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
+import android.content.SharedPreferences
+
+import com.davismiyashiro.weathermapapp.data.Place
+import com.davismiyashiro.weathermapapp.domain.Repository
+import com.google.gson.Gson
+
+import io.reactivex.rxjava3.core.Observable
 
 /**
  * Created by Davis Miyashiro.
  */
-data class City(
-        @SerializedName("id")
-        @Expose
-        var id: Int? = null,
-        @SerializedName("name")
-        @Expose
-        var name: String? = null,
-        @SerializedName("coord")
-        @Expose
-        var coord: Coord? = null,
-        @SerializedName("country")
-        @Expose
-        var country: String? = null,
-        @SerializedName("population")
-        @Expose
-        var population: Int? = null)
+
+class ForecastLocalRepository(private val sharedPreferences: SharedPreferences) : Repository {
+
+    private val KEY_PLACE = "KEY_PLACE"
+    private val gson = Gson()
+
+    override fun loadData(): Observable<Place> {
+        val value = sharedPreferences.getString(KEY_PLACE, "")
+        var place: Place? = gson.fromJson(value, Place::class.java)
+
+        if (place == null) {
+            place = Place()
+        }
+        return Observable.just(place)
+    }
+
+    override fun storeData(place: Place) {
+        val editor = sharedPreferences.edit()
+        editor.putString(KEY_PLACE, gson.toJson(place))
+        editor.apply()
+    }
+}

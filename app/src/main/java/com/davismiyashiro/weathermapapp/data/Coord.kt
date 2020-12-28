@@ -22,24 +22,18 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.network.data
+package com.davismiyashiro.weathermapapp.data
+
+import com.google.gson.annotations.Expose
+import com.google.gson.annotations.SerializedName
 
 /**
  * Created by Davis Miyashiro.
  */
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
-
-data class Weather(
-        @SerializedName("id")
+data class Coord(
+        @SerializedName("lon")
         @Expose
-        var id: Int? = null,
-        @SerializedName("main")
+        var lon: Double? = null,
+        @SerializedName("lat")
         @Expose
-        var main: String? = null,
-        @SerializedName("description")
-        @Expose
-        var description: String? = null,
-        @SerializedName("icon")
-        @Expose
-        var icon: String? = null)
+        var lat: Double? = null)

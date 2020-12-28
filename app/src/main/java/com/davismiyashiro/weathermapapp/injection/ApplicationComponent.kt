@@ -25,7 +25,6 @@
 package com.davismiyashiro.weathermapapp.injection
 
 import com.davismiyashiro.weathermapapp.presentation.ForecastListActivity
-import com.davismiyashiro.weathermapapp.domain.ForecastRepository
 
 import javax.inject.Singleton
 

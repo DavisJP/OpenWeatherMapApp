@@ -28,7 +28,7 @@ import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 
-import com.davismiyashiro.weathermapapp.network.OpenWeatherApi
+import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
 
 import java.io.File
 

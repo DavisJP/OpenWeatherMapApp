@@ -1,6 +1,6 @@
-package com.davismiyashiro.weathermapapp.network
+package com.davismiyashiro.weathermapapp.domain
 
-import com.davismiyashiro.weathermapapp.network.data.Place
+import com.davismiyashiro.weathermapapp.data.Place
 import io.reactivex.rxjava3.core.Observable
 
 interface RepositoryInterface {

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.network.data
+package com.davismiyashiro.weathermapapp.data
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
@@ -30,7 +30,10 @@ import com.google.gson.annotations.SerializedName
 /**
  * Created by Davis Miyashiro.
  */
-data class Snow (
-    @SerializedName("3h")
-    @Expose
-    var _3h:Double? = null)
+data class Wind(
+        @SerializedName("speed")
+        @Expose
+        var speed: Double? = null,
+        @SerializedName("deg")
+        @Expose
+        var deg: Double? = null)

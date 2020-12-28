@@ -22,18 +22,27 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.storage
+package com.davismiyashiro.weathermapapp.data
 
-import com.davismiyashiro.weathermapapp.network.data.Place
-
-import io.reactivex.rxjava3.core.Observable
+import com.google.gson.annotations.Expose
+import com.google.gson.annotations.SerializedName
 
 /**
  * Created by Davis Miyashiro.
  */
-interface Repository {
-
-    fun loadData(): Observable<Place>
-
-    fun storeData(place: Place)
-}
+data class City(
+        @SerializedName("id")
+        @Expose
+        var id: Int? = null,
+        @SerializedName("name")
+        @Expose
+        var name: String? = null,
+        @SerializedName("coord")
+        @Expose
+        var coord: Coord? = null,
+        @SerializedName("country")
+        @Expose
+        var country: String? = null,
+        @SerializedName("population")
+        @Expose
+        var population: Int? = null)

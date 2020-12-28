@@ -24,11 +24,11 @@
 
 package com.davismiyashiro.weathermapapp.presentation
 
-import com.davismiyashiro.weathermapapp.network.RepositoryInterface
-import com.davismiyashiro.weathermapapp.network.data.Conditions
-import com.davismiyashiro.weathermapapp.network.data.Main
-import com.davismiyashiro.weathermapapp.network.data.Place
-import com.davismiyashiro.weathermapapp.network.data.Weather
+import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
+import com.davismiyashiro.weathermapapp.data.Conditions
+import com.davismiyashiro.weathermapapp.data.Main
+import com.davismiyashiro.weathermapapp.data.Place
+import com.davismiyashiro.weathermapapp.data.Weather
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
@@ -37,13 +37,16 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.Mockito.`when`
+import org.mockito.junit.MockitoJUnitRunner
 import java.util.*
 
 /**
  * Created by Davis Miyashiro.
  */
+@RunWith(MockitoJUnitRunner::class)
 class ForecastListPresenterTest {
 
     private val repo = mock<RepositoryInterface>()

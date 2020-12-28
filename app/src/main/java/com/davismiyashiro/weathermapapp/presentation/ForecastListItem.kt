@@ -24,7 +24,7 @@
 
 package com.davismiyashiro.weathermapapp.presentation
 
-import com.davismiyashiro.weathermapapp.network.data.Conditions
+import com.davismiyashiro.weathermapapp.data.Conditions
 
 /**
  * Created by Davis Miyashiro.

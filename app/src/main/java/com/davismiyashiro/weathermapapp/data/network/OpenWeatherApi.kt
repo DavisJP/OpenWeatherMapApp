@@ -22,15 +22,25 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.network.data
+package com.davismiyashiro.weathermapapp.data.network
 
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
+import com.davismiyashiro.weathermapapp.data.Place
+
+import io.reactivex.rxjava3.core.Observable
+import retrofit2.http.GET
+import retrofit2.http.Query
 
 /**
  * Created by Davis Miyashiro.
  */
-data class Clouds(
-        @SerializedName("all")
-        @Expose
-        var all: Int? = null)
+
+//http://api.openweathermap.org/data/2.5/forecast?q=London&appid=3e29cf11d4eabe8eba6cf25d535eaac2&cnt=5
+interface OpenWeatherApi {
+
+    @GET("forecast")
+    fun getWeatherFromPlace(@Query("q") place: String,
+                            @Query("appid") id: String): Observable<Place>
+
+    @GET("forecast")
+    fun getForecastById(@Query("id") place: Int): Observable<Place>
+}

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.network.data
+package com.davismiyashiro.weathermapapp.data
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName

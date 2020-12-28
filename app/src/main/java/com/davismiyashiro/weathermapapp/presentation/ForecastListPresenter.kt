@@ -25,8 +25,8 @@
 package com.davismiyashiro.weathermapapp.presentation
 
 import androidx.annotation.NonNull
-import com.davismiyashiro.weathermapapp.network.RepositoryInterface
-import com.davismiyashiro.weathermapapp.network.data.Place
+import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
+import com.davismiyashiro.weathermapapp.data.Place
 import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable

@@ -22,12 +22,11 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.domain
+package com.davismiyashiro.weathermapapp.data.network
 
-import com.davismiyashiro.weathermapapp.network.data.Place
-import com.davismiyashiro.weathermapapp.network.OpenWeatherApi
-import com.davismiyashiro.weathermapapp.network.RepositoryInterface
-import com.davismiyashiro.weathermapapp.storage.Repository
+import com.davismiyashiro.weathermapapp.data.Place
+import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
+import com.davismiyashiro.weathermapapp.domain.Repository
 import io.reactivex.rxjava3.core.Observable
 import timber.log.Timber
 import javax.inject.Inject

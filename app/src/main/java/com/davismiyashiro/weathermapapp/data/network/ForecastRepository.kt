@@ -42,27 +42,27 @@ constructor(private val openWeatherApi: OpenWeatherApi,
     //TODO: Hardcoded for now, change later
     private val LONDON_ID = 2643743
 
-    private var place: Place? = null
-    internal var dataIsStale = false
+    private var localCache: Place? = null
+    internal var refreshFromRemote = true
 
     override fun loadWeatherData(): Observable<Place> {
-        if (place != null && !dataIsStale) {
-            return Observable.just(place)
+        if (localCache != null && !refreshFromRemote) {
+            return Observable.just(localCache)
         } else {
-            place = Place()
+            localCache = Place()
         }
 
         val remoteData = getAndSaveRemoteData()
 
-        return if (dataIsStale) {
+        return if (refreshFromRemote) {
             remoteData
         } else {
             getAndCacheLocalData()
                     .publish { local -> Observable.merge(local, remoteData.takeUntil(local)) }
                     .firstOrError()
                     .doOnError { error ->
-                        Timber.e(error,"firstOrError chain")
-                        place = Place()
+                        Timber.e(error, "firstOrError chain")
+                        localCache = Place()
                     }
                     .toObservable()
         }
@@ -71,7 +71,7 @@ constructor(private val openWeatherApi: OpenWeatherApi,
     private fun getAndCacheLocalData(): Observable<Place> {
         return localRepository.loadData()
                 .map<Place> { placeParam ->
-                    place = placeParam
+                    localCache = placeParam
                     placeParam
                 }
     }
@@ -79,18 +79,22 @@ constructor(private val openWeatherApi: OpenWeatherApi,
     private fun getAndSaveRemoteData(): Observable<Place> {
         return openWeatherApi.getForecastById(LONDON_ID)
                 .map { placeRemote ->
-                    place = placeRemote
+                    localCache = placeRemote
                     localRepository.storeData(placeRemote)
                     placeRemote
                 }
                 .doOnError { error ->
                     Timber.e(error, "remote error")
-                    place = Place()
+                    localCache = Place()
                 }
-                .doOnComplete { dataIsStale = false }
+                .doOnComplete { refreshFromRemote = false }
     }
 
-    override fun refreshData() {
-        dataIsStale = true
+    override fun refreshFromRemote() {
+        refreshFromRemote = true
+    }
+
+    fun refreshCache(cache: Place?) {
+        localCache = cache
     }
 }

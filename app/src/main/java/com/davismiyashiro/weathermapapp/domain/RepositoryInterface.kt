@@ -5,5 +5,5 @@ import io.reactivex.rxjava3.core.Observable
 
 interface RepositoryInterface {
     fun loadWeatherData(): Observable<Place>
-    fun refreshData()
+    fun refreshFromRemote()
 }

@@ -24,9 +24,12 @@
 
 package com.davismiyashiro.weathermapapp.data.network
 
+import com.davismiyashiro.weathermapapp.data.City
+import com.davismiyashiro.weathermapapp.data.Conditions
 import com.davismiyashiro.weathermapapp.data.Place
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.TestObserver
 import junit.framework.Assert.*
@@ -47,9 +50,11 @@ class ForecastRepositoryTest {
 
     private var remoteRepository = mock<OpenWeatherApi>()
     private var localRepository = mock<Repository>()
+    private lateinit var place: Place
 
     @Before
     fun setUp() {
+        place = Place("123", 10.0, 1, mutableListOf(Conditions()), City())
         placeTestObserver = TestObserver()
 
         repository = ForecastRepository(remoteRepository, localRepository)
@@ -61,11 +66,8 @@ class ForecastRepositoryTest {
 
     @Test
     fun loadWeatherData_twoConsecutiveCalls_returnsValueFromCache() {
-        val placeLocal = Place()
-        val placeRemote = Place()
-
-        `when`(localRepository.loadData()).thenReturn(Observable.just(placeLocal))
-        `when`(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(placeRemote))
+        `when`(localRepository.loadData()).thenReturn(Observable.never())
+        `when`(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(place))
 
         //Making 2 consecutive calls
         repository.loadWeatherData()
@@ -76,20 +78,17 @@ class ForecastRepositoryTest {
 
         //Repositories must be accessed only once
         verify<OpenWeatherApi>(remoteRepository).getForecastById(anyInt())
-        verify<Repository>(localRepository).loadData()
+        verify<Repository>(localRepository, never()).loadData()
 
-        assertFalse(repository.dataIsStale)
+        assertFalse(repository.refreshFromRemote)
 
-        placeTestObserver.assertValue(placeRemote)
-
-        placeTestObserver.assertValueCount(1)
-        assertEquals(placeRemote, placeTestObserver.values()[0])
+        placeTestObserver.assertValue(place)
+                .assertValueCount(1)
+                .assertValue(place)
     }
 
     @Test
     fun loadWeatherData_onlyRemoteAvailable_returnsFromCache() {
-        val place = Place()
-
         `when`(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(place))
         `when`(localRepository.loadData()).thenReturn(Observable.never())
 
@@ -102,33 +101,41 @@ class ForecastRepositoryTest {
 
         //Repositories must be accessed only once
         verify<OpenWeatherApi>(remoteRepository).getForecastById(anyInt())
-        verify<Repository>(localRepository).loadData()
 
-        assertFalse(repository.dataIsStale)
+        assertFalse(repository.refreshFromRemote)
 
         placeTestObserver.assertValueCount(1)
         assertEquals(place, placeTestObserver.values()[0])
     }
 
-    @Test
-    fun loadWeatherData_onlyLocalAvailable_returnsFromCache() {
-        val place = Place()
-
-        `when`(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.never())
-        `when`(localRepository.loadData()).thenReturn(Observable.just(place))
-
-        //Making 2 consecutive calls
-        repository.loadWeatherData()
-                .subscribe(placeTestObserver)
+    /**
+     * Save to cache and localRepo, and set dataStale = false
+     **/
+    private fun firstRemoteCallSuccessful() {
+        whenever(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(place))
 
         repository.loadWeatherData()
                 .subscribe(placeTestObserver)
 
-        //Repositories must be accessed only once
         verify<OpenWeatherApi>(remoteRepository).getForecastById(anyInt())
-        verify<Repository>(localRepository).loadData()
+    }
 
-        assertFalse(repository.dataIsStale)
+    @Test
+    fun loadWeatherData_1stRemoteFetchThenClearCache_returnsFromLocalRepo() {
+        firstRemoteCallSuccessful()
+
+        whenever(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.never())
+        whenever(localRepository.loadData()).thenReturn(Observable.just(place))
+
+        repository.refreshCache(null)
+
+        repository.loadWeatherData()
+                .subscribe(placeTestObserver)
+
+        verify<OpenWeatherApi>(remoteRepository, times(2))
+                .getForecastById(anyInt())
+        verify<Repository>(localRepository).loadData()
+        assertFalse(repository.refreshFromRemote)
 
         placeTestObserver.assertValueCount(1)
         assertEquals(place, placeTestObserver.values()[0])
@@ -136,17 +143,15 @@ class ForecastRepositoryTest {
 
     @Test
     fun loadWeatherData_twoCallsWithRefresh_returnsFromRemoteTwice() {
-        val place = Place()
-
         `when`(localRepository.loadData()).thenReturn(Observable.just(place))
         `when`(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(Place()))
 
         repository.loadWeatherData()
                 .subscribe(placeTestObserver)
 
-        repository.refreshData()
+        repository.refreshFromRemote()
 
-        assertTrue(repository.dataIsStale)
+        assertTrue(repository.refreshFromRemote)
 
         repository.loadWeatherData()
                 .subscribe(placeTestObserver)
@@ -155,38 +160,22 @@ class ForecastRepositoryTest {
     }
 
     @Test
-    fun loadWeatherData_remoteNotAvailable_returnsFromLocal() {
-        val place = Place()
-
-        `when`(localRepository.loadData()).thenReturn(Observable.just(place))
-        `when`(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.never())
-
-        repository.loadWeatherData()
-                .subscribe(placeTestObserver)
-
-        verify<OpenWeatherApi>(remoteRepository).getForecastById(anyInt())
-        verify<Repository>(localRepository).loadData()
-
-        assertFalse(repository.dataIsStale)
-
-        placeTestObserver.assertValueCount(1)
-        assertEquals(place, placeTestObserver.values()[0])
-    }
-
-    @Test
     fun loadWeatherData_localNotAvailable_returnsFromRemote() {
-        val place = Place()
+        firstRemoteCallSuccessful()
 
         `when`(localRepository.loadData()).thenReturn(Observable.never())
         `when`(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(place))
 
+        repository.refreshCache(null)
+
         repository.loadWeatherData()
                 .subscribe(placeTestObserver)
 
-        verify<OpenWeatherApi>(remoteRepository).getForecastById(anyInt())
+        verify<OpenWeatherApi>(remoteRepository, times(2)).
+        getForecastById(anyInt())
         verify<Repository>(localRepository).loadData()
 
-        assertFalse(repository.dataIsStale)
+        assertFalse(repository.refreshFromRemote)
 
         placeTestObserver.assertValueCount(1)
         assertEquals(place, placeTestObserver.values()[0])

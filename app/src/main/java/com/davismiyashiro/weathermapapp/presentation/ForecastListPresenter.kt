@@ -59,7 +59,7 @@ constructor(@param:NonNull @field:NonNull
     override fun loadWeatherData(refreshTasks: Boolean) {
 
         if (refreshTasks) {
-            repo.refreshData()
+            repo.refreshFromRemote()
         }
 
         repo.loadWeatherData()
@@ -91,8 +91,10 @@ constructor(@param:NonNull @field:NonNull
         val items = ArrayList<ForecastListItem>()
 
         data?.let {
-            for (condition in it.list!!) {
-                items.add(ForecastListItem(condition))
+            it.list?.let { conditions ->
+                for (condition in conditions) {
+                    items.add(ForecastListItem(condition))
+                }
             }
         }
 

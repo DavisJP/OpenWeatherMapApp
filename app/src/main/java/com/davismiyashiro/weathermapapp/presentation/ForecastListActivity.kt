@@ -33,9 +33,9 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.davismiyashiro.weathermapapp.App
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.databinding.ActivityMainBinding
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 /**
@@ -44,6 +44,7 @@ import javax.inject.Inject
 const val TEMPERATURE_KEY = "TEMPERATURE_KEY"
 const val RECYCLER_STATE = "RECYCLER_STATE"
 
+@AndroidEntryPoint
 class ForecastListActivity : AppCompatActivity(), ForecastListInterfaces.View, SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Inject
@@ -56,9 +57,6 @@ class ForecastListActivity : AppCompatActivity(), ForecastListInterfaces.View, S
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-        (application as App).getComponent()?.inject(this)
-
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)

@@ -26,10 +26,8 @@ package com.davismiyashiro.weathermapapp
 
 import android.app.Application
 
-import com.davismiyashiro.weathermapapp.injection.ApplicationComponent
-import com.davismiyashiro.weathermapapp.injection.ApplicationModule
-import com.davismiyashiro.weathermapapp.injection.DaggerApplicationComponent
 import com.jakewharton.threetenabp.AndroidThreeTen
+import dagger.hilt.android.HiltAndroidApp
 
 import timber.log.Timber
 
@@ -37,9 +35,8 @@ import timber.log.Timber
  * Created by Davis Miyashiro on 12/12/2017.
  */
 
-class App : Application() {
-
-    private var component: ApplicationComponent? = null
+@HiltAndroidApp
+open class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
@@ -48,17 +45,6 @@ class App : Application() {
             Timber.plant(Timber.DebugTree())
         }
 
-        component = getComponent()
-
         AndroidThreeTen.init(this)
-    }
-
-    fun getComponent(): ApplicationComponent? {
-        if (component == null) {
-            component = DaggerApplicationComponent.builder()
-                    .applicationModule(ApplicationModule(this))
-                    .build()
-        }
-        return component
     }
 }

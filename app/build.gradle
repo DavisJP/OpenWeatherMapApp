@@ -26,6 +26,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'dagger.hilt.android.plugin'
 
 android {
     compileSdkVersion 28
@@ -69,6 +70,10 @@ dependencies {
 
     implementation 'com.google.dagger:dagger:2.27'
     kapt 'com.google.dagger:dagger-compiler:2.27'
+
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+
 
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'

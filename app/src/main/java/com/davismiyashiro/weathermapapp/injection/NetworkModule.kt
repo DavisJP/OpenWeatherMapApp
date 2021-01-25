@@ -27,15 +27,16 @@ package com.davismiyashiro.weathermapapp.injection
 import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
-
+import com.davismiyashiro.weathermapapp.data.network.ForecastRepository
 import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
-
-import java.io.File
-
-import javax.inject.Singleton
-
+import com.davismiyashiro.weathermapapp.data.storage.ForecastLocalRepository
+import com.davismiyashiro.weathermapapp.data.storage.SharedPreferenceStorage
+import com.davismiyashiro.weathermapapp.domain.Repository
+import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ApplicationComponent
 import okhttp3.Cache
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -44,11 +45,14 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
+import javax.inject.Singleton
 
 /**
  * Created by Davis Miyashiro.
  */
 
+@InstallIn(ApplicationComponent::class)
 @Module
 class NetworkModule {
 
@@ -65,38 +69,42 @@ class NetworkModule {
         val cache = Cache(httpCacheDirectory, cacheSize.toLong())
 
         val urlBuilder = Interceptor { chain ->
-            chain.proceed(chain.request()
+            chain.proceed(
+                chain.request()
                     .newBuilder()
-                    .url(chain.request()
+                    .url(
+                        chain.request()
                             .url
                             .newBuilder()
                             .addQueryParameter(APP_ID_PARAM, APP_ID)
-                            .build())
-                    .build())
+                            .build()
+                    )
+                    .build()
+            )
         }
 
         return OkHttpClient.Builder()
-                .addNetworkInterceptor { chain ->
-                    val originalResponse: Response = chain.proceed(chain.request())
-                    addHttpClientHeader(application, originalResponse)
-                }
-                .addInterceptor(urlBuilder)
-                .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
-                .cache(cache)
-                .build()
+            .addNetworkInterceptor { chain ->
+                val originalResponse: Response = chain.proceed(chain.request())
+                addHttpClientHeader(application, originalResponse)
+            }
+            .addInterceptor(urlBuilder)
+            .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+            .cache(cache)
+            .build()
     }
 
     private fun addHttpClientHeader(application: Application, originalResponse: Response): Response {
         return if (isOnline(application)) {
             val maxAge = 60 // read from cache for 1 minute
             originalResponse.newBuilder()
-                    .header("Cache-Control", "public, max-age=$maxAge")
-                    .build()
-        } else {//TODO: Check API to use right max-age and max-stale
+                .header("Cache-Control", "public, max-age=$maxAge")
+                .build()
+        } else { //TODO: Check API to use right max-age and max-stale
             val maxStale = 60 * 60 * 24 * 28 // tolerate 4-weeks stale
             originalResponse.newBuilder()
-                    .header("Cache-Control", "public, only-if-cached, max-stale=$maxStale")
-                    .build()
+                .header("Cache-Control", "public, only-if-cached, max-stale=$maxStale")
+                .build()
         }
     }
 
@@ -110,16 +118,31 @@ class NetworkModule {
     @Singleton
     fun provideRetrofit(client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
-                .client(client)
-                .build()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
+            .client(client)
+            .build()
     }
 
     @Provides
     @Singleton
     fun provideApiService(retrofit: Retrofit): OpenWeatherApi {
         return retrofit.create(OpenWeatherApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLocalRepository(application: Application): Repository {
+        return ForecastLocalRepository(SharedPreferenceStorage(application))
+    }
+
+    @Provides
+    @Singleton
+    fun provideForecastRepository(
+        openWeatherApi: OpenWeatherApi,
+        localRepository: Repository
+    ): RepositoryInterface {
+        return ForecastRepository(openWeatherApi, localRepository)
     }
 }

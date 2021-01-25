@@ -40,8 +40,7 @@ import javax.inject.Inject
  * Created by Davis Miyashiro.
  */
 class ForecastListPresenter @Inject
-constructor(@param:NonNull @field:NonNull
-            private val repo: RepositoryInterface) : ForecastListInterfaces.Presenter {
+constructor(private val repo: RepositoryInterface) : ForecastListInterfaces.Presenter {
 
     private var view: ForecastListInterfaces.View? = null
 

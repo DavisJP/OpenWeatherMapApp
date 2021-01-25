@@ -24,25 +24,24 @@
 
 package com.davismiyashiro.weathermapapp.data.storage
 
-import android.content.SharedPreferences
-
 import com.davismiyashiro.weathermapapp.data.Place
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.google.gson.Gson
 
 import io.reactivex.rxjava3.core.Observable
+import javax.inject.Inject
 
 /**
  * Created by Davis Miyashiro.
  */
 
-class ForecastLocalRepository(private val sharedPreferences: SharedPreferences) : Repository {
+class ForecastLocalRepository @Inject constructor(private val storage: SharedPreferenceStorage) : Repository {
 
     private val KEY_PLACE = "KEY_PLACE"
     private val gson = Gson()
 
     override fun loadData(): Observable<Place> {
-        val value = sharedPreferences.getString(KEY_PLACE, "")
+        val value = storage.getString(KEY_PLACE)
         var place: Place? = gson.fromJson(value, Place::class.java)
 
         if (place == null) {
@@ -52,8 +51,6 @@ class ForecastLocalRepository(private val sharedPreferences: SharedPreferences) 
     }
 
     override fun storeData(place: Place) {
-        val editor = sharedPreferences.edit()
-        editor.putString(KEY_PLACE, gson.toJson(place))
-        editor.apply()
+        storage.setString(KEY_PLACE, gson.toJson(place))
     }
 }

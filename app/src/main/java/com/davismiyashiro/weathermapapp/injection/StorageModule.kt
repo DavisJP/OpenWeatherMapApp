@@ -24,18 +24,21 @@
 
 package com.davismiyashiro.weathermapapp.injection
 
-import com.davismiyashiro.weathermapapp.presentation.ForecastListActivity
-
-import javax.inject.Singleton
-
-import dagger.Component
+import com.davismiyashiro.weathermapapp.data.storage.SharedPreferenceStorage
+import com.davismiyashiro.weathermapapp.data.storage.Storage
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ApplicationComponent
 
 /**
  * Created by Davis Miyashiro.
  */
 
-@Singleton
-@Component(modules = [ApplicationModule::class, NetworkModule::class])
-interface ApplicationComponent {
-    fun inject(activity: ForecastListActivity)
+@InstallIn(ApplicationComponent::class)
+@Module
+abstract class StorageModule {
+
+    @Binds
+    abstract fun provideDefaultSharedPref(storage: SharedPreferenceStorage): Storage
 }

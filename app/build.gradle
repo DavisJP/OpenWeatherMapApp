@@ -29,11 +29,11 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'dagger.hilt.android.plugin'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
     defaultConfig {
         applicationId "com.davismiyashiro.weathermapapp"
         minSdkVersion 19
-        targetSdkVersion 28
+        targetSdkVersion 30
         versionCode 2
         versionName "2.0"
         multiDexEnabled true
@@ -69,11 +69,13 @@ dependencies {
     implementation 'com.google.android.material:material:1.1.0'
 
     implementation 'com.google.dagger:dagger:2.27'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.4'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.3.4'
     kapt 'com.google.dagger:dagger-compiler:2.27'
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
-
 
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
@@ -91,6 +93,8 @@ dependencies {
 
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.4'
 
+    implementation 'com.airbnb.android:mavericks:2.1.0'
+
     testImplementation 'org.mockito:mockito-core:3.5.13'
     testImplementation 'org.mockito:mockito-all:1.10.19'
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
@@ -102,4 +106,8 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0'
+}
+
+kapt {
+    correctErrorTypes true
 }

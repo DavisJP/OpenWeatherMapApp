@@ -1,28 +1,31 @@
 package com.davismiyashiro.weathermapapp.presentation
 
-import com.airbnb.mvrx.MavericksStateFactory
 import com.airbnb.mvrx.MavericksViewModel
 import com.airbnb.mvrx.MavericksViewModelFactory
-import com.airbnb.mvrx.ViewModelContext
-import com.davismiyashiro.weathermapapp.App
 import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
-import javax.inject.Inject
+import com.davismiyashiro.weathermapapp.injection.AssistedViewModelFactory
+import com.davismiyashiro.weathermapapp.injection.hiltMavericksViewModelFactory
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
-class ForecastListViewModel(initialState: ForecastListState) : MavericksViewModel<ForecastListState>(initialState) {
-//class ForecastListViewModel @Inject constructor(
-//    initialState: ForecastListState,
-//    private val repo: RepositoryInterface
-//) : MavericksViewModel<ForecastListState>(initialState) {
+class ForecastListViewModel @AssistedInject constructor(
+    @Assisted initialState: ForecastListState,
+    private val repo: RepositoryInterface
+) : MavericksViewModel<ForecastListState>(initialState) {
 
-//    companion object : MavericksViewModelFactory<ForecastListViewModel, ForecastListState> {
-//        override fun create(
-//            viewModelContext: ViewModelContext,
-//            state: ForecastListState
-//        ): ForecastListViewModel {
-//            val forecastListRepo = viewModelContext.app<App>().weathermapapp
-//            return ForecastListViewModel(state, repo)
-//            return super.create(viewModelContext, state)
+    init {
+        // TODO: Copy values from repo to state
+//        setState {
+//
 //        }
-//    }
+    }
 
+    @AssistedFactory
+    interface Factory : AssistedViewModelFactory<ForecastListViewModel, ForecastListState> {
+        override fun create(state: ForecastListState): ForecastListViewModel
+    }
+
+    companion object :
+        MavericksViewModelFactory<ForecastListViewModel, ForecastListState> by hiltMavericksViewModelFactory()
 }

@@ -2,7 +2,7 @@
 
 An app that displays 5 day weather forecast from http://openweathermap.org for London.
 
-This App was built to practice on MVP architecture, RxJava and Retrofit.
+This App was built to practice on MVI architecture, Dagger Hilt, RxJava and Retrofit.
 
 ### What's the current status ? ###
 
@@ -12,8 +12,8 @@ This App was built to practice on MVP architecture, RxJava and Retrofit.
 
 ### Configuration ###
 
-- This project requires Android Studio 3.0.1
-- Build with target SDK 26 and minimum API 19 (KitKat)
+- This project requires Android Studio 4.1 or above
+- Build with target SDK 30 and minimum API 19 (KitKat)
 
 ### What could be done with more time ###
 
@@ -23,11 +23,12 @@ This App was built to practice on MVP architecture, RxJava and Retrofit.
 
 ### Libraries Used ###
 
-- Dagger 2
+- Dagger 2 + Hilt
+- Viewbinding
+- Jetpack navigation
+- Rxjava 3
 - Retrofit 2
 - Gson
-- Rxjava 2
 - Picasso
 - ThreeTenABP
-- Butterknife
 - Timber

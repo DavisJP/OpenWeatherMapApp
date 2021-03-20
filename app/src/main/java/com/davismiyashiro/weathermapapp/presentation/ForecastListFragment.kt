@@ -8,7 +8,7 @@ import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.airbnb.mvrx.MavericksView
-import com.airbnb.mvrx.activityViewModel
+import com.airbnb.mvrx.fragmentViewModel
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.databinding.FragmentForecastListBinding
 import com.davismiyashiro.weathermapapp.utils.viewBinding
@@ -24,7 +24,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     ForecastListInterfaces.View,
     SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private val forecastListViewModel: ForecastListViewModel by activityViewModel()
+    private val forecastListViewModel: ForecastListViewModel by fragmentViewModel ( keyFactory = { "test"})
 
     @Inject
     internal lateinit var presenter: ForecastListPresenter

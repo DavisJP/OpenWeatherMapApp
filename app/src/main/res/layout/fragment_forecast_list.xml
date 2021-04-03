@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ MIT License
   ~
   ~ Copyright (c) 2018 Davis Miyashiro
@@ -30,12 +29,12 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.davismiyashiro.weathermapapp.presentation.ForecastListActivity"
-    tools:showIn="@layout/activity_main">
+    tools:showIn="@layout/fragment_forecast_list">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/content_main_swipe_refresh_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -46,15 +45,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/error_message_display"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:text="@string/please_check_your_network_status_or_try_again_later"
-                android:textSize="22sp"
-                android:visibility="gone" />
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_weather_list"
                 android:layout_width="match_parent"
@@ -63,5 +53,20 @@
                 tools:listitem="@layout/recycler_weather_item" />
         </LinearLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <TextView
+        android:id="@+id/error_message_display"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="16dp"
+        android:text="@string/please_check_your_network_status_or_try_again_later"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

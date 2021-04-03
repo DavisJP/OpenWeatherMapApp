@@ -7,8 +7,7 @@ import android.preference.PreferenceManager
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.airbnb.mvrx.MavericksView
-import com.airbnb.mvrx.fragmentViewModel
+import com.airbnb.mvrx.*
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.databinding.FragmentForecastListBinding
 import com.davismiyashiro.weathermapapp.utils.viewBinding
@@ -21,9 +20,9 @@ const val RECYCLER_STATE = "RECYCLER_STATE"
 @AndroidEntryPoint
 class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     MavericksView,
-    ForecastListInterfaces.View,
     SharedPreferences.OnSharedPreferenceChangeListener {
 
+    @InternalMavericksApi
     private val forecastListViewModel: ForecastListViewModel by fragmentViewModel ( keyFactory = { "test"})
 
     @Inject
@@ -40,6 +39,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
     private val binding: FragmentForecastListBinding by viewBinding()
 
+    @InternalMavericksApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -57,7 +57,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         }
 
         binding.contentMainSwipeRefreshLayout.setOnRefreshListener {
-            presenter.loadWeatherData(true)
+            forecastListViewModel.loadWeatherData(true)
             savedState = null
         }
     }
@@ -69,12 +69,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
     override fun onResume() {
         super.onResume()
-
-        presenter.attachView(this)
-
         setSwipeRefresh(true)
-
-        presenter.loadWeatherData(false)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -93,7 +88,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         inflater.inflate(R.menu.menu_main, menu)
     }
 
-    override fun setSwipeRefresh(value: Boolean) {
+    private fun setSwipeRefresh(value: Boolean) {
         binding.contentMainSwipeRefreshLayout.isRefreshing = value
     }
 
@@ -102,12 +97,12 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         temperatureDialog.show(parentFragmentManager, "fragDialog")
     }
 
-    override fun showErrorMsg() {
+    private fun showErrorMsg() {
         binding.errorMessageDisplay.visibility = View.VISIBLE
         binding.recyclerWeatherList.visibility = View.GONE
     }
 
-    override fun showForecastList(items: List<ForecastListItem>) {
+    private fun showForecastList(items: List<ForecastListItem>) {
         adapter.replaceData(items)
         binding.errorMessageDisplay.visibility = View.GONE
         binding.recyclerWeatherList.visibility = View.VISIBLE
@@ -129,7 +124,23 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         }
     }
 
+    @InternalMavericksApi
     override fun invalidate() {
-        //TODO("Not yet implemented")
+        withState(forecastListViewModel) { state ->
+            when (state.forecast) {
+                is Loading -> {
+                    setSwipeRefresh(true)
+                }
+                is Success -> {
+                    setSwipeRefresh(false)
+                    showForecastList(state.forecast.invoke())
+                }
+                is Fail -> {
+                    setSwipeRefresh(false)
+                    showErrorMsg()
+                }
+                is Uninitialized -> setSwipeRefresh(true)
+            }
+        }
     }
 }

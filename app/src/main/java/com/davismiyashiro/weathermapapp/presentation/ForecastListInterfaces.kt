@@ -34,7 +34,7 @@ import androidx.annotation.NonNull
 interface ForecastListInterfaces {
 
     interface View {
-        fun showForecastList(item: List<ForecastListItem>)
+        fun showForecastList(items: List<ForecastListItem>)
         fun showErrorMsg()
         fun setSwipeRefresh(value: Boolean)
     }

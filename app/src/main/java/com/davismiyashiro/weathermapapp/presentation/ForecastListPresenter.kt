@@ -38,6 +38,7 @@ import javax.inject.Inject
 
 /**
  * Created by Davis Miyashiro.
+ * TODO: Remove it, deprecated in favor of viewmodel
  */
 class ForecastListPresenter @Inject
 constructor(private val repo: RepositoryInterface) : ForecastListInterfaces.Presenter {

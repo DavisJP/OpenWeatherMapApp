@@ -5,6 +5,6 @@ import com.airbnb.mvrx.MavericksState
 import com.airbnb.mvrx.Uninitialized
 
 data class ForecastListState(
-    val forecast: Async<List<UIForecastListItem>> = Uninitialized
+    val forecast: Async<List<ForecastListItem>> = Uninitialized
 ) : MavericksState {
 }

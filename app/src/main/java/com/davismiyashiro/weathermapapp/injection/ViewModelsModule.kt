@@ -1,5 +1,6 @@
 package com.davismiyashiro.weathermapapp.injection
 
+import com.airbnb.mvrx.InternalMavericksApi
 import com.davismiyashiro.weathermapapp.presentation.ForecastListViewModel
 import dagger.Binds
 import dagger.Module
@@ -9,6 +10,7 @@ import dagger.multibindings.IntoMap
 @Module
 @InstallIn(MavericksViewModelComponent::class)
 interface ViewModelsModule {
+    @InternalMavericksApi
     @Binds
     @IntoMap
     @ViewModelKey(ForecastListViewModel::class)

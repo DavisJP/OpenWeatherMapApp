@@ -1,7 +1,30 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2021 Davis Miyashiro
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.davismiyashiro.weathermapapp.presentation
 
 import com.airbnb.mvrx.*
-import com.davismiyashiro.weathermapapp.data.Place
 import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
 import com.davismiyashiro.weathermapapp.injection.AssistedViewModelFactory
 import com.davismiyashiro.weathermapapp.injection.hiltMavericksViewModelFactory
@@ -14,7 +37,6 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.disposables.Disposable.disposed
 import io.reactivex.rxjava3.schedulers.Schedulers
-import java.util.ArrayList
 
 /**
  *  TODO: move Mavericks RxJava3 when supported
@@ -22,6 +44,7 @@ import java.util.ArrayList
 @InternalMavericksApi
 class ForecastListViewModel @AssistedInject constructor(
     @Assisted initialState: ForecastListState,
+    private val mapper: ForecastListItemMapper,
     private val repo: RepositoryInterface
 ) : MavericksViewModel<ForecastListState>(initialState) {
 
@@ -32,11 +55,7 @@ class ForecastListViewModel @AssistedInject constructor(
             copy(forecast = Loading())
         }
 
-        repo.loadWeatherData()
-            .map { mapPlaceToForecastListItem(it) }
-            .execute {
-               copy(forecast = it)
-            }
+        loadWeatherData(true)
     }
 
     @AssistedFactory
@@ -47,21 +66,6 @@ class ForecastListViewModel @AssistedInject constructor(
     companion object :
         MavericksViewModelFactory<ForecastListViewModel, ForecastListState> by hiltMavericksViewModelFactory()
 
-    private fun mapPlaceToForecastListItem(data: Place?): List<ForecastListItem> {
-
-        val items = ArrayList<ForecastListItem>()
-
-        data?.let {
-            it.list?.let { conditions ->
-                for (condition in conditions) {
-                    items.add(ForecastListItem(condition))
-                }
-            }
-        }
-
-        return items
-    }
-
     fun loadWeatherData(refreshTasks: Boolean) {
 
         if (refreshTasks) {
@@ -71,7 +75,7 @@ class ForecastListViewModel @AssistedInject constructor(
         repo.loadWeatherData()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .map { mapPlaceToForecastListItem(it) }
+            .map { mapper.mapPlaceToForecastListItem(it) }
             .execute {
                 copy(forecast = it)
             }.disposeOnClear()

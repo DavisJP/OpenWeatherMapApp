@@ -94,14 +94,17 @@ dependencies {
 
     implementation 'com.airbnb.android:mavericks:2.3.0'
 //    no support for rxjava3 yet
-//    implementation 'com.airbnb.android:mavericks-rxjava2:2.1.0'
+//    implementation 'com.airbnb.android:mavericks-rxjava2:2.3.0'
 
     testImplementation 'org.mockito:mockito-core:3.12.4'
     testImplementation 'org.mockito:mockito-all:1.10.19'
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
+    testImplementation 'io.mockk:mockk:1.9.3'
+    testImplementation 'com.airbnb.android:mavericks-testing:2.3.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.threeten:threetenbp:1.5.1'
 
+    androidTestImplementation 'androidx.test:core:1.4.0'
     androidTestImplementation 'androidx.test:rules:1.4.0'
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

@@ -4,7 +4,10 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Parcelable
 import android.preference.PreferenceManager
-import android.view.*
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.airbnb.mvrx.*
@@ -12,7 +15,6 @@ import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.databinding.FragmentForecastListBinding
 import com.davismiyashiro.weathermapapp.utils.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 const val TEMPERATURE_KEY = "TEMPERATURE_KEY"
 const val RECYCLER_STATE = "RECYCLER_STATE"
@@ -23,10 +25,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     SharedPreferences.OnSharedPreferenceChangeListener {
 
     @InternalMavericksApi
-    private val forecastListViewModel: ForecastListViewModel by fragmentViewModel ( keyFactory = { "test"})
-
-    @Inject
-    internal lateinit var presenter: ForecastListPresenter
+    private val forecastListViewModel: ForecastListViewModel by fragmentViewModel(keyFactory = { "test" })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,11 +43,13 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         super.onViewCreated(view, savedInstanceState)
 
         //Listening to changes on Temperature Units
-        PreferenceManager.getDefaultSharedPreferences(requireContext()).registerOnSharedPreferenceChangeListener(this)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
+            .registerOnSharedPreferenceChangeListener(this)
 
         adapter = ForecastListAdapter(requireContext())
 
-        binding.recyclerWeatherList.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        binding.recyclerWeatherList.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         binding.recyclerWeatherList.setHasFixedSize(true)
         binding.recyclerWeatherList.adapter = adapter
 
@@ -63,7 +64,10 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putParcelable(RECYCLER_STATE, binding.recyclerWeatherList.layoutManager?.onSaveInstanceState())
+        outState.putParcelable(
+            RECYCLER_STATE,
+            binding.recyclerWeatherList.layoutManager?.onSaveInstanceState()
+        )
         super.onSaveInstanceState(outState)
     }
 
@@ -114,8 +118,8 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
     override fun onDestroy() {
         super.onDestroy()
-        presenter.dettachView()
-        PreferenceManager.getDefaultSharedPreferences(requireContext()).unregisterOnSharedPreferenceChangeListener(this)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
+            .unregisterOnSharedPreferenceChangeListener(this)
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {

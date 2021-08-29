@@ -26,11 +26,7 @@ package com.davismiyashiro.weathermapapp.presentation
 
 import com.davismiyashiro.weathermapapp.data.Conditions
 
-/**
- * Created by Davis Miyashiro.
- */
-
-class ForecastListItem(condition: Conditions) {
+data class ForecastListItem(val condition: Conditions) {
     val main: String = condition.weather?.get(0)?.main ?: ""
     val dt: Long = condition.dt ?: 0
     val temp: Double = condition.main?.temp ?: 0.0

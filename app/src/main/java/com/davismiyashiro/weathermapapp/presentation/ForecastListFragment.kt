@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.airbnb.mvrx.*
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.databinding.FragmentForecastListBinding
+import com.davismiyashiro.weathermapapp.domain.ForecastListItemEntity
 import com.davismiyashiro.weathermapapp.utils.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -106,8 +107,8 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         binding.recyclerWeatherList.visibility = View.GONE
     }
 
-    private fun showForecastList(items: List<ForecastListItem>) {
-        adapter.replaceData(items)
+    private fun showForecastList(itemEntities: List<ForecastListItemEntity>) {
+        adapter.replaceData(itemEntities)
         binding.errorMessageDisplay.visibility = View.GONE
         binding.recyclerWeatherList.visibility = View.VISIBLE
 
@@ -131,13 +132,13 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     @InternalMavericksApi
     override fun invalidate() {
         withState(forecastListViewModel) { state ->
-            when (state.forecast) {
+            when (state.forecastEntityList) {
                 is Loading -> {
                     setSwipeRefresh(true)
                 }
                 is Success -> {
                     setSwipeRefresh(false)
-                    showForecastList(state.forecast.invoke())
+                    showForecastList(state.forecastEntityList.invoke())
                 }
                 is Fail -> {
                     setSwipeRefresh(false)

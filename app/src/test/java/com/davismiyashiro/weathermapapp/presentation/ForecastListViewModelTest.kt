@@ -9,6 +9,7 @@ import com.davismiyashiro.weathermapapp.data.Conditions
 import com.davismiyashiro.weathermapapp.data.Main
 import com.davismiyashiro.weathermapapp.data.Place
 import com.davismiyashiro.weathermapapp.data.Weather
+import com.davismiyashiro.weathermapapp.domain.ForecastListItemEntity
 import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
@@ -64,8 +65,8 @@ class ForecastListViewModelTest {
         sut = ForecastListViewModel(ForecastListState(), mapper, repo)
 
         withState(sut) { state ->
-            assertTrue(state.forecast is Success<List<ForecastListItem>>)
-            assertEquals(forecastListItemList[0].main, state.forecast.invoke()?.get(0)?.main)
+            assertTrue(state.forecastEntityList is Success<List<ForecastListItemEntity>>)
+            assertEquals(forecastListItemList[0].main, state.forecastEntityList.invoke()?.get(0)?.main)
         }
     }
 
@@ -78,8 +79,8 @@ class ForecastListViewModelTest {
         sut = ForecastListViewModel(ForecastListState(), mapper, repo)
 
         withState(sut) { state ->
-            assertTrue(state.forecast is Fail)
-            assertEquals(exception, (state.forecast as Fail).error)
+            assertTrue(state.forecastEntityList is Fail)
+            assertEquals(exception, (state.forecastEntityList as Fail).error)
         }
     }
 }

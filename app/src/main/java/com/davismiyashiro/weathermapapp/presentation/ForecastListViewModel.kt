@@ -52,7 +52,7 @@ class ForecastListViewModel @AssistedInject constructor(
 
     init {
         setState {
-            copy(forecast = Loading())
+            copy(forecastEntityList = Loading())
         }
 
         loadWeatherData(true)
@@ -77,7 +77,7 @@ class ForecastListViewModel @AssistedInject constructor(
             .observeOn(AndroidSchedulers.mainThread())
             .map { mapper.mapPlaceToForecastListItem(it) }
             .execute {
-                copy(forecast = it)
+                copy(forecastEntityList = it)
             }.disposeOnClear()
     }
 

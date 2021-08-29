@@ -31,6 +31,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.databinding.RecyclerWeatherItemBinding
+import com.davismiyashiro.weathermapapp.domain.ForecastListItemEntity
 import com.squareup.picasso.Picasso
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
@@ -47,13 +48,13 @@ const val TEMPERATURE_FAHRENHEIT = 1
 
 class ForecastListAdapter(private val context: Context) : RecyclerView.Adapter<ForecastListAdapter.WeatherHolder>() {
 
-    private var forecastListItems: List<ForecastListItem>
+    private var forecastListItemEntities: List<ForecastListItemEntity>
 
     private val temperatureUnit: Int
         get() = PreferenceManager.getDefaultSharedPreferences(context).getInt(TEMPERATURE_KEY, 0)
 
     init {
-        forecastListItems = ArrayList()
+        forecastListItemEntities = ArrayList()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeatherHolder {
@@ -63,7 +64,7 @@ class ForecastListAdapter(private val context: Context) : RecyclerView.Adapter<F
     }
 
     override fun onBindViewHolder(holder: WeatherHolder, position: Int) {
-        val item = forecastListItems[position]
+        val item = forecastListItemEntities[position]
 
         with(holder) {
             binding.weatherDescText.text = item.main
@@ -84,7 +85,7 @@ class ForecastListAdapter(private val context: Context) : RecyclerView.Adapter<F
     }
 
     override fun getItemCount(): Int {
-        return forecastListItems.size
+        return forecastListItemEntities.size
     }
 
     private fun convertTemperature(kelvin: Double): Double {
@@ -115,8 +116,8 @@ class ForecastListAdapter(private val context: Context) : RecyclerView.Adapter<F
         return (kelvin - 273.16) * 9.0 / 5 + 32
     }
 
-    fun replaceData(items: List<ForecastListItem>) {
-        forecastListItems = items
+    fun replaceData(itemEntities: List<ForecastListItemEntity>) {
+        forecastListItemEntities = itemEntities
         notifyDataSetChanged()
     }
 

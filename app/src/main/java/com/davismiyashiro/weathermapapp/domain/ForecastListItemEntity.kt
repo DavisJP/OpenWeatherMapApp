@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.presentation
+package com.davismiyashiro.weathermapapp.domain
 
 import com.davismiyashiro.weathermapapp.data.Conditions
 
-data class ForecastListItem(val condition: Conditions) {
+data class ForecastListItemEntity(val condition: Conditions) {
     val main: String = condition.weather?.get(0)?.main ?: ""
     val dt: Long = condition.dt ?: 0
     val temp: Double = condition.main?.temp ?: 0.0

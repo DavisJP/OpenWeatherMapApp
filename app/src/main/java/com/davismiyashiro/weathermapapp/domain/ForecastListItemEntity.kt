@@ -24,7 +24,7 @@
 
 package com.davismiyashiro.weathermapapp.domain
 
-import com.davismiyashiro.weathermapapp.data.Conditions
+import com.davismiyashiro.weathermapapp.data.entities.Conditions
 
 data class ForecastListItemEntity(val condition: Conditions) {
     val main: String = condition.weather?.get(0)?.main ?: ""

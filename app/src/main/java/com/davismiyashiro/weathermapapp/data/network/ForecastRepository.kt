@@ -24,9 +24,9 @@
 
 package com.davismiyashiro.weathermapapp.data.network
 
-import com.davismiyashiro.weathermapapp.data.Place
-import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
+import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.domain.Repository
+import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
 import io.reactivex.rxjava3.core.Observable
 import timber.log.Timber
 import javax.inject.Inject
@@ -36,8 +36,10 @@ import javax.inject.Inject
  */
 
 class ForecastRepository @Inject
-constructor(private val openWeatherApi: OpenWeatherApi,
-            private val localRepository: Repository) : RepositoryInterface {
+constructor(
+    private val openWeatherApi: OpenWeatherApi,
+    private val localRepository: Repository
+) : RepositoryInterface {
 
     //TODO: Hardcoded for now, change later
     private val LONDON_ID = 2643743
@@ -58,36 +60,36 @@ constructor(private val openWeatherApi: OpenWeatherApi,
             remoteData
         } else {
             getAndCacheLocalData()
-                    .publish { local -> Observable.merge(local, remoteData.takeUntil(local)) }
-                    .firstOrError()
-                    .doOnError { error ->
-                        Timber.e(error, "firstOrError chain")
-                        localCache = Place()
-                    }
-                    .toObservable()
+                .publish { local -> Observable.merge(local, remoteData.takeUntil(local)) }
+                .firstOrError()
+                .doOnError { error ->
+                    Timber.e(error, "firstOrError chain")
+                    localCache = Place()
+                }
+                .toObservable()
         }
     }
 
     private fun getAndCacheLocalData(): Observable<Place> {
         return localRepository.loadData()
-                .map<Place> { placeParam ->
-                    localCache = placeParam
-                    placeParam
-                }
+            .map<Place> { placeParam ->
+                localCache = placeParam
+                placeParam
+            }
     }
 
     private fun getAndSaveRemoteData(): Observable<Place> {
         return openWeatherApi.getForecastById(LONDON_ID)
-                .map { placeRemote ->
-                    localCache = placeRemote
-                    localRepository.storeData(placeRemote)
-                    placeRemote
-                }
-                .doOnError { error ->
-                    Timber.e(error, "remote error")
-                    localCache = Place()
-                }
-                .doOnComplete { refreshFromRemote = false }
+            .map { placeRemote ->
+                localCache = placeRemote
+                localRepository.storeData(placeRemote)
+                placeRemote
+            }
+            .doOnError { error ->
+                Timber.e(error, "remote error")
+                localCache = Place()
+            }
+            .doOnComplete { refreshFromRemote = false }
     }
 
     override fun refreshFromRemote() {

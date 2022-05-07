@@ -24,7 +24,7 @@
 
 package com.davismiyashiro.weathermapapp.data.network
 
-import com.davismiyashiro.weathermapapp.data.Place
+import com.davismiyashiro.weathermapapp.data.entities.Place
 
 import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
@@ -38,8 +38,10 @@ import retrofit2.http.Query
 interface OpenWeatherApi {
 
     @GET("forecast")
-    fun getWeatherFromPlace(@Query("q") place: String,
-                            @Query("appid") id: String): Observable<Place>
+    fun getWeatherFromPlace(
+        @Query("q") place: String,
+        @Query("appid") id: String
+    ): Observable<Place>
 
     @GET("forecast")
     fun getForecastById(@Query("id") place: Int): Observable<Place>

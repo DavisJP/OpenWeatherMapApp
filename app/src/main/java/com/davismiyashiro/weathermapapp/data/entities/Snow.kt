@@ -22,15 +22,16 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.data
+package com.davismiyashiro.weathermapapp.data.entities
+
+import com.google.gson.annotations.Expose
+import com.google.gson.annotations.SerializedName
 
 /**
  * Created by Davis Miyashiro.
  */
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
-
-data class Sys(
-        @SerializedName("pod")
-        @Expose
-        var pod: String? = null)
+data class Snow(
+    @SerializedName("3h")
+    @Expose
+    var _3h: Double? = null
+)

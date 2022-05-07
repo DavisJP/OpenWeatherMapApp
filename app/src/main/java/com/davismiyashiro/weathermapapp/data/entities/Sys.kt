@@ -22,36 +22,16 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.data.storage
-
-import com.davismiyashiro.weathermapapp.data.entities.Place
-import com.davismiyashiro.weathermapapp.domain.Repository
-import com.google.gson.Gson
-
-import io.reactivex.rxjava3.core.Observable
-import javax.inject.Inject
+package com.davismiyashiro.weathermapapp.data.entities
 
 /**
  * Created by Davis Miyashiro.
  */
+import com.google.gson.annotations.Expose
+import com.google.gson.annotations.SerializedName
 
-class ForecastLocalRepository @Inject constructor(private val storage: SharedPreferenceStorage) :
-    Repository {
-
-    private val KEY_PLACE = "KEY_PLACE"
-    private val gson = Gson()
-
-    override fun loadData(): Observable<Place> {
-        val value = storage.getString(KEY_PLACE)
-        var place: Place? = gson.fromJson(value, Place::class.java)
-
-        if (place == null) {
-            place = Place()
-        }
-        return Observable.just(place)
-    }
-
-    override fun storeData(place: Place) {
-        storage.setString(KEY_PLACE, gson.toJson(place))
-    }
-}
+data class Sys(
+    @SerializedName("pod")
+    @Expose
+    var pod: String? = null
+)

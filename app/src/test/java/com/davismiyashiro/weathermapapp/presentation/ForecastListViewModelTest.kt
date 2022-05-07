@@ -5,11 +5,12 @@ import com.airbnb.mvrx.InternalMavericksApi
 import com.airbnb.mvrx.Success
 import com.airbnb.mvrx.test.MvRxTestRule
 import com.airbnb.mvrx.withState
-import com.davismiyashiro.weathermapapp.data.Conditions
-import com.davismiyashiro.weathermapapp.data.Main
-import com.davismiyashiro.weathermapapp.data.Place
-import com.davismiyashiro.weathermapapp.data.Weather
+import com.davismiyashiro.weathermapapp.data.entities.Conditions
+import com.davismiyashiro.weathermapapp.data.entities.Main
+import com.davismiyashiro.weathermapapp.data.entities.Place
+import com.davismiyashiro.weathermapapp.data.entities.Weather
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemEntity
+import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
@@ -22,13 +23,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
 import java.io.IOException
-import java.util.*
 
 @RunWith(MockitoJUnitRunner::class)
 class ForecastListViewModelTest {
 
     private val repo = mock<RepositoryInterface>()
-    val mapper = ForecastListItemMapper()
+    private val mapper = ForecastListItemMapper()
 
     @get:Rule
     val mvrxRule = MvRxTestRule()
@@ -66,7 +66,10 @@ class ForecastListViewModelTest {
 
         withState(sut) { state ->
             assertTrue(state.forecastEntityList is Success<List<ForecastListItemEntity>>)
-            assertEquals(forecastListItemList[0].main, state.forecastEntityList.invoke()?.get(0)?.main)
+            assertEquals(
+                forecastListItemList[0].main,
+                state.forecastEntityList.invoke()?.get(0)?.main
+            )
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Davis Miyashiro
+ * Copyright (c) 2021 Davis Miyashiro
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.data
+package com.davismiyashiro.weathermapapp.data.entities
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
@@ -30,7 +30,19 @@ import com.google.gson.annotations.SerializedName
 /**
  * Created by Davis Miyashiro.
  */
-data class Clouds(
-        @SerializedName("all")
+data class City(
+        @SerializedName("id")
         @Expose
-        var all: Int? = null)
+        var id: Int? = null,
+        @SerializedName("name")
+        @Expose
+        var name: String? = null,
+        @SerializedName("coord")
+        @Expose
+        var coord: Coord? = null,
+        @SerializedName("country")
+        @Expose
+        var country: String? = null,
+        @SerializedName("population")
+        @Expose
+        var population: Int? = null)

@@ -25,6 +25,7 @@
 package com.davismiyashiro.weathermapapp.presentation
 
 import com.airbnb.mvrx.*
+import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
 import com.davismiyashiro.weathermapapp.injection.AssistedViewModelFactory
 import com.davismiyashiro.weathermapapp.injection.hiltMavericksViewModelFactory

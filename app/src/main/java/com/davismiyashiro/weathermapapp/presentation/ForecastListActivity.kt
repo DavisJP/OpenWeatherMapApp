@@ -146,7 +146,7 @@ class ForecastListActivity : AppCompatActivity(), ForecastListInterfaces.View, S
         PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this)
     }
 
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (key == TEMPERATURE_KEY) {
             adapter.notifyDataSetChanged()
         }

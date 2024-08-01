@@ -29,13 +29,13 @@ import com.davismiyashiro.weathermapapp.data.storage.Storage
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.components.SingletonComponent
 
 /**
  * Created by Davis Miyashiro.
  */
 
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 @Module
 abstract class StorageModule {
 

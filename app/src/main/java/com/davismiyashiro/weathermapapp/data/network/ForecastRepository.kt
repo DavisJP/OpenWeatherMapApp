@@ -47,7 +47,7 @@ constructor(private val openWeatherApi: OpenWeatherApi,
 
     override fun loadWeatherData(): Observable<Place> {
         if (localCache != null && !refreshFromRemote) {
-            return Observable.just(localCache)
+            return Observable.just(localCache!!)
         } else {
             localCache = Place()
         }

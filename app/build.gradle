@@ -78,7 +78,6 @@ dependencies {
     kapt "com.google.dagger:dagger-compiler:$hilt_version"
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
-
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
 
@@ -115,6 +114,11 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.4.0'
 }
 
+kapt {
+    correctErrorTypes true
+}
+
+// Allow references to generated code
 kapt {
     correctErrorTypes true
 }

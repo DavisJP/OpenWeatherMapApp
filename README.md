@@ -12,8 +12,8 @@ This App was built to practice on MVI architecture, Dagger Hilt, RxJava and Retr
 
 ### Configuration ###
 
-- This project requires Android Studio 4.1 or above
-- Build with target SDK 30 and minimum API 19 (KitKat)
+- This project was build with Android Studio Koala (2024.1.1)
+- It targets SDK 34 and minimum API 21 (Lollipop)
 
 ### What could be done with more time ###
 

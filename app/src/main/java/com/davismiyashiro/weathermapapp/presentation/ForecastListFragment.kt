@@ -123,7 +123,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
             .unregisterOnSharedPreferenceChangeListener(this)
     }
 
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
         if (key == TEMPERATURE_KEY) {
             adapter.notifyDataSetChanged()
         }

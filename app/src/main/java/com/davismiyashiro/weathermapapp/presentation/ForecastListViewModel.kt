@@ -86,7 +86,7 @@ class ForecastListViewModel @AssistedInject constructor(
      * Helper to map an [Observable] to an [Async] property on the state object.
      */
     @InternalMavericksApi
-    fun <T> Observable<T>.execute(
+    fun <T : Any> Observable<T>.execute(
         stateReducer: ForecastListState.(Async<T>) -> ForecastListState
     ) = execute({ it }, null, stateReducer)
 
@@ -105,7 +105,7 @@ class ForecastListViewModel @AssistedInject constructor(
      *  @see Success.metadata
      */
     @InternalMavericksApi
-    fun <T, V> Observable<T>.execute(
+    fun <T : Any, V> Observable<T>.execute(
         mapper: (T) -> V,
         successMetaData: ((T) -> Any)? = null,
         stateReducer: ForecastListState.(Async<V>) -> ForecastListState

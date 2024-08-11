@@ -12,8 +12,8 @@ This App was built to practice on MVP architecture, RxJava and Retrofit.
 
 ### Configuration ###
 
-- This project requires Android Studio 3.0.1
-- Build with target SDK 26 and minimum API 19 (KitKat)
+- This project was build with Android Studio Koala (2024.1.1)
+- It targets SDK 34 and minimum API 21 (Lollipop)
 
 ### What could be done with more time ###
 
@@ -23,11 +23,11 @@ This App was built to practice on MVP architecture, RxJava and Retrofit.
 
 ### Libraries Used ###
 
-- Dagger 2
+- Dagger 2 + Hilt
+- Viewbinding
+- Rxjava 3
 - Retrofit 2
 - Gson
-- Rxjava 2
 - Picasso
 - ThreeTenABP
-- Butterknife
 - Timber

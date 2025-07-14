@@ -29,10 +29,11 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
+import coil3.load
+import coil3.request.placeholder
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.databinding.RecyclerWeatherItemBinding
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemEntity
-import com.squareup.picasso.Picasso
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
@@ -77,10 +78,10 @@ class ForecastListAdapter(private val context: Context) :
 
             binding.weatherTempUnitText.setTemperatureUnit(temperatureUnit)
 
-            Picasso.get()
-                .load(IMG_SRC_W_URL + item.imgIcon)
-                .placeholder(android.R.drawable.progress_indeterminate_horizontal)
-                .into(binding.weatherImg)
+            binding.weatherImg
+                .load(IMG_SRC_W_URL + item.imgIcon) {
+                    placeholder(android.R.drawable.progress_indeterminate_horizontal)
+                }
         }
     }
 

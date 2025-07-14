@@ -12,8 +12,8 @@ This App was built to practice on MVI architecture, Dagger Hilt, RxJava and Retr
 
 ### Configuration ###
 
-- This project was build with Android Studio Koala (2024.1.1)
-- It targets SDK 34 and minimum API 21 (Lollipop)
+- This project was build with Android Studio Narwhal (2025.1.1)
+- It targets SDK 35 and minimum API 21 (Lollipop)
 
 ### What could be done with more time ###
 
@@ -29,6 +29,6 @@ This App was built to practice on MVI architecture, Dagger Hilt, RxJava and Retr
 - Rxjava 3
 - Retrofit 2
 - Gson
-- Picasso
+- Coil
 - ThreeTenABP
 - Timber

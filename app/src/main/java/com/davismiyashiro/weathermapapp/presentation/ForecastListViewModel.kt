@@ -111,8 +111,8 @@ class ForecastListViewModel @AssistedInject constructor(
         stateReducer: ForecastListState.(Async<V>) -> ForecastListState
     ): Disposable {
         val blockExecutions = config.onExecute(this@ForecastListViewModel)
-        if (blockExecutions != MavericksViewModelConfig.BlockExecutions.No) {
-            if (blockExecutions == MavericksViewModelConfig.BlockExecutions.WithLoading) {
+        if (blockExecutions != MavericksBlockExecutions.No) {
+            if (blockExecutions == MavericksBlockExecutions.WithLoading) {
                 setState { stateReducer(Loading()) }
             }
             return disposed()

@@ -31,10 +31,10 @@ plugins {
 
 android {
     defaultConfig {
-        compileSdk 34
+        compileSdk 35
         applicationId "com.davismiyashiro.weathermapapp"
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 2
         versionName "2.0"
         multiDexEnabled true
@@ -49,6 +49,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     compileOptions {
@@ -72,8 +73,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0'
 
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.5'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.9.1'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.9.1'
 
     implementation "com.google.dagger:dagger:$hilt_version"
     ksp "com.google.dagger:dagger-compiler:$hilt_version"
@@ -91,11 +92,12 @@ dependencies {
 
     implementation 'com.jakewharton.timber:timber:5.0.1'
 
-    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'io.coil-kt.coil3:coil:3.2.0'
+    implementation 'io.coil-kt.coil3:coil-network-okhttp:3.2.0'
 
     implementation 'com.jakewharton.threetenabp:threetenabp:1.4.9'
 
-    implementation 'com.airbnb.android:mavericks:2.7.0'
+    implementation 'com.airbnb.android:mavericks:3.0.10'
 //    no support for rxjava3 yet
 //    implementation 'com.airbnb.android:mavericks-rxjava2:2.3.0'
 
@@ -103,7 +105,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-all:1.10.19'
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
     testImplementation 'io.mockk:mockk:1.14.4'
-    testImplementation 'com.airbnb.android:mavericks-testing:2.7.0'
+    testImplementation 'com.airbnb.android:mavericks-testing:3.0.10'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.threeten:threetenbp:1.7.1'
 

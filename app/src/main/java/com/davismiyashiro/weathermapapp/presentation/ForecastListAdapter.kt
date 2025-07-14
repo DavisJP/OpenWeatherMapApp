@@ -25,9 +25,9 @@
 package com.davismiyashiro.weathermapapp.presentation
 
 import android.content.Context
-import android.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.databinding.RecyclerWeatherItemBinding
@@ -37,7 +37,6 @@ import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.format.FormatStyle
-import java.util.*
 
 /**
  * Created by Davis Miyashiro.
@@ -46,7 +45,8 @@ const val IMG_SRC_W_URL = "https://openweathermap.org/img/w/"
 const val TEMPERATURE_CELSIUS = 0
 const val TEMPERATURE_FAHRENHEIT = 1
 
-class ForecastListAdapter(private val context: Context) : RecyclerView.Adapter<ForecastListAdapter.WeatherHolder>() {
+class ForecastListAdapter(private val context: Context) :
+    RecyclerView.Adapter<ForecastListAdapter.WeatherHolder>() {
 
     private var forecastListItemEntities: List<ForecastListItemEntity>
 
@@ -78,9 +78,9 @@ class ForecastListAdapter(private val context: Context) : RecyclerView.Adapter<F
             binding.weatherTempUnitText.setTemperatureUnit(temperatureUnit)
 
             Picasso.get()
-                    .load(IMG_SRC_W_URL + item.imgIcon)
-                    .placeholder(android.R.drawable.progress_indeterminate_horizontal)
-                    .into(binding.weatherImg)
+                .load(IMG_SRC_W_URL + item.imgIcon)
+                .placeholder(android.R.drawable.progress_indeterminate_horizontal)
+                .into(binding.weatherImg)
         }
     }
 
@@ -98,7 +98,8 @@ class ForecastListAdapter(private val context: Context) : RecyclerView.Adapter<F
 
     private fun getReadableDate(dateMilli: Long): String {
 
-        val localDateTime = Instant.ofEpochSecond(dateMilli).atZone(ZoneId.systemDefault()).toLocalDateTime()
+        val localDateTime =
+            Instant.ofEpochSecond(dateMilli).atZone(ZoneId.systemDefault()).toLocalDateTime()
 
         val formatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
         val dayOfWeek = localDateTime.dayOfWeek
@@ -121,5 +122,6 @@ class ForecastListAdapter(private val context: Context) : RecyclerView.Adapter<F
         notifyDataSetChanged()
     }
 
-    class WeatherHolder(val binding: RecyclerWeatherItemBinding) : RecyclerView.ViewHolder(binding.root)
+    class WeatherHolder(val binding: RecyclerWeatherItemBinding) :
+        RecyclerView.ViewHolder(binding.root)
 }

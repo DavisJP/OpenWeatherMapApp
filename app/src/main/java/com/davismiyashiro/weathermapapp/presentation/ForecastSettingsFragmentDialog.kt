@@ -27,8 +27,9 @@ package com.davismiyashiro.weathermapapp.presentation
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
-import android.preference.PreferenceManager
+import androidx.core.content.edit
 import androidx.fragment.app.DialogFragment
+import androidx.preference.PreferenceManager
 import com.davismiyashiro.weathermapapp.R
 
 /**
@@ -41,13 +42,12 @@ class ForecastSettingsFragmentDialog : DialogFragment() {
 
         val builder = AlertDialog.Builder(activity)
         builder.setTitle(R.string.choose_temperature_unit)
-                .setItems(R.array.pref_temperature_units) { _, position ->
-                    val pref = PreferenceManager.getDefaultSharedPreferences(context)
-                    val edit = pref.edit()
-
-                    edit.putInt(TEMPERATURE_KEY, position)
-                    edit.apply()
+            .setItems(R.array.pref_temperature_units) { _, position ->
+                val pref = PreferenceManager.getDefaultSharedPreferences(requireActivity())
+                pref.edit {
+                    putInt(TEMPERATURE_KEY, position)
                 }
+            }
 
         return builder.create()
     }

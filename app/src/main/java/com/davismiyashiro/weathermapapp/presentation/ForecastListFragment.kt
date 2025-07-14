@@ -3,14 +3,23 @@ package com.davismiyashiro.weathermapapp.presentation
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Parcelable
-import android.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.airbnb.mvrx.*
+import com.airbnb.mvrx.Fail
+import com.airbnb.mvrx.InternalMavericksApi
+import com.airbnb.mvrx.Loading
+import com.airbnb.mvrx.MavericksView
+import com.airbnb.mvrx.Success
+import com.airbnb.mvrx.Uninitialized
+import com.airbnb.mvrx.fragmentViewModel
+import com.airbnb.mvrx.withState
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.databinding.FragmentForecastListBinding
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemEntity
@@ -28,11 +37,6 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     @InternalMavericksApi
     private val forecastListViewModel: ForecastListViewModel by fragmentViewModel(keyFactory = { "test" })
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
-
     private lateinit var adapter: ForecastListAdapter
 
     private var savedState: Parcelable? = null
@@ -46,6 +50,27 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         //Listening to changes on Temperature Units
         PreferenceManager.getDefaultSharedPreferences(requireContext())
             .registerOnSharedPreferenceChangeListener(this)
+        val menuHost = requireActivity()
+
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(
+                menu: Menu,
+                menuInflater: MenuInflater
+            ) {
+                menuInflater.inflate(R.menu.menu_main, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_settings -> {
+                        showTemperatureOptions()
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         adapter = ForecastListAdapter(requireContext())
 
@@ -75,22 +100,6 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     override fun onResume() {
         super.onResume()
         setSwipeRefresh(true)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_settings -> {
-                showTemperatureOptions()
-                return true
-            }
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.menu_main, menu)
     }
 
     private fun setSwipeRefresh(value: Boolean) {
@@ -136,14 +145,17 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
                 is Loading -> {
                     setSwipeRefresh(true)
                 }
+
                 is Success -> {
                     setSwipeRefresh(false)
                     showForecastList(state.forecastEntityList.invoke())
                 }
+
                 is Fail -> {
                     setSwipeRefresh(false)
                     showErrorMsg()
                 }
+
                 is Uninitialized -> setSwipeRefresh(true)
             }
         }

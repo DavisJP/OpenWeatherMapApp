@@ -2,10 +2,9 @@ package com.davismiyashiro.weathermapapp.utils
 
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import androidx.lifecycle.OnLifecycleEvent
 import androidx.viewbinding.ViewBinding
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -13,41 +12,49 @@ import kotlin.reflect.KProperty
 /**
  * Create viewbindings for Fragments.
  *
- * To use, just call
- * private val binding: <T> by viewBinding()
+ * To use, bind the view after passing the layout on constructor
+ * private val binding: <T> by viewBinding(FragmentScreenBinding::bind)
  */
-inline fun <reified T : ViewBinding> Fragment.viewBinding() = FragmentViewBindingDelegate(T::class.java, this)
+fun <T : ViewBinding> Fragment.viewBinding(viewBindingFactory: (View) -> T) =
+    FragmentViewBindingDelegate(this, viewBindingFactory)
 
 class FragmentViewBindingDelegate<T : ViewBinding>(
-    private val bindingClass: Class<T>,
-    val fragment: Fragment
+    val fragment: Fragment,
+    val viewBindingFactory: (View) -> T,
 ) : ReadOnlyProperty<Fragment, T> {
     private var binding: T? = null
 
-    private val bindMethod = bindingClass.getMethod("bind", View::class.java)
+    init {
+        fragment.lifecycle.addObserver(object : DefaultLifecycleObserver {
+            val viewLifecycleObserver = Observer<LifecycleOwner?> { owner ->
+                if (owner == null) {
+                    binding = null
+                }
+            }
+
+            override fun onCreate(owner: LifecycleOwner) {
+                fragment.viewLifecycleOwnerLiveData.observeForever(viewLifecycleObserver)
+            }
+
+            override fun onDestroy(owner: LifecycleOwner) {
+                fragment.viewLifecycleOwnerLiveData.removeObserver(viewLifecycleObserver)
+            }
+        })
+    }
 
     override fun getValue(thisRef: Fragment, property: KProperty<*>): T {
-        binding?.let { return it }
+        val binding = binding
 
-        val lifecycle = fragment.viewLifecycleOwner.lifecycle
-        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.INITIALIZED)) {
-            error("Cannot access view bindings. View lifecycle is ${lifecycle.currentState}!")
+        if (binding != null && binding.root === thisRef.view) {
+            return binding
         }
 
-        fragment.viewLifecycleOwnerLiveData.observe(
-            fragment,
-            Observer { viewLifecycleOwner ->
-                viewLifecycleOwner.lifecycle.addObserver(object : LifecycleObserver {
-                    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-                    fun onDestroy() {
-                        binding = null
-                    }
-                })
-            }
-        )
+        val view = thisRef.view
 
-        @Suppress("UNCHECKED_CAST")
-        binding = bindMethod.invoke(null, thisRef.requireView()) as T
-        return binding!!
+        if (view == null) {
+            throw IllegalStateException("Should not attempt to get bindings when the Fragment's view is null.")
+        }
+
+        return viewBindingFactory(view).also { this.binding = it }
     }
 }

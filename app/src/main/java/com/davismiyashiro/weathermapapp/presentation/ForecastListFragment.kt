@@ -41,36 +41,38 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
     private var savedState: Parcelable? = null
 
-    private val binding: FragmentForecastListBinding by viewBinding()
+    private val binding by viewBinding(FragmentForecastListBinding::bind)
 
     @InternalMavericksApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val binding = binding
         //Listening to changes on Temperature Units
         PreferenceManager.getDefaultSharedPreferences(requireContext())
             .registerOnSharedPreferenceChangeListener(this)
-        val menuHost = requireActivity()
 
-        menuHost.addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(
-                menu: Menu,
-                menuInflater: MenuInflater
-            ) {
-                menuInflater.inflate(R.menu.menu_main, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.action_settings -> {
-                        showTemperatureOptions()
-                        true
-                    }
-
-                    else -> false
+        requireActivity().apply {
+            addMenuProvider(object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater
+                ) {
+                    menuInflater.inflate(R.menu.menu_main, menu)
                 }
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    return when (menuItem.itemId) {
+                        R.id.action_settings -> {
+                            showTemperatureOptions()
+                            true
+                        }
+
+                        else -> false
+                    }
+                }
+            }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        }
 
         adapter = ForecastListAdapter(requireContext())
 

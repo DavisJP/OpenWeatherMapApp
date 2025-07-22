@@ -3,7 +3,8 @@ package com.davismiyashiro.weathermapapp.presentation
 import com.airbnb.mvrx.Fail
 import com.airbnb.mvrx.InternalMavericksApi
 import com.airbnb.mvrx.Success
-import com.airbnb.mvrx.test.MvRxTestRule
+import com.airbnb.mvrx.mocking.MockBehavior
+import com.airbnb.mvrx.test.MavericksTestRule
 import com.airbnb.mvrx.withState
 import com.davismiyashiro.weathermapapp.data.entities.Conditions
 import com.davismiyashiro.weathermapapp.data.entities.Main
@@ -31,7 +32,11 @@ class ForecastListViewModelTest {
     private val mapper = ForecastListItemMapper()
 
     @get:Rule
-    val mvrxRule = MvRxTestRule()
+    val mvrxRule = MavericksTestRule(
+        true, MockBehavior(
+            stateStoreBehavior = MockBehavior.StateStoreBehavior.Synchronous
+        )
+    )
 
     @get:Rule
     var mOverrideSchedulersRule = RxSchedulersOverrideRule()

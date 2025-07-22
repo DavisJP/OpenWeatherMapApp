@@ -26,20 +26,24 @@ package com.davismiyashiro.weathermapapp.presentation
 
 import android.content.Context
 import android.util.AttributeSet
-import androidx.appcompat.widget.AppCompatTextView
 import com.davismiyashiro.weathermapapp.R
+import com.google.android.material.textview.MaterialTextView
 
 /**
  * Created by Davis Miyashiro.
  */
 
-class TemperatureTextView : AppCompatTextView {
+class TemperatureTextView : MaterialTextView {
 
     constructor(context: Context) : super(context)
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    )
 
     fun setTemperatureUnit(temperatureUnit: Int) {
         text = when (temperatureUnit) {

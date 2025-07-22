@@ -25,7 +25,12 @@
 package com.davismiyashiro.weathermapapp.presentation
 
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.updatePadding
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -39,12 +44,23 @@ class ForecastListActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        val wic = WindowInsetsControllerCompat(window, window.decorView)
+        wic.isAppearanceLightNavigationBars = false
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setTitle(R.string.open_weather_map)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { appBarLayout, windowInsets ->
+            val insets =
+                windowInsets.getInsets(WindowInsetsCompat.Type.statusBars())
+            appBarLayout.updatePadding(top = insets.top)
+            windowInsets
+        }
     }
 }

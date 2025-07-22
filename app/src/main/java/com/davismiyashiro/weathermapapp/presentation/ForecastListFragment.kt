@@ -8,6 +8,9 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.core.view.MenuProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
@@ -80,6 +83,19 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         binding.recyclerWeatherList.setHasFixedSize(true)
         binding.recyclerWeatherList.adapter = adapter
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.recyclerWeatherList) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            view.updatePadding(
+                left = insets.left,
+                right = insets.right,
+                bottom = insets.bottom
+            )
+
+            binding.recyclerWeatherList.clipToPadding = false
+            WindowInsetsCompat.CONSUMED
+        }
 
         if (savedInstanceState != null) {
             savedState = savedInstanceState.getParcelable(RECYCLER_STATE)

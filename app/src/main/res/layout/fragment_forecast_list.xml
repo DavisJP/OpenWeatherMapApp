@@ -50,11 +50,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="visible"
+                android:clipToPadding="false"
                 tools:listitem="@layout/recycler_weather_item" />
         </LinearLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/error_message_display"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

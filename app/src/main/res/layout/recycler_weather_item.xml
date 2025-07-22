@@ -26,6 +26,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="?android:listPreferredItemHeight"
+    android:background="?attr/colorSurfaceContainerHigh"
     android:paddingStart="16dp"
     android:paddingEnd="16dp">
 
@@ -39,7 +40,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_gravity="center"
-            android:background="@color/colorAccent"
+            android:background="@color/md_theme_primaryContainer"
             android:clipToPadding="false"
             android:padding="4dp" />
 

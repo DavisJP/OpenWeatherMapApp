@@ -7,5 +7,4 @@ import com.davismiyashiro.weathermapapp.domain.ForecastListItemEntity
 
 data class ForecastListState(
     val forecastEntityList: Async<List<ForecastListItemEntity>> = Uninitialized
-) : MavericksState {
-}
+) : MavericksState

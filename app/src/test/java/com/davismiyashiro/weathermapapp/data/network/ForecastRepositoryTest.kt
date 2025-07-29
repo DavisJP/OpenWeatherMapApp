@@ -82,8 +82,8 @@ class ForecastRepositoryTest {
             .subscribe(placeTestObserver)
 
         //Repositories must be accessed only once
-        verify<OpenWeatherApi>(remoteRepository).getForecastById(anyInt())
-        verify<Repository>(localRepository, never()).loadData()
+        verify(remoteRepository).getForecastById(anyInt())
+        verify(localRepository, never()).loadData()
 
         assertFalse(repository.refreshFromRemote)
 
@@ -105,7 +105,7 @@ class ForecastRepositoryTest {
             .subscribe(placeTestObserver)
 
         //Repositories must be accessed only once
-        verify<OpenWeatherApi>(remoteRepository).getForecastById(anyInt())
+        verify(remoteRepository).getForecastById(anyInt())
 
         assertFalse(repository.refreshFromRemote)
 
@@ -122,7 +122,7 @@ class ForecastRepositoryTest {
         repository.loadWeatherData()
             .subscribe(placeTestObserver)
 
-        verify<OpenWeatherApi>(remoteRepository).getForecastById(anyInt())
+        verify(remoteRepository).getForecastById(anyInt())
     }
 
     @Test
@@ -137,9 +137,9 @@ class ForecastRepositoryTest {
         repository.loadWeatherData()
             .subscribe(placeTestObserver)
 
-        verify<OpenWeatherApi>(remoteRepository, times(2))
+        verify(remoteRepository, times(2))
             .getForecastById(anyInt())
-        verify<Repository>(localRepository).loadData()
+        verify(localRepository).loadData()
         assertFalse(repository.refreshFromRemote)
 
         placeTestObserver.assertValueCount(1)
@@ -161,7 +161,7 @@ class ForecastRepositoryTest {
         repository.loadWeatherData()
             .subscribe(placeTestObserver)
 
-        verify<OpenWeatherApi>(remoteRepository, times(2)).getForecastById(anyInt())
+        verify(remoteRepository, times(2)).getForecastById(anyInt())
     }
 
     @Test
@@ -176,8 +176,8 @@ class ForecastRepositoryTest {
         repository.loadWeatherData()
             .subscribe(placeTestObserver)
 
-        verify<OpenWeatherApi>(remoteRepository, times(2)).getForecastById(anyInt())
-        verify<Repository>(localRepository).loadData()
+        verify(remoteRepository, times(2)).getForecastById(anyInt())
+        verify(localRepository).loadData()
 
         assertFalse(repository.refreshFromRemote)
 

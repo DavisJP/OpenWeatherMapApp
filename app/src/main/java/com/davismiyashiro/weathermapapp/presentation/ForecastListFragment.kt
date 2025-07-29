@@ -42,6 +42,9 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import coil3.compose.AsyncImage
@@ -100,19 +103,18 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
         PreferenceManager.getDefaultSharedPreferences(requireContext())
             .registerOnSharedPreferenceChangeListener(this)
-//        TODO: Support for edge-to-edge
-//        ViewCompat.setOnApplyWindowInsetsListener(binding.recyclerWeatherList) { view, windowInsets ->
-//            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-//
-//            view.updatePadding(
-//                left = insets.left,
-//                right = insets.right,
-//                bottom = insets.bottom
-//            )
 
-//            binding.recyclerWeatherList.clipToPadding = false
-//            WindowInsetsCompat.CONSUMED
-//        }
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            view.updatePadding(
+                top = insets.top,
+                left = insets.left,
+                right = insets.right,
+            )
+
+            WindowInsetsCompat.CONSUMED
+        }
 
         if (savedInstanceState != null) {
             savedState = savedInstanceState.getParcelable(RECYCLER_STATE)

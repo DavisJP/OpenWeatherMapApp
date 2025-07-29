@@ -28,6 +28,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -97,7 +100,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
         PreferenceManager.getDefaultSharedPreferences(requireContext())
             .registerOnSharedPreferenceChangeListener(this)
-
+//        TODO: Support for edge-to-edge
 //        ViewCompat.setOnApplyWindowInsetsListener(binding.recyclerWeatherList) { view, windowInsets ->
 //            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
 //
@@ -114,11 +117,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         if (savedInstanceState != null) {
             savedState = savedInstanceState.getParcelable(RECYCLER_STATE)
         }
-
-//        binding.contentMainSwipeRefreshLayout.setOnRefreshListener {
-        forecastListViewModel.loadWeatherData(true)
-//            savedState = null
-//        }
+        forecastListViewModel.loadWeatherData(false)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -129,40 +128,38 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         super.onSaveInstanceState(outState)
     }
 
-    override fun onResume() {
-        super.onResume()
-        setSwipeRefresh(true)
-    }
-
-    private fun setSwipeRefresh(value: Boolean) {
-//        binding.contentMainSwipeRefreshLayout.isRefreshing = value
-    }
-
     private fun showTemperatureOptions() {
         val temperatureDialog = ForecastSettingsFragmentDialog.newInstance()
         temperatureDialog.show(parentFragmentManager, "fragDialog")
     }
 
-    private fun showErrorMsg() {
+    @OptIn(ExperimentalMaterial3Api::class)
+    private fun showErrorMsg(
+        onRefresh: () -> Unit,
+    ) {
         binding.composeView.setContent {
-            AppTheme(dynamicColor = false) {
-                Scaffold { padding ->
-                    Text(
-                        modifier = Modifier.padding(padding),
-                        text =
-                            resources.getString(R.string.please_check_your_network_status_or_try_again_later),
-                    )
-                }
-            }
+            ForecastErrorScreen(
+                isRefreshing = false,
+                onRefresh = onRefresh
+            )
         }
     }
 
-    private fun showForecastList(itemEntities: List<ForecastListItemEntity>) {
+    private fun showForecastList(
+        itemEntities: List<ForecastListItemEntity>,
+        isRefreshing: Boolean,
+        onRefresh: () -> Unit
+    ) {
         binding.composeView.setContent {
             AppTheme(dynamicColor = false) {
 
                 val currentTempUnit = temperatureUnitState
-                ForecastListScreen(itemEntities, currentTempUnit)
+                ForecastListScreen(
+                    itemEntities,
+                    currentTempUnit,
+                    isRefreshing = isRefreshing,
+                    onRefresh = onRefresh
+                )
             }
         }
     }
@@ -172,12 +169,20 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     private fun ForecastListScreen(
         data: List<ForecastListItemEntity>,
         temperatureUnit: Int,
+        isRefreshing: Boolean,
+        onRefresh: () -> Unit,
         modifier: Modifier = Modifier
     ) {
+        val pullToRefreshState = rememberPullToRefreshState()
         Scaffold(
             modifier = modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .pullToRefresh(
+                    state = pullToRefreshState,
+                    onRefresh = onRefresh,
+                    isRefreshing = isRefreshing
+                ),
             topBar = {
                 TopAppBar(
                     title = {
@@ -196,7 +201,45 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
                 )
             },
         ) { contentPadding ->
-            ForecastList(data, temperatureUnit, contentPadding, modifier)
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = onRefresh
+            ) {
+                ForecastList(data, temperatureUnit, contentPadding, modifier)
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun ForecastErrorScreen(
+        isRefreshing: Boolean,
+        onRefresh: () -> Unit,
+    ) {
+        val pullToRefreshState = rememberPullToRefreshState()
+        AppTheme(dynamicColor = false) {
+            Scaffold(
+                modifier = Modifier.pullToRefresh(
+                    state = pullToRefreshState,
+                    isRefreshing = isRefreshing,
+                    onRefresh = onRefresh,
+                )
+            ) { padding ->
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = onRefresh
+                ) {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        item {
+                            Text(
+                                modifier = Modifier.padding(padding),
+                                text =
+                                    resources.getString(R.string.please_check_your_network_status_or_try_again_later),
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -306,21 +349,28 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     override fun invalidate() {
         withState(forecastListViewModel) { state ->
             when (state.forecastEntityList) {
-                is Loading -> {
-                    setSwipeRefresh(true)
+                is Loading, Uninitialized -> {
+                    //TODO: Add loading screen
+                    showForecastList(
+                        emptyList(),
+                        isRefreshing = true,
+                        onRefresh = { forecastListViewModel.loadWeatherData(true) }
+                    )
                 }
 
                 is Success -> {
-                    setSwipeRefresh(false)
-                    showForecastList(state.forecastEntityList.invoke())
+                    showForecastList(
+                        state.forecastEntityList(),
+                        isRefreshing = false,
+                        onRefresh = { forecastListViewModel.loadWeatherData(true) }
+                    )
                 }
 
                 is Fail -> {
-                    setSwipeRefresh(false)
-                    showErrorMsg()
+                    showErrorMsg(
+                        onRefresh = { forecastListViewModel.loadWeatherData(true) }
+                    )
                 }
-
-                is Uninitialized -> setSwipeRefresh(true)
             }
         }
     }

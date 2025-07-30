@@ -8,6 +8,7 @@ import android.os.Parcelable
 import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -18,9 +19,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -37,9 +44,11 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.view.ViewCompat
@@ -65,6 +74,11 @@ import com.davismiyashiro.weathermapapp.databinding.FragmentForecastListBinding
 import com.davismiyashiro.weathermapapp.designsystem.theme.AppTheme
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemEntity
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
+import com.davismiyashiro.weathermapapp.domain.IMG_SRC_W_URL
+import com.davismiyashiro.weathermapapp.domain.TEMPERATURE_CELSIUS
+import com.davismiyashiro.weathermapapp.domain.TEMPERATURE_FAHRENHEIT
+import com.davismiyashiro.weathermapapp.domain.convertKelvinToCelsius
+import com.davismiyashiro.weathermapapp.domain.convertKelvinToFahrenheit
 import com.davismiyashiro.weathermapapp.utils.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import org.threeten.bp.Instant
@@ -122,14 +136,6 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         forecastListViewModel.loadWeatherData(false)
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-//        outState.putParcelable(
-//            RECYCLER_STATE,
-//            binding.recyclerWeatherList.layoutManager?.onSaveInstanceState()
-//        )
-        super.onSaveInstanceState(outState)
-    }
-
     private fun showTemperatureOptions() {
         val temperatureDialog = ForecastSettingsFragmentDialog.newInstance()
         temperatureDialog.show(parentFragmentManager, "fragDialog")
@@ -149,7 +155,6 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
     private fun showForecastList(
         itemEntities: List<ForecastListItemEntity>,
-        isRefreshing: Boolean,
         onRefresh: () -> Unit
     ) {
         binding.composeView.setContent {
@@ -159,7 +164,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
                 ForecastListScreen(
                     itemEntities,
                     currentTempUnit,
-                    isRefreshing = isRefreshing,
+                    isRefreshing = false,
                     onRefresh = onRefresh
                 )
             }
@@ -175,10 +180,13 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         onRefresh: () -> Unit,
         modifier: Modifier = Modifier
     ) {
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scrollState = rememberLazyListState()
         val pullToRefreshState = rememberPullToRefreshState()
         Scaffold(
             modifier = modifier
                 .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 .pullToRefresh(
                     state = pullToRefreshState,
@@ -190,6 +198,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
                     title = {
                         Text(resources.getString(R.string.open_weather_map))
                     },
+                    scrollBehavior = scrollBehavior,
                     actions = {
                         IconButton(onClick = {
                             showTemperatureOptions()
@@ -207,9 +216,40 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
                 isRefreshing = isRefreshing,
                 onRefresh = onRefresh
             ) {
-                ForecastList(data, temperatureUnit, contentPadding, modifier)
+                ForecastList(data, temperatureUnit, contentPadding, scrollState, modifier)
             }
         }
+    }
+
+    @Composable
+    fun ForecastLoadingScreen() {
+        AppTheme(dynamicColor = false) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator(
+                )
+            }
+        }
+    }
+
+    fun showLoadingScreen() {
+        binding.composeView.setContent {
+            ForecastLoadingScreen()
+        }
+    }
+
+    @Preview(showBackground = true)
+    @Composable
+    private fun PreviewLoadingScreen() {
+        ForecastLoadingScreen()
+    }
+
+    @Preview(showBackground = true)
+    @Composable
+    private fun PreviewErrorScreen() {
+        ForecastErrorScreen(isRefreshing = false) {}
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -218,7 +258,9 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         isRefreshing: Boolean,
         onRefresh: () -> Unit,
     ) {
+        val context = LocalContext.current
         val pullToRefreshState = rememberPullToRefreshState()
+        val scrollState = rememberScrollState()
         AppTheme(dynamicColor = false) {
             Scaffold(
                 modifier = Modifier.pullToRefresh(
@@ -231,14 +273,19 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
                     isRefreshing = isRefreshing,
                     onRefresh = onRefresh
                 ) {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        item {
-                            Text(
-                                modifier = Modifier.padding(padding),
-                                text =
-                                    resources.getString(R.string.please_check_your_network_status_or_try_again_later),
-                            )
-                        }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                            .verticalScroll(scrollState),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(padding),
+                            text =
+                                context.resources.getString(R.string.please_check_your_network_status_or_try_again_later),
+                            textAlign = TextAlign.Center,
+                        )
                     }
                 }
             }
@@ -250,6 +297,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         data: List<ForecastListItemEntity>,
         temperatureUnit: Int,
         contentPadding: PaddingValues,
+        scrollState: LazyListState,
         modifier: Modifier,
     ) {
         LazyColumn(
@@ -257,6 +305,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 .fillMaxSize()
                 .padding(contentPadding),
+            state = scrollState,
             contentPadding = PaddingValues(16.dp)
         ) {
             items(data) {
@@ -352,18 +401,12 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         withState(forecastListViewModel) { state ->
             when (state.forecastEntityList) {
                 is Loading, Uninitialized -> {
-                    //TODO: Add loading screen
-                    showForecastList(
-                        emptyList(),
-                        isRefreshing = true,
-                        onRefresh = { forecastListViewModel.loadWeatherData(true) }
-                    )
+                    showLoadingScreen()
                 }
 
                 is Success -> {
                     showForecastList(
                         state.forecastEntityList(),
-                        isRefreshing = false,
                         onRefresh = { forecastListViewModel.loadWeatherData(true) }
                     )
                 }
@@ -411,15 +454,5 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
         val dayOfWeek = localDateTime.dayOfWeek
 
         return dayOfWeek.name + " - " + localDateTime.format(formatter)
-    }
-
-    //T(°C) = T(K) - 273.15
-    private fun convertKelvinToCelsius(kelvin: Double): Double {
-        return kelvin - 273.16
-    }
-
-    //T(°F) = T(K) × 9/5 - 459.67
-    private fun convertKelvinToFahrenheit(kelvin: Double): Double {
-        return (kelvin - 273.16) * 9.0 / 5 + 32
     }
 }

@@ -49,7 +49,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -66,14 +65,9 @@ import com.airbnb.mvrx.Uninitialized
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
 import com.davismiyashiro.weathermapapp.R
-import com.davismiyashiro.weathermapapp.data.entities.City
-import com.davismiyashiro.weathermapapp.data.entities.Conditions
-import com.davismiyashiro.weathermapapp.data.entities.Place
-import com.davismiyashiro.weathermapapp.data.entities.Weather
 import com.davismiyashiro.weathermapapp.databinding.FragmentForecastListBinding
 import com.davismiyashiro.weathermapapp.designsystem.theme.AppTheme
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemEntity
-import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.IMG_SRC_W_URL
 import com.davismiyashiro.weathermapapp.domain.TEMPERATURE_CELSIUS
 import com.davismiyashiro.weathermapapp.domain.TEMPERATURE_FAHRENHEIT
@@ -155,7 +149,8 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
     private fun showForecastList(
         itemEntities: List<ForecastListItemEntity>,
-        onRefresh: () -> Unit
+        onRefresh: () -> Unit,
+        onMenuAction: () -> Unit,
     ) {
         binding.composeView.setContent {
             AppTheme(dynamicColor = false) {
@@ -165,70 +160,9 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
                     itemEntities,
                     currentTempUnit,
                     isRefreshing = false,
-                    onRefresh = onRefresh
-                )
-            }
-        }
-    }
-
-    @Composable
-    @OptIn(ExperimentalMaterial3Api::class)
-    private fun ForecastListScreen(
-        data: List<ForecastListItemEntity>,
-        temperatureUnit: Int,
-        isRefreshing: Boolean,
-        onRefresh: () -> Unit,
-        modifier: Modifier = Modifier
-    ) {
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        val scrollState = rememberLazyListState()
-        val pullToRefreshState = rememberPullToRefreshState()
-        Scaffold(
-            modifier = modifier
-                .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .pullToRefresh(
-                    state = pullToRefreshState,
                     onRefresh = onRefresh,
-                    isRefreshing = isRefreshing
-                ),
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(resources.getString(R.string.open_weather_map))
-                    },
-                    scrollBehavior = scrollBehavior,
-                    actions = {
-                        IconButton(onClick = {
-                            showTemperatureOptions()
-                        }) {
-                            Icon(
-                                imageVector = Icons.Filled.MoreVert,
-                                contentDescription = stringResource(R.string.action_settings)
-                            )
-                        }
-                    }
-                )
-            },
-        ) { contentPadding ->
-            PullToRefreshBox(
-                isRefreshing = isRefreshing,
-                onRefresh = onRefresh
-            ) {
-                ForecastList(data, temperatureUnit, contentPadding, scrollState, modifier)
-            }
-        }
-    }
-
-    @Composable
-    fun ForecastLoadingScreen() {
-        AppTheme(dynamicColor = false) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(
+                    context = requireContext(),
+                    onMenuAction = onMenuAction,
                 )
             }
         }
@@ -237,150 +171,6 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     fun showLoadingScreen() {
         binding.composeView.setContent {
             ForecastLoadingScreen()
-        }
-    }
-
-    @Preview(showBackground = true)
-    @Composable
-    private fun PreviewLoadingScreen() {
-        ForecastLoadingScreen()
-    }
-
-    @Preview(showBackground = true)
-    @Composable
-    private fun PreviewErrorScreen() {
-        ForecastErrorScreen(isRefreshing = false) {}
-    }
-
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun ForecastErrorScreen(
-        isRefreshing: Boolean,
-        onRefresh: () -> Unit,
-    ) {
-        val context = LocalContext.current
-        val pullToRefreshState = rememberPullToRefreshState()
-        val scrollState = rememberScrollState()
-        AppTheme(dynamicColor = false) {
-            Scaffold(
-                modifier = Modifier.pullToRefresh(
-                    state = pullToRefreshState,
-                    isRefreshing = isRefreshing,
-                    onRefresh = onRefresh,
-                )
-            ) { padding ->
-                PullToRefreshBox(
-                    isRefreshing = isRefreshing,
-                    onRefresh = onRefresh
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                            .verticalScroll(scrollState),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(padding),
-                            text =
-                                context.resources.getString(R.string.please_check_your_network_status_or_try_again_later),
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun ForecastList(
-        data: List<ForecastListItemEntity>,
-        temperatureUnit: Int,
-        contentPadding: PaddingValues,
-        scrollState: LazyListState,
-        modifier: Modifier,
-    ) {
-        LazyColumn(
-            modifier = modifier
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .fillMaxSize()
-                .padding(contentPadding),
-            state = scrollState,
-            contentPadding = PaddingValues(16.dp)
-        ) {
-            items(data) {
-                ForecastListItem(it, temperatureUnit)
-            }
-        }
-    }
-
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun ForecastListItem(
-        item: ForecastListItemEntity,
-        temperatureUnit: Int,
-        modifier: Modifier = Modifier
-    ) {
-        val context = LocalContext.current
-        Row(
-            modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AsyncImage(
-                modifier = modifier
-                    .size(48.dp)
-                    .padding(4.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                model = IMG_SRC_W_URL + item.imgIcon,
-                contentDescription = item.main,
-//                placeholder = painterResource(android.R.drawable.progress_indeterminate_horizontal),
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = modifier.padding(horizontal = 16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(text = getReadableDate(item.dt))
-                    Text(text = item.main)
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Row(
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Text(text = convertTemperature(item.temp, temperatureUnit, context))
-                    Text(text = convertTemperatureUnit(temperatureUnit, context.resources))
-                }
-            }
-        }
-    }
-
-    @Preview("Preview Weather List", showBackground = true)
-    @Composable
-    fun PreviewForecastList() {
-        val place = Place(
-            "123",
-            10.0,
-            1,
-            mutableListOf(
-                Conditions(
-                    dt = 21,
-                    weather = mutableListOf(
-                        Weather(
-                            main = "Weather",
-                            description = "Clear",
-                            icon = "icon",
-                        )
-                    )
-                )
-            ),
-            City()
-        )
-        val item = ForecastListItemMapper().mapPlaceToForecastListItem(place)
-        AppTheme(dynamicColor = false) {
-            ForecastListItem(item[0], 0)
         }
     }
 
@@ -407,7 +197,8 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
                 is Success -> {
                     showForecastList(
                         state.forecastEntityList(),
-                        onRefresh = { forecastListViewModel.loadWeatherData(true) }
+                        onRefresh = { forecastListViewModel.loadWeatherData(true) },
+                        onMenuAction = { showTemperatureOptions() }
                     )
                 }
 
@@ -419,40 +210,208 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
             }
         }
     }
+}
 
-    private fun convertTemperature(
-        temperature: Double,
-        temperatureUnit: Int,
-        context: Context
-    ): String {
-        val convertedTemp = when (temperatureUnit) {
-            TEMPERATURE_CELSIUS -> convertKelvinToCelsius(temperature)
-            TEMPERATURE_FAHRENHEIT -> convertKelvinToFahrenheit(temperature)
-            else -> convertKelvinToCelsius(temperature) //Default is Celsius
-        }
-        val formatter = context.getString(R.string.format_temperature)
-        return String.format(formatter, convertedTemp)
-    }
-
-    fun convertTemperatureUnit(temperatureUnit: Int, resources: Resources): String {
-        return when (temperatureUnit) {
-            TEMPERATURE_CELSIUS -> resources.getString(R.string.celsius)
-            TEMPERATURE_FAHRENHEIT -> resources.getString(R.string.fahrenheit)
-            else -> "" //Default is Kelvin
+@Composable
+fun ForecastLoadingScreen() {
+    AppTheme(dynamicColor = false) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator(
+            )
         }
     }
+}
 
-    @Composable
-    private fun getReadableDate(dateMilli: Long): String {
-        if (LocalInspectionMode.current) {
-            return "Mon - 10:30 AM (Preview)" // Simple placeholder
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ForecastErrorScreen(
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+) {
+    val context = LocalContext.current
+    val pullToRefreshState = rememberPullToRefreshState()
+    val scrollState = rememberScrollState()
+    AppTheme(dynamicColor = false) {
+        Scaffold(
+            modifier = Modifier.pullToRefresh(
+                state = pullToRefreshState,
+                isRefreshing = isRefreshing,
+                onRefresh = onRefresh,
+            )
+        ) { padding ->
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = onRefresh
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .verticalScroll(scrollState),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        modifier = Modifier.padding(padding),
+                        text =
+                            context.resources.getString(R.string.please_check_your_network_status_or_try_again_later),
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
         }
-        val localDateTime =
-            Instant.ofEpochSecond(dateMilli).atZone(ZoneId.systemDefault()).toLocalDateTime()
-
-        val formatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
-        val dayOfWeek = localDateTime.dayOfWeek
-
-        return dayOfWeek.name + " - " + localDateTime.format(formatter)
     }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun ForecastListScreen(
+    data: List<ForecastListItemEntity>,
+    temperatureUnit: Int,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+    context: Context,
+    onMenuAction: () -> Unit,
+) {
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollState = rememberLazyListState()
+    val pullToRefreshState = rememberPullToRefreshState()
+    Scaffold(
+        modifier = modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .pullToRefresh(
+                state = pullToRefreshState,
+                onRefresh = onRefresh,
+                isRefreshing = isRefreshing
+            ),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(context.resources.getString(R.string.open_weather_map))
+                },
+                scrollBehavior = scrollBehavior,
+                actions = {
+                    IconButton(onClick = {
+                        onMenuAction()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = stringResource(R.string.action_settings)
+                        )
+                    }
+                }
+            )
+        },
+    ) { contentPadding ->
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh
+        ) {
+            ForecastList(data, temperatureUnit, contentPadding, scrollState, modifier)
+        }
+    }
+}
+
+@Composable
+private fun ForecastList(
+    data: List<ForecastListItemEntity>,
+    temperatureUnit: Int,
+    contentPadding: PaddingValues,
+    scrollState: LazyListState,
+    modifier: Modifier,
+) {
+    LazyColumn(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .fillMaxSize()
+            .padding(contentPadding),
+        state = scrollState,
+        contentPadding = PaddingValues(16.dp)
+    ) {
+        items(data) {
+            ForecastListItem(it, temperatureUnit)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ForecastListItem(
+    item: ForecastListItemEntity,
+    temperatureInt: Int,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    Row(
+        modifier
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AsyncImage(
+            modifier = modifier
+                .size(48.dp)
+                .padding(4.dp)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            model = IMG_SRC_W_URL + item.imgIcon,
+            contentDescription = item.main,
+//                placeholder = painterResource(android.R.drawable.progress_indeterminate_horizontal),
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier.padding(horizontal = 16.dp)
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = getReadableDate(item.dt))
+                Text(text = item.main)
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Row(
+                horizontalArrangement = Arrangement.End
+            ) {
+                Text(text = item.temp.toTemperatureUnit(temperatureInt, context))
+                Text(text = temperatureInt.toTemperatureUnit(context.resources))
+            }
+        }
+    }
+}
+
+fun Double.toTemperatureUnit(temperatureUnit: Int, context: Context): String {
+    val convertedTemp = when (temperatureUnit) {
+        TEMPERATURE_CELSIUS -> convertKelvinToCelsius(this)
+        TEMPERATURE_FAHRENHEIT -> convertKelvinToFahrenheit(this)
+        else -> convertKelvinToCelsius(this) //Default is Celsius
+    }
+    val formatter = context.getString(R.string.format_temperature)
+    return String.format(formatter, convertedTemp)
+}
+
+fun Int.toTemperatureUnit(
+    resources: Resources
+): String {
+    return when (this) {
+        TEMPERATURE_CELSIUS -> resources.getString(R.string.celsius)
+        TEMPERATURE_FAHRENHEIT -> resources.getString(R.string.fahrenheit)
+        else -> "" //Default is Kelvin
+    }
+}
+
+@Composable
+fun getReadableDate(dateMilli: Long): String {
+    if (LocalInspectionMode.current) {
+        return "Mon - 10:30 AM (Preview)" // Simple placeholder
+    }
+    val localDateTime =
+        Instant.ofEpochSecond(dateMilli).atZone(ZoneId.systemDefault()).toLocalDateTime()
+
+    val formatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
+    val dayOfWeek = localDateTime.dayOfWeek
+
+    return dayOfWeek.name + " - " + localDateTime.format(formatter)
 }

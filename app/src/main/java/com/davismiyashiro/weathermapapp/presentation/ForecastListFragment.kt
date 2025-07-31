@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Resources
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,24 +14,33 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -41,6 +49,8 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +60,8 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -81,8 +93,7 @@ import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.format.FormatStyle
 
 const val TEMPERATURE_KEY = "TEMPERATURE_KEY"
-const val RECYCLER_STATE = "RECYCLER_STATE"
-const val TEMPERATURE_DEFAULT = 0
+const val TEMPERATURE_DEFAULT = TEMPERATURE_CELSIUS
 
 @AndroidEntryPoint
 class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
@@ -92,8 +103,6 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     @InternalMavericksApi
     private val forecastListViewModel: ForecastListViewModel by fragmentViewModel(keyFactory = { "test" })
 
-    private var savedState: Parcelable? = null
-
     private val binding by viewBinding(FragmentForecastListBinding::bind)
 
     private var temperatureUnitState by mutableIntStateOf(TEMPERATURE_DEFAULT)
@@ -101,6 +110,8 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     private val temperatureUnitPref: Int
         get() = PreferenceManager.getDefaultSharedPreferences(requireContext())
             .getInt(TEMPERATURE_KEY, TEMPERATURE_DEFAULT)
+
+    private var showTempSettingsDialog = mutableStateOf(false)
 
     @InternalMavericksApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -124,15 +135,7 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
             WindowInsetsCompat.CONSUMED
         }
 
-        if (savedInstanceState != null) {
-            savedState = savedInstanceState.getParcelable(RECYCLER_STATE)
-        }
         forecastListViewModel.loadWeatherData(false)
-    }
-
-    private fun showTemperatureOptions() {
-        val temperatureDialog = ForecastSettingsFragmentDialog.newInstance()
-        temperatureDialog.show(parentFragmentManager, "fragDialog")
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -150,7 +153,6 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
     private fun showForecastList(
         itemEntities: List<ForecastListItemEntity>,
         onRefresh: () -> Unit,
-        onMenuAction: () -> Unit,
     ) {
         binding.composeView.setContent {
             AppTheme(dynamicColor = false) {
@@ -162,7 +164,22 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
                     isRefreshing = false,
                     onRefresh = onRefresh,
                     context = requireContext(),
-                    onMenuAction = onMenuAction,
+                    showDialog = showTempSettingsDialog.value,
+                    onShowDialogChange = { shouldShow ->
+                        showTempSettingsDialog.value = shouldShow
+                        if (shouldShow) {
+                            temperatureUnitState = temperatureUnitPref
+                        }
+                    },
+                    dialogCurrentUnitIndex = temperatureUnitState,
+                    onDialogUnitSelected = {
+                        temperatureUnitState = it
+                        val pref = PreferenceManager.getDefaultSharedPreferences(requireActivity())
+                        pref.edit {
+                            putInt(TEMPERATURE_KEY, it)
+                        }
+                        showTempSettingsDialog.value = false
+                    },
                 )
             }
         }
@@ -198,7 +215,6 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
                     showForecastList(
                         state.forecastEntityList(),
                         onRefresh = { forecastListViewModel.loadWeatherData(true) },
-                        onMenuAction = { showTemperatureOptions() }
                     )
                 }
 
@@ -267,18 +283,22 @@ fun ForecastErrorScreen(
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun ForecastListScreen(
+fun ForecastListScreen(
     data: List<ForecastListItemEntity>,
     temperatureUnit: Int,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
     context: Context,
-    onMenuAction: () -> Unit,
+    showDialog: Boolean,
+    onShowDialogChange: (Boolean) -> Unit,
+    dialogCurrentUnitIndex: Int,
+    onDialogUnitSelected: (Int) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberLazyListState()
     val pullToRefreshState = rememberPullToRefreshState()
+
     Scaffold(
         modifier = modifier
             .fillMaxSize()
@@ -297,7 +317,7 @@ private fun ForecastListScreen(
                 scrollBehavior = scrollBehavior,
                 actions = {
                     IconButton(onClick = {
-                        onMenuAction()
+                        onShowDialogChange(true)
                     }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
@@ -315,6 +335,15 @@ private fun ForecastListScreen(
             ForecastList(data, temperatureUnit, contentPadding, scrollState, modifier)
         }
     }
+
+    SettingsDialog(
+        showDialog = showDialog,
+        currentUnitIndexSelected = dialogCurrentUnitIndex,
+        onDismissRequest = { onShowDialogChange(false) },
+        onUnitSelected = { selectedIndex ->
+            onDialogUnitSelected(selectedIndex)
+        }
+    )
 }
 
 @Composable
@@ -377,6 +406,72 @@ fun ForecastListItem(
             ) {
                 Text(text = item.temp.toTemperatureUnit(temperatureInt, context))
                 Text(text = temperatureInt.toTemperatureUnit(context.resources))
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun SettingsDialog(
+    showDialog: Boolean,
+    currentUnitIndexSelected: Int,
+    onDismissRequest: () -> Unit,
+    onUnitSelected: (Int) -> Unit,
+) {
+    if (showDialog) {
+        val context = LocalContext.current
+        var tempSelectedOptionIndex by remember(currentUnitIndexSelected) {
+            mutableIntStateOf(
+                currentUnitIndexSelected
+            )
+        }
+
+        BasicAlertDialog(
+            onDismissRequest = onDismissRequest,
+        ) {
+            Surface(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .wrapContentHeight(),
+                shape = MaterialTheme.shapes.large,
+                tonalElevation = AlertDialogDefaults.TonalElevation
+            ) {
+                val temperatureScales =
+                    context.resources.getStringArray(R.array.pref_temperature_units)
+                Column(modifier = Modifier.padding(24.dp)) {
+                    Text(
+                        fontSize = 24.sp,
+                        text = context.getString(R.string.choose_temperature_unit),
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    temperatureScales.forEachIndexed { index, scale ->
+                        Row(
+                            modifier = Modifier
+                                .padding(PaddingValues(bottom = 8.dp))
+                                .selectable(
+                                    index == tempSelectedOptionIndex,
+                                    onClick = { tempSelectedOptionIndex = index })
+                        ) {
+                            RadioButton(
+                                selected = index == tempSelectedOptionIndex,
+                                onClick = null,
+                            )
+                            Spacer(Modifier.width(16.dp))
+                            Text(scale)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextButton(
+                        onClick = {
+                            onUnitSelected(tempSelectedOptionIndex)
+                            onDismissRequest()
+                        },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text("Confirm")
+                    }
+                }
             }
         }
     }

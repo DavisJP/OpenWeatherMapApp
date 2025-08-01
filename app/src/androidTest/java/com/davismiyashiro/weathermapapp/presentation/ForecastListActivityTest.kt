@@ -24,13 +24,12 @@
 
 package com.davismiyashiro.weathermapapp.presentation
 
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.rule.ActivityTestRule
+import com.davismiyashiro.weathermapapp.R
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -44,12 +43,11 @@ import org.junit.runner.RunWith
 class ForecastListActivityTest {
 
     @get:Rule
-    val main = ActivityTestRule(ForecastListActivity::class.java)
+    val composeTestRule = createAndroidComposeRule<ForecastListActivity>()
 
     @Test
     @Throws(Exception::class)
     fun useAppContext() {
-        // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
 
         assertEquals("com.davismiyashiro.weathermapapp", appContext.packageName)
@@ -57,6 +55,7 @@ class ForecastListActivityTest {
 
     @Test
     fun checkToolbarDisplaysTitle() {
-        onView(withText("OpenWeatherMap")).check(matches(isDisplayed()))
+        val expectedTitle = composeTestRule.activity.getString(R.string.open_weather_map)
+        composeTestRule.onNodeWithText(expectedTitle).assertIsDisplayed()
     }
 }

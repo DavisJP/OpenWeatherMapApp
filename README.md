@@ -2,12 +2,12 @@
 
 An app that displays 5 day weather forecast from http://openweathermap.org for London.
 
-This App was built to practice on MVI architecture, Dagger Hilt, RxJava and Retrofit.
+This App was built to practice on MVVM architecture, Jetpack Compose, Dagger Hilt, RxJava and Retrofit.
 
 ### What's the current status ? ###
 
-- Currently the app lists the 5 day weather forecast for London
-- It allows for switching the temperature between Celsius and Fahrenheit
+- The app currently lists 5-day weather forecasts for London
+- Allows for switching the temperature scale between Celsius and Fahrenheit
 - Swipe to refresh list
 
 ### Configuration ###
@@ -25,6 +25,7 @@ This App was built to practice on MVI architecture, Dagger Hilt, RxJava and Retr
 
 - Dagger 2 + Hilt
 - Viewbinding
+- Jetpack Compose
 - Jetpack navigation
 - Rxjava 3
 - Retrofit 2

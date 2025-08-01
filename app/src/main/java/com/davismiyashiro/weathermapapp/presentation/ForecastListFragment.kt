@@ -14,12 +14,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -29,8 +26,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialogDefaults
-import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,7 +34,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -60,7 +55,6 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -426,25 +420,18 @@ fun SettingsDialog(
                 currentUnitIndexSelected
             )
         }
-
-        BasicAlertDialog(
+        val temperatureScales =
+            context.resources.getStringArray(R.array.pref_temperature_units)
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.background,
             onDismissRequest = onDismissRequest,
-        ) {
-            Surface(
-                modifier = Modifier
-                    .wrapContentWidth()
-                    .wrapContentHeight(),
-                shape = MaterialTheme.shapes.large,
-                tonalElevation = AlertDialogDefaults.TonalElevation
-            ) {
-                val temperatureScales =
-                    context.resources.getStringArray(R.array.pref_temperature_units)
-                Column(modifier = Modifier.padding(24.dp)) {
-                    Text(
-                        fontSize = 24.sp,
-                        text = context.getString(R.string.choose_temperature_unit),
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
+            title = {
+                Text(
+                    text = context.getString(R.string.choose_temperature_unit),
+                )
+            },
+            text = {
+                Column {
                     temperatureScales.forEachIndexed { index, scale ->
                         Row(
                             modifier = Modifier
@@ -461,19 +448,18 @@ fun SettingsDialog(
                             Text(scale)
                         }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    TextButton(
-                        onClick = {
-                            onUnitSelected(tempSelectedOptionIndex)
-                            onDismissRequest()
-                        },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Text("Confirm")
-                    }
                 }
-            }
-        }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onUnitSelected(tempSelectedOptionIndex)
+                    },
+                ) {
+                    Text(stringResource(android.R.string.ok))
+                }
+            },
+        )
     }
 }
 

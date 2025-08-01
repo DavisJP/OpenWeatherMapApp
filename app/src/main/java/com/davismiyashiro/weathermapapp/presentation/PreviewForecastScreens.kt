@@ -51,7 +51,7 @@ fun PreviewForecastList() {
 @Composable
 @Preview("Setting dialog")
 fun ShowSettingsDialog() {
-    AppTheme {
+    AppTheme(dynamicColor = false) {
         SettingsDialog(
             onDismissRequest = { },
             showDialog = true,

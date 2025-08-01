@@ -2,18 +2,18 @@
 
 An app that displays 5 day weather forecast from http://openweathermap.org for London.
 
-This App was built to practice on MVP architecture, RxJava and Retrofit.
+This App was built to practice on MVVM architecture, Jetpack Compose, Dagger Hilt, RxJava and Retrofit.
 
 ### What's the current status ? ###
 
-- Currently the app lists the 5 day weather forecast for London
-- It allows for switching the temperature between Celsius and Fahrenheit
+- The app currently lists 5-day weather forecasts for London
+- Allows for switching the temperature scale between Celsius and Fahrenheit
 - Swipe to refresh list
 
 ### Configuration ###
 
-- This project was build with Android Studio Koala (2024.1.1)
-- It targets SDK 34 and minimum API 21 (Lollipop)
+- This project was build with Android Studio Narwhal (2025.1.1)
+- It targets SDK 35 and minimum API 21 (Lollipop)
 
 ### What could be done with more time ###
 
@@ -25,9 +25,11 @@ This App was built to practice on MVP architecture, RxJava and Retrofit.
 
 - Dagger 2 + Hilt
 - Viewbinding
+- Jetpack Compose
+- Jetpack navigation
 - Rxjava 3
 - Retrofit 2
 - Gson
-- Picasso
+- Coil
 - ThreeTenABP
 - Timber

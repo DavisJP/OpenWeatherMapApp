@@ -22,26 +22,16 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.presentation
+package com.davismiyashiro.weathermapapp.data.entities
 
-import androidx.annotation.NonNull
-
+import com.google.gson.annotations.Expose
+import com.google.gson.annotations.SerializedName
 
 /**
  * Created by Davis Miyashiro.
  */
-
-interface ForecastListInterfaces {
-
-    interface View {
-        fun showForecastList(item: List<ForecastListItem>)
-        fun showErrorMsg()
-        fun setSwipeRefresh(value: Boolean)
-    }
-
-    interface Presenter {
-        fun attachView(@NonNull mainView: View)
-        fun dettachView()
-        fun loadWeatherData(refreshData: Boolean)
-    }
-}
+data class Snow(
+    @SerializedName("3h")
+    @Expose
+    var _3h: Double? = null
+)

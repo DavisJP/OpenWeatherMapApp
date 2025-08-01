@@ -24,7 +24,7 @@
 
 package com.davismiyashiro.weathermapapp.data.storage
 
-import com.davismiyashiro.weathermapapp.data.Place
+import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.google.gson.Gson
 
@@ -35,7 +35,8 @@ import javax.inject.Inject
  * Created by Davis Miyashiro.
  */
 
-class ForecastLocalRepository @Inject constructor(private val storage: SharedPreferenceStorage) : Repository {
+class ForecastLocalRepository @Inject constructor(private val storage: SharedPreferenceStorage) :
+    Repository {
 
     private val KEY_PLACE = "KEY_PLACE"
     private val gson = Gson()

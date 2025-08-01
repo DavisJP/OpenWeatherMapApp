@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Davis Miyashiro
+ * Copyright (c) 2021 Davis Miyashiro
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,21 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.data
+package com.davismiyashiro.weathermapapp.domain
 
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
+import com.davismiyashiro.weathermapapp.data.entities.Place
+import javax.inject.Inject
 
-/**
- * Created by Davis Miyashiro.
- */
-data class Wind(
-        @SerializedName("speed")
-        @Expose
-        var speed: Double? = null,
-        @SerializedName("deg")
-        @Expose
-        var deg: Double? = null)
+open class ForecastListItemMapper @Inject constructor() {
+    fun mapPlaceToForecastListItem(data: Place?): List<ForecastListItemEntity> {
+        return mutableListOf<ForecastListItemEntity>().apply {
+            data?.let {
+                it.list?.let { conditions ->
+                    for (condition in conditions) {
+                        add(ForecastListItemEntity(condition))
+                    }
+                }
+            }
+        }
+    }
+}

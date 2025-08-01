@@ -24,131 +24,33 @@
 
 package com.davismiyashiro.weathermapapp.presentation
 
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Parcelable
-import android.preference.PreferenceManager
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.davismiyashiro.weathermapapp.R
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.viewinterop.AndroidViewBinding
 import com.davismiyashiro.weathermapapp.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 /**
  * Created by Davis Miyashiro.
  */
-const val TEMPERATURE_KEY = "TEMPERATURE_KEY"
-const val RECYCLER_STATE = "RECYCLER_STATE"
-
 @AndroidEntryPoint
-class ForecastListActivity : AppCompatActivity(), ForecastListInterfaces.View, SharedPreferences.OnSharedPreferenceChangeListener {
-
-    @Inject
-    internal lateinit var presenter: ForecastListPresenter
-
-    private lateinit var adapter: ForecastListAdapter
-
-    private var savedState: Parcelable? = null
-
-    private lateinit var binding: ActivityMainBinding
+class ForecastListActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
+
         super.onCreate(savedInstanceState)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setTitle(R.string.open_weather_map)
-
-        //Listening to changes on Temperature Units
-        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this)
-
-        adapter = ForecastListAdapter(this)
-
-        binding.content.recyclerWeatherList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        binding.content.recyclerWeatherList.setHasFixedSize(true)
-        binding.content.recyclerWeatherList.adapter = adapter
-
-        if (savedInstanceState != null) {
-            savedState = savedInstanceState.getParcelable(RECYCLER_STATE)
-        }
-
-        binding.content.contentMainSwipeRefreshLayout.setOnRefreshListener {
-            presenter.loadWeatherData(true)
-            savedState = null
-        }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putParcelable(RECYCLER_STATE, binding.content.recyclerWeatherList.layoutManager?.onSaveInstanceState())
-        super.onSaveInstanceState(outState)
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        presenter.attachView(this)
-
-        setSwipeRefresh(true)
-
-        presenter.loadWeatherData(false)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_settings -> {
-                showTemperatureOptions()
-                return true
+        setContentView(
+            ComposeView(this).apply {
+                consumeWindowInsets = false
+                setContent {
+                    AndroidViewBinding(ActivityMainBinding::inflate)
+                }
             }
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
-
-    override fun setSwipeRefresh(value: Boolean) {
-        binding.content.contentMainSwipeRefreshLayout.isRefreshing = value
-    }
-
-    private fun showTemperatureOptions() {
-        val temperatureDialog = ForecastSettingsFragmentDialog.newInstance()
-        temperatureDialog.show(supportFragmentManager, "fragDialog")
-    }
-
-    override fun showErrorMsg() {
-        binding.content.errorMessageDisplay.visibility = View.VISIBLE
-        binding.content.recyclerWeatherList.visibility = View.GONE
-    }
-
-    override fun showForecastList(items: List<ForecastListItem>) {
-        adapter.replaceData(items)
-        binding.content.errorMessageDisplay.visibility = View.GONE
-        binding.content.recyclerWeatherList.visibility = View.VISIBLE
-
-        if (savedState != null) {
-            binding.content.recyclerWeatherList.layoutManager?.onRestoreInstanceState(savedState)
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        presenter.dettachView()
-        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this)
-    }
-
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        if (key == TEMPERATURE_KEY) {
-            adapter.notifyDataSetChanged()
-        }
+        )
     }
 }

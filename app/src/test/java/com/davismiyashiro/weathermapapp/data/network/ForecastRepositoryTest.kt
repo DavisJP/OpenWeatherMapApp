@@ -24,20 +24,25 @@
 
 package com.davismiyashiro.weathermapapp.data.network
 
-import com.davismiyashiro.weathermapapp.data.City
-import com.davismiyashiro.weathermapapp.data.Conditions
-import com.davismiyashiro.weathermapapp.data.Place
+import com.davismiyashiro.weathermapapp.data.entities.City
+import com.davismiyashiro.weathermapapp.data.entities.Conditions
+import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.TestObserver
-import junit.framework.Assert.*
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertTrue
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.Mockito.*
+import org.mockito.Mockito.never
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 
 /**
  * Created by Davis Miyashiro.
@@ -71,20 +76,20 @@ class ForecastRepositoryTest {
 
         //Making 2 consecutive calls
         repository.loadWeatherData()
-                .subscribe(placeTestObserver)
+            .subscribe(placeTestObserver)
 
         repository.loadWeatherData()
-                .subscribe(placeTestObserver)
+            .subscribe(placeTestObserver)
 
         //Repositories must be accessed only once
-        verify<OpenWeatherApi>(remoteRepository).getForecastById(anyInt())
-        verify<Repository>(localRepository, never()).loadData()
+        verify(remoteRepository).getForecastById(anyInt())
+        verify(localRepository, never()).loadData()
 
         assertFalse(repository.refreshFromRemote)
 
         placeTestObserver.assertValue(place)
-                .assertValueCount(1)
-                .assertValue(place)
+            .assertValueCount(1)
+            .assertValue(place)
     }
 
     @Test
@@ -94,13 +99,13 @@ class ForecastRepositoryTest {
 
         //Making 2 consecutive calls
         repository.loadWeatherData()
-                .subscribe(placeTestObserver)
+            .subscribe(placeTestObserver)
 
         repository.loadWeatherData()
-                .subscribe(placeTestObserver)
+            .subscribe(placeTestObserver)
 
         //Repositories must be accessed only once
-        verify<OpenWeatherApi>(remoteRepository).getForecastById(anyInt())
+        verify(remoteRepository).getForecastById(anyInt())
 
         assertFalse(repository.refreshFromRemote)
 
@@ -115,9 +120,9 @@ class ForecastRepositoryTest {
         whenever(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(place))
 
         repository.loadWeatherData()
-                .subscribe(placeTestObserver)
+            .subscribe(placeTestObserver)
 
-        verify<OpenWeatherApi>(remoteRepository).getForecastById(anyInt())
+        verify(remoteRepository).getForecastById(anyInt())
     }
 
     @Test
@@ -130,11 +135,11 @@ class ForecastRepositoryTest {
         repository.refreshCache(null)
 
         repository.loadWeatherData()
-                .subscribe(placeTestObserver)
+            .subscribe(placeTestObserver)
 
-        verify<OpenWeatherApi>(remoteRepository, times(2))
-                .getForecastById(anyInt())
-        verify<Repository>(localRepository).loadData()
+        verify(remoteRepository, times(2))
+            .getForecastById(anyInt())
+        verify(localRepository).loadData()
         assertFalse(repository.refreshFromRemote)
 
         placeTestObserver.assertValueCount(1)
@@ -147,16 +152,16 @@ class ForecastRepositoryTest {
         `when`(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(Place()))
 
         repository.loadWeatherData()
-                .subscribe(placeTestObserver)
+            .subscribe(placeTestObserver)
 
         repository.refreshFromRemote()
 
         assertTrue(repository.refreshFromRemote)
 
         repository.loadWeatherData()
-                .subscribe(placeTestObserver)
+            .subscribe(placeTestObserver)
 
-        verify<OpenWeatherApi>(remoteRepository, times(2)).getForecastById(anyInt())
+        verify(remoteRepository, times(2)).getForecastById(anyInt())
     }
 
     @Test
@@ -169,11 +174,10 @@ class ForecastRepositoryTest {
         repository.refreshCache(null)
 
         repository.loadWeatherData()
-                .subscribe(placeTestObserver)
+            .subscribe(placeTestObserver)
 
-        verify<OpenWeatherApi>(remoteRepository, times(2)).
-        getForecastById(anyInt())
-        verify<Repository>(localRepository).loadData()
+        verify(remoteRepository, times(2)).getForecastById(anyInt())
+        verify(localRepository).loadData()
 
         assertFalse(repository.refreshFromRemote)
 

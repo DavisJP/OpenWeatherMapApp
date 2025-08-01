@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.data
+package com.davismiyashiro.weathermapapp.data.entities
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
@@ -31,9 +31,10 @@ import com.google.gson.annotations.SerializedName
  * Created by Davis Miyashiro.
  */
 data class Coord(
-        @SerializedName("lon")
-        @Expose
-        var lon: Double? = null,
-        @SerializedName("lat")
-        @Expose
-        var lat: Double? = null)
+    @SerializedName("lon")
+    @Expose
+    var lon: Double? = null,
+    @SerializedName("lat")
+    @Expose
+    var lat: Double? = null
+)

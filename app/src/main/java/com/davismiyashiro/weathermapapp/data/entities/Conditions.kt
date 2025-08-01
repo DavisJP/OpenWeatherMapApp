@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Davis Miyashiro
+ * Copyright (c) 2021 Davis Miyashiro
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.data
+package com.davismiyashiro.weathermapapp.data.entities
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
@@ -30,7 +30,29 @@ import com.google.gson.annotations.SerializedName
 /**
  * Created by Davis Miyashiro.
  */
-data class Snow (
-    @SerializedName("3h")
+data class Conditions(
+    @SerializedName("dt")
     @Expose
-    var _3h:Double? = null)
+    var dt: Long? = null,
+    @SerializedName("main")
+    @Expose
+    var main: Main? = null,
+    @SerializedName("weather")
+    @Expose
+    var weather: List<Weather>? = null,
+    @SerializedName("clouds")
+    @Expose
+    var clouds: Clouds? = null,
+    @SerializedName("wind")
+    @Expose
+    var wind: Wind? = null,
+    @SerializedName("snow")
+    @Expose
+    var snow: Snow? = null,
+    @SerializedName("sys")
+    @Expose
+    var sys: Sys? = null,
+    @SerializedName("dt_txt")
+    @Expose
+    var dtTxt: String? = null
+)

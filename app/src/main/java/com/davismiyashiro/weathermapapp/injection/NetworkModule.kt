@@ -27,6 +27,8 @@ package com.davismiyashiro.weathermapapp.injection
 import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import com.davismiyashiro.weathermapapp.data.network.ForecastRepository
 import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
 import com.davismiyashiro.weathermapapp.data.storage.ForecastLocalRepository
@@ -89,12 +91,17 @@ class NetworkModule {
                 addHttpClientHeader(application, originalResponse)
             }
             .addInterceptor(urlBuilder)
-            .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            })
             .cache(cache)
             .build()
     }
 
-    private fun addHttpClientHeader(application: Application, originalResponse: Response): Response {
+    private fun addHttpClientHeader(
+        application: Application,
+        originalResponse: Response
+    ): Response {
         return if (isOnline(application)) {
             val maxAge = 60 // read from cache for 1 minute
             originalResponse.newBuilder()
@@ -110,8 +117,20 @@ class NetworkModule {
 
     private fun isOnline(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val netInfo = cm.activeNetworkInfo
-        return netInfo != null && netInfo.isConnectedOrConnecting
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val activeNetwork = cm.activeNetwork ?: return false
+            val networkCapabilities = cm.getNetworkCapabilities(activeNetwork) ?: return false
+            return when {
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
+                else -> false
+            }
+        } else {
+            val netInfo = cm.activeNetworkInfo
+            return netInfo != null && netInfo.isConnectedOrConnecting
+        }
     }
 
     @Provides

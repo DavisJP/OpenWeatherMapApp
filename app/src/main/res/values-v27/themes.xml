@@ -1,0 +1,6 @@
+<resources>
+
+    <style name="AppTheme" parent="Theme.Material3.Light.NoActionBar" />
+
+    <style name="MyM3ToolbarThemeOverlay" parent="ThemeOverlay.Material3.ActionBar" />
+</resources>

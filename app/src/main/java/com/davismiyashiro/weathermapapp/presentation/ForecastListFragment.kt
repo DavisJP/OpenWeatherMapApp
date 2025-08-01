@@ -62,6 +62,7 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import coil3.compose.AsyncImage
+import com.airbnb.mvrx.Async
 import com.airbnb.mvrx.Fail
 import com.airbnb.mvrx.InternalMavericksApi
 import com.airbnb.mvrx.Loading
@@ -99,20 +100,20 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
     private val binding by viewBinding(FragmentForecastListBinding::bind)
 
-    private var temperatureUnitState by mutableIntStateOf(TEMPERATURE_DEFAULT)
+    private var temperatureScaleIndexState by mutableIntStateOf(TEMPERATURE_DEFAULT)
 
-    private val temperatureUnitPref: Int
+    private val temperatureScaleIndexSavedPref: Int
         get() = PreferenceManager.getDefaultSharedPreferences(requireContext())
             .getInt(TEMPERATURE_KEY, TEMPERATURE_DEFAULT)
 
-    private var showTempSettingsDialog = mutableStateOf(false)
+    private var showTempDialogState = mutableStateOf(false)
 
     @InternalMavericksApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         //Listening to changes on Temperature Units
-        temperatureUnitState = temperatureUnitPref
+        temperatureScaleIndexState = temperatureScaleIndexSavedPref
 
         PreferenceManager.getDefaultSharedPreferences(requireContext())
             .registerOnSharedPreferenceChangeListener(this)
@@ -128,61 +129,6 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
             WindowInsetsCompat.CONSUMED
         }
-
-        forecastListViewModel.loadWeatherData(false)
-    }
-
-    @OptIn(ExperimentalMaterial3Api::class)
-    private fun showErrorMsg(
-        onRefresh: () -> Unit,
-    ) {
-        binding.composeView.setContent {
-            ForecastErrorScreen(
-                isRefreshing = false,
-                onRefresh = onRefresh
-            )
-        }
-    }
-
-    private fun showForecastList(
-        itemEntities: List<ForecastListItemEntity>,
-        onRefresh: () -> Unit,
-    ) {
-        binding.composeView.setContent {
-            AppTheme(dynamicColor = false) {
-
-                val currentTempUnit = temperatureUnitState
-                ForecastListScreen(
-                    itemEntities,
-                    currentTempUnit,
-                    isRefreshing = false,
-                    onRefresh = onRefresh,
-                    context = requireContext(),
-                    showDialog = showTempSettingsDialog.value,
-                    onShowDialogChange = { shouldShow ->
-                        showTempSettingsDialog.value = shouldShow
-                        if (shouldShow) {
-                            temperatureUnitState = temperatureUnitPref
-                        }
-                    },
-                    dialogCurrentUnitIndex = temperatureUnitState,
-                    onDialogUnitSelected = {
-                        temperatureUnitState = it
-                        val pref = PreferenceManager.getDefaultSharedPreferences(requireActivity())
-                        pref.edit {
-                            putInt(TEMPERATURE_KEY, it)
-                        }
-                        showTempSettingsDialog.value = false
-                    },
-                )
-            }
-        }
-    }
-
-    fun showLoadingScreen() {
-        binding.composeView.setContent {
-            ForecastLoadingScreen()
-        }
     }
 
     override fun onDestroy() {
@@ -193,31 +139,75 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
         if (key == TEMPERATURE_KEY) {
-            temperatureUnitState = sharedPreferences.getInt(TEMPERATURE_KEY, TEMPERATURE_DEFAULT)
+            temperatureScaleIndexState =
+                sharedPreferences.getInt(TEMPERATURE_KEY, TEMPERATURE_DEFAULT)
         }
     }
 
     @InternalMavericksApi
     override fun invalidate() {
         withState(forecastListViewModel) { state ->
-            when (state.forecastEntityList) {
-                is Loading, Uninitialized -> {
-                    showLoadingScreen()
-                }
-
-                is Success -> {
-                    showForecastList(
-                        state.forecastEntityList(),
+            binding.composeView.setContent {
+                AppTheme(dynamicColor = false) {
+                    val context = LocalContext.current
+                    ForecastHomeScreen(
+                        forecastState = state.forecastEntityList,
+                        temperatureScaleIndex = temperatureScaleIndexState,
                         onRefresh = { forecastListViewModel.loadWeatherData(true) },
-                    )
-                }
-
-                is Fail -> {
-                    showErrorMsg(
-                        onRefresh = { forecastListViewModel.loadWeatherData(true) }
+                        showSettingsDialog = showTempDialogState.value,
+                        onShowSettingsDialogChange = { shouldShow ->
+                            showTempDialogState.value = shouldShow
+                        },
+                        onDialogUnitSelected = { selectedIndex ->
+                            temperatureScaleIndexState = selectedIndex
+                            val pref = PreferenceManager.getDefaultSharedPreferences(context)
+                            pref.edit {
+                                putInt(TEMPERATURE_KEY, selectedIndex)
+                            }
+                            showTempDialogState.value = false
+                        },
                     )
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ForecastHomeScreen(
+    forecastState: Async<List<ForecastListItemEntity>>,
+    temperatureScaleIndex: Int,
+    onRefresh: () -> Unit,
+    showSettingsDialog: Boolean,
+    onShowSettingsDialogChange: (Boolean) -> Unit,
+    onDialogUnitSelected: (Int) -> Unit
+) {
+    val context = LocalContext.current
+
+    when (forecastState) {
+        is Uninitialized, is Loading -> {
+            ForecastLoadingScreen()
+        }
+
+        is Success -> {
+            ForecastListScreen(
+                context = context,
+                data = forecastState(),
+                temperatureUnit = temperatureScaleIndex,
+                isRefreshing = false,
+                onRefresh = onRefresh,
+                showDialog = showSettingsDialog,
+                onShowDialogChange = onShowSettingsDialogChange,
+                onDialogUnitSelected = onDialogUnitSelected
+            )
+        }
+
+        is Fail -> {
+            ForecastErrorScreen(
+                isRefreshing = true,
+                onRefresh = onRefresh
+            )
         }
     }
 }
@@ -286,7 +276,6 @@ fun ForecastListScreen(
     context: Context,
     showDialog: Boolean,
     onShowDialogChange: (Boolean) -> Unit,
-    dialogCurrentUnitIndex: Int,
     onDialogUnitSelected: (Int) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -332,7 +321,7 @@ fun ForecastListScreen(
 
     SettingsDialog(
         showDialog = showDialog,
-        currentUnitIndexSelected = dialogCurrentUnitIndex,
+        currentUnitIndexSelected = temperatureUnit,
         onDismissRequest = { onShowDialogChange(false) },
         onUnitSelected = { selectedIndex ->
             onDialogUnitSelected(selectedIndex)

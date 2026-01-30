@@ -25,15 +25,14 @@
 package com.davismiyashiro.weathermapapp.domain
 
 import com.davismiyashiro.weathermapapp.data.entities.Place
-
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Created by Davis Miyashiro.
  */
 interface Repository {
 
-    fun loadData(): Observable<Place>
+    fun loadData(): Flow<Place>
 
-    fun storeData(place: Place)
+    suspend fun storeData(place: Place)
 }

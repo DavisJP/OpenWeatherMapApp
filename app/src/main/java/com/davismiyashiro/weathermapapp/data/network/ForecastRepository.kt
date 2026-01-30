@@ -27,7 +27,8 @@ package com.davismiyashiro.weathermapapp.data.network
 import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -45,54 +46,41 @@ constructor(
     private val LONDON_ID = 2643743
 
     private var localCache: Place? = null
+    @Volatile
     internal var refreshFromRemote = true
 
-    override fun loadWeatherData(): Observable<Place> {
+    override fun loadWeatherData(): Flow<Place> = flow {
         if (localCache != null && !refreshFromRemote) {
-            return Observable.just(localCache!!)
-        } else {
-            localCache = Place()
+            emit(localCache!!)
         }
 
-        val remoteData = getAndSaveRemoteData()
+        if (!refreshFromRemote) {
+            localRepository.loadData().collect {
+                localCache = it
+                emit(it)
+            }
+        }
 
-        return if (refreshFromRemote) {
-            remoteData
-        } else {
-            getAndCacheLocalData()
-                .publish { local -> Observable.merge(local, remoteData.takeUntil(local)) }
-                .firstOrError()
-                .doOnError { error ->
-                    Timber.e(error, "firstOrError chain")
-                    localCache = Place()
-                }
-                .toObservable()
+        try {
+            val remoteData = getAndSaveRemoteData()
+            emit(remoteData)
+        } catch (e: Exception) {
+            Timber.e(e, "remote error")
+            if (localCache == null) {
+                throw e
+            }
         }
     }
 
-    private fun getAndCacheLocalData(): Observable<Place> {
-        return localRepository.loadData()
-            .map<Place> { placeParam ->
-                localCache = placeParam
-                placeParam
-            }
+    private suspend fun getAndSaveRemoteData(): Place {
+        val placeRemote = openWeatherApi.getForecastById(LONDON_ID)
+        localCache = placeRemote
+        localRepository.storeData(placeRemote)
+        refreshFromRemote = false
+        return placeRemote
     }
 
-    private fun getAndSaveRemoteData(): Observable<Place> {
-        return openWeatherApi.getForecastById(LONDON_ID)
-            .map { placeRemote ->
-                localCache = placeRemote
-                localRepository.storeData(placeRemote)
-                placeRemote
-            }
-            .doOnError { error ->
-                Timber.e(error, "remote error")
-                localCache = Place()
-            }
-            .doOnComplete { refreshFromRemote = false }
-    }
-
-    override fun refreshFromRemote() {
+    override suspend fun refreshFromRemote() {
         refreshFromRemote = true
     }
 

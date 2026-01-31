@@ -121,10 +121,7 @@ dependencies {
 
     implementation("com.jakewharton.threetenabp:threetenabp:1.4.9")
 
-    implementation("com.airbnb.android:mavericks:3.0.10")
-    implementation("com.airbnb.android:mavericks-compose:3.0.10")
-//    no support for rxjava3 yet
-//    implementation("com.airbnb.android:mavericks-rxjava2:2.3.0")
+    implementation("app.cash.molecule:molecule-runtime:2.2.0")
 
     testImplementation("org.mockito:mockito-core:5.21.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")

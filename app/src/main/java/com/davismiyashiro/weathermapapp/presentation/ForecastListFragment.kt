@@ -42,6 +42,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -60,21 +61,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.preference.PreferenceManager
 import coil3.compose.AsyncImage
-import com.airbnb.mvrx.Async
-import com.airbnb.mvrx.Fail
-import com.airbnb.mvrx.InternalMavericksApi
-import com.airbnb.mvrx.Loading
-import com.airbnb.mvrx.MavericksView
-import com.airbnb.mvrx.Success
-import com.airbnb.mvrx.Uninitialized
-import com.airbnb.mvrx.fragmentViewModel
-import com.airbnb.mvrx.withState
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.databinding.FragmentForecastListBinding
 import com.davismiyashiro.weathermapapp.designsystem.theme.AppTheme
-import com.davismiyashiro.weathermapapp.domain.ForecastListItemEntity
 import com.davismiyashiro.weathermapapp.domain.IMG_SRC_W_URL
 import com.davismiyashiro.weathermapapp.domain.TEMPERATURE_CELSIUS
 import com.davismiyashiro.weathermapapp.domain.TEMPERATURE_FAHRENHEIT
@@ -92,11 +84,9 @@ const val TEMPERATURE_DEFAULT = TEMPERATURE_CELSIUS
 
 @AndroidEntryPoint
 class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
-    MavericksView,
     SharedPreferences.OnSharedPreferenceChangeListener {
 
-    @InternalMavericksApi
-    private val forecastListViewModel: ForecastListViewModel by fragmentViewModel(keyFactory = { "test" })
+    private val forecastListViewModel: ForecastListViewModel by viewModels()
 
     private val binding by viewBinding(FragmentForecastListBinding::bind)
 
@@ -108,7 +98,6 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
     private var showTempDialogState = mutableStateOf(false)
 
-    @InternalMavericksApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -129,6 +118,29 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
 
             WindowInsetsCompat.CONSUMED
         }
+
+        binding.composeView.setContent {
+            AppTheme(dynamicColor = false) {
+                val state by forecastListViewModel.state.collectAsState()
+                val context = LocalContext.current
+                ForecastHomeScreen(
+                    forecastState = state,
+                    temperatureScaleIndex = temperatureScaleIndexState,
+                    showSettingsDialog = showTempDialogState.value,
+                    onShowSettingsDialogChange = { shouldShow ->
+                        showTempDialogState.value = shouldShow
+                    },
+                    onDialogUnitSelected = { selectedIndex ->
+                        temperatureScaleIndexState = selectedIndex
+                        val pref = PreferenceManager.getDefaultSharedPreferences(context)
+                        pref.edit {
+                            putInt(TEMPERATURE_KEY, selectedIndex)
+                        }
+                        showTempDialogState.value = false
+                    },
+                )
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -143,72 +155,37 @@ class ForecastListFragment : Fragment(R.layout.fragment_forecast_list),
                 sharedPreferences.getInt(TEMPERATURE_KEY, TEMPERATURE_DEFAULT)
         }
     }
-
-    @InternalMavericksApi
-    override fun invalidate() {
-        withState(forecastListViewModel) { state ->
-            binding.composeView.setContent {
-                AppTheme(dynamicColor = false) {
-                    val context = LocalContext.current
-                    ForecastHomeScreen(
-                        forecastState = state.forecastEntityList,
-                        temperatureScaleIndex = temperatureScaleIndexState,
-                        onRefresh = { forecastListViewModel.loadWeatherData(true) },
-                        showSettingsDialog = showTempDialogState.value,
-                        onShowSettingsDialogChange = { shouldShow ->
-                            showTempDialogState.value = shouldShow
-                        },
-                        onDialogUnitSelected = { selectedIndex ->
-                            temperatureScaleIndexState = selectedIndex
-                            val pref = PreferenceManager.getDefaultSharedPreferences(context)
-                            pref.edit {
-                                putInt(TEMPERATURE_KEY, selectedIndex)
-                            }
-                            showTempDialogState.value = false
-                        },
-                    )
-                }
-            }
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForecastHomeScreen(
-    forecastState: Async<List<ForecastListItemEntity>>,
+    forecastState: ForecastListState,
     temperatureScaleIndex: Int,
-    onRefresh: () -> Unit,
     showSettingsDialog: Boolean,
     onShowSettingsDialogChange: (Boolean) -> Unit,
     onDialogUnitSelected: (Int) -> Unit
 ) {
     val context = LocalContext.current
 
-    when (forecastState) {
-        is Uninitialized, is Loading -> {
-            ForecastLoadingScreen()
-        }
-
-        is Success -> {
-            ForecastListScreen(
-                context = context,
-                data = forecastState(),
-                temperatureUnit = temperatureScaleIndex,
-                isRefreshing = false,
-                onRefresh = onRefresh,
-                showDialog = showSettingsDialog,
-                onShowDialogChange = onShowSettingsDialogChange,
-                onDialogUnitSelected = onDialogUnitSelected
-            )
-        }
-
-        is Fail -> {
-            ForecastErrorScreen(
-                isRefreshing = true,
-                onRefresh = onRefresh
-            )
-        }
+    if (forecastState.isLoading) {
+        ForecastLoadingScreen()
+    } else if (forecastState.error != null) {
+        ForecastErrorScreen(
+            isRefreshing = forecastState.isLoading,
+            onRefresh = { forecastState.eventSink(ForecastListEvent.Refresh) }
+        )
+    } else {
+        ForecastListScreen(
+            context = context,
+            data = forecastState.forecastItems,
+            temperatureUnit = temperatureScaleIndex,
+            isRefreshing = forecastState.isLoading,
+            onRefresh = { forecastState.eventSink(ForecastListEvent.Refresh) },
+            showDialog = showSettingsDialog,
+            onShowDialogChange = onShowSettingsDialogChange,
+            onDialogUnitSelected = onDialogUnitSelected
+        )
     }
 }
 
@@ -268,7 +245,7 @@ fun ForecastErrorScreen(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun ForecastListScreen(
-    data: List<ForecastListItemEntity>,
+    data: List<ForecastListItem>,
     temperatureUnit: Int,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
@@ -331,7 +308,7 @@ fun ForecastListScreen(
 
 @Composable
 private fun ForecastList(
-    data: List<ForecastListItemEntity>,
+    data: List<ForecastListItem>,
     temperatureUnit: Int,
     contentPadding: PaddingValues,
     scrollState: LazyListState,
@@ -354,7 +331,7 @@ private fun ForecastList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForecastListItem(
-    item: ForecastListItemEntity,
+    item: ForecastListItem,
     temperatureInt: Int,
     modifier: Modifier = Modifier
 ) {
@@ -369,9 +346,8 @@ fun ForecastListItem(
                 .size(48.dp)
                 .padding(4.dp)
                 .background(MaterialTheme.colorScheme.primaryContainer),
-            model = IMG_SRC_W_URL + item.imgIcon,
+            model = IMG_SRC_W_URL + item.icon,
             contentDescription = item.main,
-//                placeholder = painterResource(android.R.drawable.progress_indeterminate_horizontal),
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -380,7 +356,7 @@ fun ForecastListItem(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(text = getReadableDate(item.dt))
+                Text(text = getReadableDate(item.date))
                 Text(text = item.main)
             }
             Spacer(modifier = Modifier.width(16.dp))

@@ -1,94 +1,101 @@
 package com.davismiyashiro.weathermapapp.presentation
 
-import com.airbnb.mvrx.Fail
-import com.airbnb.mvrx.InternalMavericksApi
-import com.airbnb.mvrx.Success
-import com.airbnb.mvrx.mocking.MockBehavior
-import com.airbnb.mvrx.test.MavericksTestRule
-import com.airbnb.mvrx.withState
+import android.os.Build
+import app.cash.turbine.test
 import com.davismiyashiro.weathermapapp.data.entities.Conditions
 import com.davismiyashiro.weathermapapp.data.entities.Main
 import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.data.entities.Weather
-import com.davismiyashiro.weathermapapp.domain.ForecastListItemEntity
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.junit.MockitoJUnit
+import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.io.IOException
 
-@RunWith(MockitoJUnitRunner::class)
+@ExperimentalCoroutinesApi
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [Build.VERSION_CODES.P])
 class ForecastListViewModelTest {
+
+    @get:Rule
+    val coroutineRule = MainCoroutineRule()
+
+    @get:Rule
+    val mockitoRule: MockitoRule = MockitoJUnit.rule()
 
     private val repo = mock<RepositoryInterface>()
     private val mapper = ForecastListItemMapper()
 
-    @get:Rule
-    val mvrxRule = MavericksTestRule(
-        true, MockBehavior(
-            stateStoreBehavior = MockBehavior.StateStoreBehavior.Synchronous
-        )
-    )
+    private lateinit var sut: ForecastListViewModel
 
-    @get:Rule
-    var mOverrideSchedulersRule = RxSchedulersOverrideRule()
+    private val place = Place()
 
-    private var place = Place()
-
-    @InternalMavericksApi
-    lateinit var sut: ForecastListViewModel
-
-    @InternalMavericksApi
     @Before
     fun setup() {
-        val conditions = Conditions(
-            dt = 10.toLong(),
-            main = Main(temp = 32.0)
+        place.list = listOf(
+            Conditions(
+                dt = 10.toLong(),
+                main = Main(temp = 32.0),
+                weather = listOf(
+                    Weather(icon = "Whatever", main = "Ok")
+                )
+            )
         )
-
-        val listWeather = ArrayList<Weather>()
-        listWeather.add(Weather(icon = "Whatever", main = "Ok"))
-        conditions.weather = listWeather
-
-        place.list = listOf(conditions)
     }
 
-    @InternalMavericksApi
     @Test
-    fun `given repo returns valid response, state SUCCESS receives the forecast list`() {
-        whenever(repo.loadWeatherData()).thenReturn(Observable.just(place))
+    fun `given repo returns valid response, state SUCCESS receives the forecast list`() = runTest {
+        whenever(repo.loadWeatherData()).thenReturn(flowOf(place))
         val forecastListItemList = ForecastListItemMapper().mapPlaceToForecastListItem(place)
 
-        sut = ForecastListViewModel(ForecastListState(), mapper, repo)
+        sut = ForecastListViewModel(repo, mapper)
 
-        withState(sut) { state ->
-            assertTrue(state.forecastEntityList is Success<List<ForecastListItemEntity>>)
-            assertEquals(
-                forecastListItemList[0].main,
-                state.forecastEntityList.invoke()?.get(0)?.main
-            )
+        sut.state.test {
+            val initialState = awaitItem()
+            assertTrue(initialState.isLoading)
+            assertTrue(initialState.forecastItems.isEmpty())
+            assertNull(initialState.error)
+
+            val finalState = awaitItem()
+            assertFalse(finalState.isLoading)
+            assertEquals(forecastListItemList, finalState.forecastItems)
+            assertNull(finalState.error)
         }
     }
 
-    @InternalMavericksApi
     @Test
-    fun `given repo returns valid error, state FAIL is set`() {
+    fun `given repo returns valid error, state FAIL is set`() = runTest {
         val exception = IOException("Random Error")
-        whenever(repo.loadWeatherData()).thenReturn(Observable.error(exception))
+        whenever(repo.loadWeatherData()).thenReturn(flow { throw exception })
 
-        sut = ForecastListViewModel(ForecastListState(), mapper, repo)
+        sut = ForecastListViewModel(repo, mapper)
 
-        withState(sut) { state ->
-            assertTrue(state.forecastEntityList is Fail)
-            assertEquals(exception, (state.forecastEntityList as Fail).error)
+        sut.state.test {
+            val initialState = awaitItem()
+            assertTrue(initialState.isLoading)
+            assertTrue(initialState.forecastItems.isEmpty())
+            assertNull(initialState.error)
+
+            val finalState = awaitItem()
+            assertFalse(finalState.isLoading)
+            assertTrue(finalState.forecastItems.isEmpty())
+            assertEquals(exception, finalState.error)
         }
     }
 }

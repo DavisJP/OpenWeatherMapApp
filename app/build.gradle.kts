@@ -90,6 +90,7 @@ dependencies {
 
     // Jetpack Compose - Material Design 3
     implementation(libs.androidx.compose.material3)
+    implementation(libs.compose.material.icons)
 
     // DI
     implementation(libs.hilt.android)

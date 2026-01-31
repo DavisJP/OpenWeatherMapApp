@@ -16,16 +16,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-sealed interface ForecastListEvent {
-    data object Refresh : ForecastListEvent
-    data class UpdateTemperatureUnit(val unit: Int) : ForecastListEvent
-}
-
 @Composable
 fun forecastListPresenter(
     repo: Repository,
     mapper: ForecastListItemMapper,
-    userPrefs: UserPreferencesRepository
+    userPrefs: UserPreferencesRepository,
 ): ForecastListState {
     var isLoading by remember { mutableStateOf(true) }
     var forecastItems by remember { mutableStateOf(emptyList<ForecastListItem>()) }
@@ -70,6 +65,6 @@ fun forecastListPresenter(
         forecastItems = forecastItems,
         temperatureUnit = temperatureUnit,
         error = error,
-        eventSink = eventSink
+        eventSink = eventSink,
     )
 }

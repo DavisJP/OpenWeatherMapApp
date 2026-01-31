@@ -49,9 +49,9 @@ class ForecastListPresenterTest {
                 dt = 10.toLong(),
                 main = Main(temp = 32.0),
                 weather = listOf(
-                    Weather(icon = "Whatever", main = "Ok")
-                )
-            )
+                    Weather(icon = "Whatever", main = "Ok"),
+                ),
+            ),
         )
         whenever(userPrefs.temperatureUnitFlow).thenReturn(flowOf(TEMPERATURE_DEFAULT))
     }

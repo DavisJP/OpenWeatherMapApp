@@ -4,5 +4,5 @@ data class ForecastListItem(
     val date: Long,
     val main: String,
     val temp: Double,
-    val icon: String
+    val icon: String,
 )

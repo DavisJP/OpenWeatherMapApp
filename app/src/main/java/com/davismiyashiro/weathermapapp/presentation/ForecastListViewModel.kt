@@ -39,7 +39,7 @@ import javax.inject.Inject
 class ForecastListViewModel @Inject constructor(
     private val repo: Repository,
     private val mapper: ForecastListItemMapper,
-    private val userPrefs: UserPreferencesRepository
+    private val userPrefs: UserPreferencesRepository,
 ) : ViewModel() {
 
     val state: StateFlow<ForecastListState> =

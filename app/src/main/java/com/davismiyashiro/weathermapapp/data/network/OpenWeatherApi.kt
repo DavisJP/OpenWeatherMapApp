@@ -25,7 +25,6 @@
 package com.davismiyashiro.weathermapapp.data.network
 
 import com.davismiyashiro.weathermapapp.data.entities.Place
-
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -33,14 +32,11 @@ import retrofit2.http.Query
  * Created by Davis Miyashiro.
  */
 
-//http://api.openweathermap.org/data/2.5/forecast?q=London&appid=3e29cf11d4eabe8eba6cf25d535eaac2&cnt=5
+// http://api.openweathermap.org/data/2.5/forecast?q=London&appid=3e29cf11d4eabe8eba6cf25d535eaac2&cnt=5
 interface OpenWeatherApi {
 
     @GET("forecast")
-    suspend fun getWeatherFromPlace(
-        @Query("q") place: String,
-        @Query("appid") id: String
-    ): Place
+    suspend fun getWeatherFromPlace(@Query("q") place: String, @Query("appid") id: String): Place
 
     @GET("forecast")
     suspend fun getForecastById(@Query("id") place: Int): Place

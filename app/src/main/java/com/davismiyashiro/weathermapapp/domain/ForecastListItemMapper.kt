@@ -37,8 +37,8 @@ open class ForecastListItemMapper @Inject constructor() {
                         date = condition.dt ?: 0L,
                         main = condition.weather?.firstOrNull()?.main ?: "",
                         temp = condition.main?.temp ?: 0.0,
-                        icon = condition.weather?.firstOrNull()?.icon?.plus(".png") ?: ""
-                    )
+                        icon = condition.weather?.firstOrNull()?.icon?.plus(".png") ?: "",
+                    ),
                 )
             }
         }

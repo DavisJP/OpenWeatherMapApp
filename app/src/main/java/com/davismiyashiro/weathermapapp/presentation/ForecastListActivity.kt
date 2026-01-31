@@ -55,7 +55,7 @@ class ForecastListActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = MainDestinations.FORECAST_LIST_ROUTE
+                    startDestination = MainDestinations.FORECAST_LIST_ROUTE,
                 ) {
                     composable(MainDestinations.FORECAST_LIST_ROUTE) {
                         val viewModel: ForecastListViewModel = hiltViewModel()

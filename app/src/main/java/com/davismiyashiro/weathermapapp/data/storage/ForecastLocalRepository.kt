@@ -34,14 +34,14 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+private const val KEY_PLACE = "KEY_PLACE"
+
 /**
  * Created by Davis Miyashiro.
  */
-
 class ForecastLocalRepository @Inject constructor(private val storage: SharedPreferenceStorage) :
     LocalRepository {
 
-    private val KEY_PLACE = "KEY_PLACE"
     private val gson = Gson()
 
     override fun loadData(): Flow<Place> = flow {

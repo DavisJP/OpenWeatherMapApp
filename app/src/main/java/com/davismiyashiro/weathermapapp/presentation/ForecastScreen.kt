@@ -68,9 +68,7 @@ const val TEMPERATURE_DEFAULT = TEMPERATURE_CELSIUS
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForecastHomeScreen(
-    forecastState: ForecastListState,
-) {
+fun ForecastHomeScreen(forecastState: ForecastListState) {
     var showSettingsDialog by remember { mutableStateOf(false) }
 
     if (forecastState.isLoading) {
@@ -78,7 +76,7 @@ fun ForecastHomeScreen(
     } else if (forecastState.error != null) {
         ForecastErrorScreen(
             isRefreshing = forecastState.isLoading,
-            onRefresh = { forecastState.eventSink(ForecastListEvent.Refresh) }
+            onRefresh = { forecastState.eventSink(ForecastListEvent.Refresh) },
         )
     } else {
         ForecastListScreen(
@@ -91,7 +89,7 @@ fun ForecastHomeScreen(
             onDialogUnitSelected = {
                 forecastState.eventSink(ForecastListEvent.UpdateTemperatureUnit(it))
                 showSettingsDialog = false
-            }
+            },
         )
     }
 }
@@ -103,31 +101,27 @@ fun ForecastLoadingScreen() {
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            CircularProgressIndicator(
-            )
+            CircularProgressIndicator()
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForecastErrorScreen(
-    isRefreshing: Boolean,
-    onRefresh: () -> Unit,
-) {
+fun ForecastErrorScreen(isRefreshing: Boolean, onRefresh: () -> Unit) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     AppTheme(dynamicColor = false) {
         PullToRefreshBox(
             isRefreshing = isRefreshing,
-            onRefresh = onRefresh
+            onRefresh = onRefresh,
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
                     .verticalScroll(scrollState),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = context.resources.getString(R.string.please_check_your_network_status_or_try_again_later),
@@ -170,17 +164,17 @@ fun ForecastListScreen(
                     }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
-                            contentDescription = stringResource(R.string.action_settings)
+                            contentDescription = stringResource(R.string.action_settings),
                         )
                     }
-                }
+                },
             )
         },
     ) { contentPadding ->
         PullToRefreshBox(
             modifier = Modifier.padding(contentPadding),
             isRefreshing = isRefreshing,
-            onRefresh = onRefresh
+            onRefresh = onRefresh,
         ) {
             ForecastList(data, temperatureUnit, scrollState)
         }
@@ -192,22 +186,18 @@ fun ForecastListScreen(
         onDismissRequest = { onShowDialogChange(false) },
         onUnitSelected = { selectedIndex ->
             onDialogUnitSelected(selectedIndex)
-        }
+        },
     )
 }
 
 @Composable
-private fun ForecastList(
-    data: List<ForecastListItem>,
-    temperatureUnit: Int,
-    scrollState: LazyListState,
-) {
+private fun ForecastList(data: List<ForecastListItem>, temperatureUnit: Int, scrollState: LazyListState) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surfaceContainerHigh),
         state = scrollState,
-        contentPadding = PaddingValues(16.dp)
+        contentPadding = PaddingValues(16.dp),
     ) {
         items(data) {
             ForecastListItem(it, temperatureUnit)
@@ -216,11 +206,7 @@ private fun ForecastList(
 }
 
 @Composable
-fun ForecastListItem(
-    item: ForecastListItem,
-    temperatureInt: Int,
-    modifier: Modifier = Modifier
-) {
+fun ForecastListItem(item: ForecastListItem, temperatureInt: Int, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val isPreview = LocalInspectionMode.current
     val readableDate = remember(item.date, isPreview) { getReadableDate(item.date, isPreview) }
@@ -231,7 +217,7 @@ fun ForecastListItem(
 
     Row(
         modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         AsyncImage(
             modifier = Modifier
@@ -243,17 +229,17 @@ fun ForecastListItem(
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = 16.dp),
         ) {
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Text(text = readableDate)
                 Text(text = item.main)
             }
             Spacer(modifier = Modifier.width(16.dp))
             Row(
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.End,
             ) {
                 Text(text = tempString)
                 Text(text = unitString)
@@ -274,7 +260,7 @@ fun SettingsDialog(
         val context = LocalContext.current
         var tempSelectedOptionIndex by remember(currentUnitIndexSelected) {
             mutableIntStateOf(
-                currentUnitIndexSelected
+                currentUnitIndexSelected,
             )
         }
         val temperatureScales =
@@ -295,7 +281,8 @@ fun SettingsDialog(
                                 .padding(PaddingValues(bottom = 8.dp))
                                 .selectable(
                                     index == tempSelectedOptionIndex,
-                                    onClick = { tempSelectedOptionIndex = index })
+                                    onClick = { tempSelectedOptionIndex = index },
+                                ),
                         ) {
                             RadioButton(
                                 selected = index == tempSelectedOptionIndex,
@@ -324,19 +311,17 @@ fun Double.toTemperatureUnit(temperatureUnit: Int, context: Context): String {
     val convertedTemp = when (temperatureUnit) {
         TEMPERATURE_CELSIUS -> convertKelvinToCelsius(this)
         TEMPERATURE_FAHRENHEIT -> convertKelvinToFahrenheit(this)
-        else -> convertKelvinToCelsius(this) //Default is Celsius
+        else -> convertKelvinToCelsius(this) // Default is Celsius
     }
     val formatter = context.getString(R.string.format_temperature)
     return String.format(formatter, convertedTemp)
 }
 
-fun Int.toTemperatureUnit(
-    resources: Resources
-): String {
+fun Int.toTemperatureUnit(resources: Resources): String {
     return when (this) {
         TEMPERATURE_CELSIUS -> resources.getString(R.string.celsius)
         TEMPERATURE_FAHRENHEIT -> resources.getString(R.string.fahrenheit)
-        else -> "" //Default is Kelvin
+        else -> "" // Default is Kelvin
     }
 }
 

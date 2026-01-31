@@ -32,17 +32,16 @@ import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 import javax.inject.Inject
 
+// Hardcoded for testing, but api is deprecated, move to LAT/LONG
+private const val LONDON_ID = 2643743
+
 /**
  * Created by Davis Miyashiro.
  */
-
 class ForecastRepository @Inject constructor(
     private val openWeatherApi: OpenWeatherApi,
-    private val localRepository: LocalRepository
+    private val localRepository: LocalRepository,
 ) : Repository {
-
-    //TODO: Hardcoded for now, change later
-    private val LONDON_ID = 2643743
 
     override fun loadWeatherData(): Flow<Place> = flow {
         try {

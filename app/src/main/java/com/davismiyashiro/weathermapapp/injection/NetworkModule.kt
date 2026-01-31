@@ -28,7 +28,6 @@ import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import com.davismiyashiro.weathermapapp.data.network.ForecastRepository
 import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
 import com.davismiyashiro.weathermapapp.data.storage.ForecastLocalRepository
@@ -49,24 +48,22 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import javax.inject.Singleton
 
+private const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
+private const val APP_ID_PARAM = "appid"
+private const val APP_ID = "3e29cf11d4eabe8eba6cf25d535eaac2"
+
 /**
  * Created by Davis Miyashiro.
  */
-
 @InstallIn(SingletonComponent::class)
 @Module
 class NetworkModule {
 
-    private val BASE_URL = "https://api.openweathermap.org/data/2.5/"
-    private val APP_ID_PARAM = "appid"
-    private val APP_ID = "3e29cf11d4eabe8eba6cf25d535eaac2"
-
     @Provides
     @Singleton
     fun provideOkHttpClient(application: Application): OkHttpClient {
-
         val httpCacheDirectory = File(application.cacheDir, "responses")
-        val cacheSize = 10 * 1024 * 1024 //10MB
+        val cacheSize = 10 * 1024 * 1024 // 10MB
         val cache = Cache(httpCacheDirectory, cacheSize.toLong())
 
         val urlBuilder = Interceptor { chain ->
@@ -78,9 +75,9 @@ class NetworkModule {
                             .url
                             .newBuilder()
                             .addQueryParameter(APP_ID_PARAM, APP_ID)
-                            .build()
+                            .build(),
                     )
-                    .build()
+                    .build(),
             )
         }
 
@@ -90,23 +87,22 @@ class NetworkModule {
                 addHttpClientHeader(application, originalResponse)
             }
             .addInterceptor(urlBuilder)
-            .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            })
+            .addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                },
+            )
             .cache(cache)
             .build()
     }
 
-    private fun addHttpClientHeader(
-        application: Application,
-        originalResponse: Response
-    ): Response {
+    private fun addHttpClientHeader(application: Application, originalResponse: Response): Response {
         return if (isOnline(application)) {
             val maxAge = 60 // read from cache for 1 minute
             originalResponse.newBuilder()
                 .header("Cache-Control", "public, max-age=$maxAge")
                 .build()
-        } else { //TODO: Check API to use right max-age and max-stale
+        } else { // TODO: Check API to use right max-age and max-stale
             val maxStale = 60 * 60 * 24 * 28 // tolerate 4-weeks stale
             originalResponse.newBuilder()
                 .header("Cache-Control", "public, only-if-cached, max-stale=$maxStale")
@@ -151,10 +147,7 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideForecastRepository(
-        openWeatherApi: OpenWeatherApi,
-        localRepository: LocalRepository
-    ): Repository {
+    fun provideForecastRepository(openWeatherApi: OpenWeatherApi, localRepository: LocalRepository): Repository {
         return ForecastRepository(openWeatherApi, localRepository)
     }
 }

@@ -28,6 +28,7 @@ import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 import javax.inject.Inject
@@ -52,12 +53,17 @@ constructor(
     override fun loadWeatherData(): Flow<Place> = flow {
         if (localCache != null && !refreshFromRemote) {
             emit(localCache!!)
+            return@flow
         }
 
         if (!refreshFromRemote) {
-            localRepository.loadData().collect {
-                localCache = it
-                emit(it)
+            try {
+                val localData = localRepository.loadData().first()
+                localCache = localData
+                emit(localData)
+                return@flow
+            } catch (e: NoSuchElementException) {
+                Timber.d("No local data available")
             }
         }
 
@@ -66,9 +72,7 @@ constructor(
             emit(remoteData)
         } catch (e: Exception) {
             Timber.e(e, "remote error")
-            if (localCache == null) {
-                throw e
-            }
+            throw e
         }
     }
 

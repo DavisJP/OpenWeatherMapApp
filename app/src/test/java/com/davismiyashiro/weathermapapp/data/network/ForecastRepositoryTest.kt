@@ -24,164 +24,160 @@
 
 package com.davismiyashiro.weathermapapp.data.network
 
+import app.cash.turbine.test
 import com.davismiyashiro.weathermapapp.data.entities.City
 import com.davismiyashiro.weathermapapp.data.entities.Conditions
 import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.domain.Repository
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.observers.TestObserver
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
-import junit.framework.TestCase.assertTrue
-import org.junit.After
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+import kotlin.NoSuchElementException
 
-/**
- * Created by Davis Miyashiro.
- */
 class ForecastRepositoryTest {
 
     private lateinit var repository: ForecastRepository
 
-    private lateinit var placeTestObserver: TestObserver<Place>
-
-    private var remoteRepository = mock<OpenWeatherApi>()
-    private var localRepository = mock<Repository>()
+    private val remoteRepository: OpenWeatherApi = mock()
+    private val localRepository: Repository = mock()
     private lateinit var place: Place
 
     @Before
     fun setUp() {
         place = Place("123", 10.0, 1, mutableListOf(Conditions()), City())
-        placeTestObserver = TestObserver()
-
         repository = ForecastRepository(remoteRepository, localRepository)
     }
 
-    @After
-    fun tearDown() {
-    }
-
     @Test
-    fun loadWeatherData_twoConsecutiveCalls_returnsValueFromCache() {
-        `when`(localRepository.loadData()).thenReturn(Observable.never())
-        `when`(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(place))
+    fun `loadWeatherData consecutive calls returns value from cache`() = runTest {
+        whenever(remoteRepository.getForecastById(anyInt())).thenReturn(place)
 
-        //Making 2 consecutive calls
-        repository.loadWeatherData()
-            .subscribe(placeTestObserver)
+        // First call fetches from remote and populates cache
+        repository.loadWeatherData().test {
+            assertEquals(place, awaitItem())
+            awaitComplete()
+        }
 
-        repository.loadWeatherData()
-            .subscribe(placeTestObserver)
+        // Second call should hit the cache
+        repository.loadWeatherData().test {
+            assertEquals(place, awaitItem())
+            awaitComplete()
+        }
 
-        //Repositories must be accessed only once
-        verify(remoteRepository).getForecastById(anyInt())
+        // Verify remote was only called once, and local was never called
+        verify(remoteRepository, times(1)).getForecastById(anyInt())
         verify(localRepository, never()).loadData()
-
         assertFalse(repository.refreshFromRemote)
-
-        placeTestObserver.assertValue(place)
-            .assertValueCount(1)
-            .assertValue(place)
     }
 
     @Test
-    fun loadWeatherData_onlyRemoteAvailable_returnsFromCache() {
-        `when`(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(place))
-        `when`(localRepository.loadData()).thenReturn(Observable.never())
+    fun `loadWeatherData only remote available returns from cache`() = runTest {
+        whenever(remoteRepository.getForecastById(anyInt())).thenReturn(place)
+        whenever(localRepository.loadData()).thenReturn(flow { throw NoSuchElementException() })
 
-        //Making 2 consecutive calls
-        repository.loadWeatherData()
-            .subscribe(placeTestObserver)
+        // Ensure we try local first, which will fail, then fetch from remote, populating cache
+        repository.refreshFromRemote = false
+        repository.loadWeatherData().test {
+            assertEquals(place, awaitItem())
+            awaitComplete()
+        }
+        verify(localRepository, times(1)).loadData() // Verify we tried local
 
-        repository.loadWeatherData()
-            .subscribe(placeTestObserver)
+        // Second call should hit the cache
+        repository.loadWeatherData().test {
+            assertEquals(place, awaitItem())
+            awaitComplete()
+        }
 
-        //Repositories must be accessed only once
-        verify(remoteRepository).getForecastById(anyInt())
-
+        // Verify remote was only called once in total
+        verify(remoteRepository, times(1)).getForecastById(anyInt())
         assertFalse(repository.refreshFromRemote)
-
-        placeTestObserver.assertValueCount(1)
-        assertEquals(place, placeTestObserver.values()[0])
-    }
-
-    /**
-     * Save to cache and localRepo, and set dataStale = false
-     **/
-    private fun firstRemoteCallSuccessful() {
-        whenever(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(place))
-
-        repository.loadWeatherData()
-            .subscribe(placeTestObserver)
-
-        verify(remoteRepository).getForecastById(anyInt())
     }
 
     @Test
-    fun loadWeatherData_1stRemoteFetchThenClearCache_returnsFromLocalRepo() {
-        firstRemoteCallSuccessful()
+    fun `loadWeatherData 1st remote fetch then clear cache returns from local repo`() = runTest {
+        whenever(remoteRepository.getForecastById(anyInt())).thenReturn(place)
 
-        whenever(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.never())
-        whenever(localRepository.loadData()).thenReturn(Observable.just(place))
+        // First call is a refresh, fetches from remote
+        repository.loadWeatherData().test {
+            assertEquals(place, awaitItem())
+            awaitComplete()
+        }
 
+        // Clear cache and set up local repository to return data
+        whenever(localRepository.loadData()).thenReturn(flowOf(place))
         repository.refreshCache(null)
 
-        repository.loadWeatherData()
-            .subscribe(placeTestObserver)
+        // Second call should now fetch from local
+        repository.loadWeatherData().test {
+            assertEquals(place, awaitItem())
+            awaitComplete()
+        }
 
-        verify(remoteRepository, times(2))
-            .getForecastById(anyInt())
+        // Verify remote was only hit on the first call, and local was hit on the second
+        verify(remoteRepository, times(1)).getForecastById(anyInt())
         verify(localRepository).loadData()
         assertFalse(repository.refreshFromRemote)
-
-        placeTestObserver.assertValueCount(1)
-        assertEquals(place, placeTestObserver.values()[0])
     }
 
     @Test
-    fun loadWeatherData_twoCallsWithRefresh_returnsFromRemoteTwice() {
-        `when`(localRepository.loadData()).thenReturn(Observable.just(place))
-        `when`(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(Place()))
+    fun `loadWeatherData two calls with refresh returns from remote twice`() = runTest {
+        val remotePlace1 = Place("remote_1")
+        whenever(remoteRepository.getForecastById(anyInt())).thenReturn(remotePlace1)
 
-        repository.loadWeatherData()
-            .subscribe(placeTestObserver)
+        // First call is a refresh (by default), should hit remote
+        repository.loadWeatherData().test {
+            assertEquals(remotePlace1, awaitItem())
+            awaitComplete()
+        }
 
+        // Force a refresh
         repository.refreshFromRemote()
-
         assertTrue(repository.refreshFromRemote)
 
-        repository.loadWeatherData()
-            .subscribe(placeTestObserver)
+        val remotePlace2 = Place("remote_2")
+        whenever(remoteRepository.getForecastById(anyInt())).thenReturn(remotePlace2)
 
+        // Second call should also hit remote
+        repository.loadWeatherData().test {
+            assertEquals(remotePlace2, awaitItem())
+            awaitComplete()
+        }
+
+        // Verify remote was called twice
         verify(remoteRepository, times(2)).getForecastById(anyInt())
     }
 
     @Test
-    fun loadWeatherData_localNotAvailable_returnsFromRemote() {
-        firstRemoteCallSuccessful()
-
-        `when`(localRepository.loadData()).thenReturn(Observable.never())
-        `when`(remoteRepository.getForecastById(anyInt())).thenReturn(Observable.just(place))
-
+    fun `loadWeatherData local not available returns from remote`() = runTest {
+        // Start in a non-refreshing state with an empty cache
+        repository.refreshFromRemote = false
         repository.refreshCache(null)
 
-        repository.loadWeatherData()
-            .subscribe(placeTestObserver)
+        // Setup local to fail and remote to succeed
+        whenever(localRepository.loadData()).thenReturn(flow { throw NoSuchElementException("No local data") })
+        whenever(remoteRepository.getForecastById(anyInt())).thenReturn(place)
 
-        verify(remoteRepository, times(2)).getForecastById(anyInt())
-        verify(localRepository).loadData()
+        // Load data, should try local, fail, and then fetch from remote
+        repository.loadWeatherData().test {
+            assertEquals(place, awaitItem())
+            awaitComplete()
+        }
 
+        // Verify the sequence of events
+        verify(localRepository, times(1)).loadData()
+        verify(remoteRepository, times(1)).getForecastById(anyInt())
         assertFalse(repository.refreshFromRemote)
-
-        placeTestObserver.assertValueCount(1)
-        assertEquals(place, placeTestObserver.values()[0])
     }
 }

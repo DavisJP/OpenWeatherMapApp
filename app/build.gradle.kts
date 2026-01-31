@@ -32,10 +32,10 @@ plugins {
 
 android {
     defaultConfig {
-        compileSdk = 35
+        compileSdk = 36
         applicationId = "com.davismiyashiro.weathermapapp"
-        minSdk = 21
-        targetSdk = 35
+        minSdk = 23
+        targetSdk = 36
         versionCode = 3
         versionName = "3.0"
         multiDexEnabled = true
@@ -55,8 +55,8 @@ android {
     }
 
     compileOptions {
-        targetCompatibility = JavaVersion.VERSION_17
-        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_21
     }
 
     composeOptions {
@@ -64,9 +64,13 @@ android {
     }
 
     kotlin {
-        jvmToolchain(17)
+        jvmToolchain(21)
     }
     namespace = "com.davismiyashiro.weathermapapp"
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 dependencies {
@@ -122,11 +126,12 @@ dependencies {
 //    no support for rxjava3 yet
 //    implementation("com.airbnb.android:mavericks-rxjava2:2.3.0")
 
-    testImplementation("org.mockito:mockito-core:5.18.0")
-    testImplementation("org.mockito:mockito-all:1.10.19")
-    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
+    testImplementation("org.mockito:mockito-core:5.21.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
     testImplementation("io.mockk:mockk:1.14.4")
-    testImplementation("com.airbnb.android:mavericks-testing:3.0.10")
+    testImplementation("app.cash.turbine:turbine:1.2.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    testImplementation("org.robolectric:robolectric:4.16.1")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.threeten:threetenbp:1.7.1")
     testImplementation(composeBom)

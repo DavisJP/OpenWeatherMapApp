@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2021 Davis Miyashiro
+ * Copyright (c) 2018 Davis Miyashiro
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,25 +22,17 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.presentation
+package com.davismiyashiro.weathermapapp.domain
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import app.cash.molecule.RecompositionMode
-import app.cash.molecule.launchMolecule
-import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
-import com.davismiyashiro.weathermapapp.domain.Repository
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.StateFlow
-import javax.inject.Inject
+import com.davismiyashiro.weathermapapp.data.entities.Place
+import kotlinx.coroutines.flow.Flow
 
-@HiltViewModel
-class ForecastListViewModel @Inject constructor(
-    private val repo: Repository,
-    private val mapper: ForecastListItemMapper
-) : ViewModel() {
+/**
+ * Created by Davis Miyashiro.
+ */
+interface LocalRepository {
 
-    val state: StateFlow<ForecastListState> = viewModelScope.launchMolecule(RecompositionMode.Immediate) {
-        forecastListPresenter(repo, mapper)
-    }
+    fun loadData(): Flow<Place>
+
+    suspend fun storeData(place: Place)
 }

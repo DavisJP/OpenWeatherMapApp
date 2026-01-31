@@ -7,7 +7,7 @@ import com.davismiyashiro.weathermapapp.data.entities.Main
 import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.data.entities.Weather
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
-import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
+import com.davismiyashiro.weathermapapp.domain.Repository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -39,7 +39,7 @@ class ForecastListViewModelTest {
     @get:Rule
     val mockitoRule: MockitoRule = MockitoJUnit.rule()
 
-    private val repo = mock<RepositoryInterface>()
+    private val repo = mock<Repository>()
     private val mapper = ForecastListItemMapper()
 
     private lateinit var sut: ForecastListViewModel

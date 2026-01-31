@@ -33,8 +33,8 @@ import com.davismiyashiro.weathermapapp.data.network.ForecastRepository
 import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
 import com.davismiyashiro.weathermapapp.data.storage.ForecastLocalRepository
 import com.davismiyashiro.weathermapapp.data.storage.SharedPreferenceStorage
+import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.Repository
-import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -116,19 +116,14 @@ class NetworkModule {
 
     private fun isOnline(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val activeNetwork = cm.activeNetwork ?: return false
-            val networkCapabilities = cm.getNetworkCapabilities(activeNetwork) ?: return false
-            return when {
-                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
-                else -> false
-            }
-        } else {
-            val netInfo = cm.activeNetworkInfo
-            return netInfo != null && netInfo.isConnectedOrConnecting
+        val activeNetwork = cm.activeNetwork ?: return false
+        val networkCapabilities = cm.getNetworkCapabilities(activeNetwork) ?: return false
+        return when {
+            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
+            else -> false
         }
     }
 
@@ -150,7 +145,7 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideLocalRepository(application: Application): Repository {
+    fun provideLocalRepository(application: Application): LocalRepository {
         return ForecastLocalRepository(SharedPreferenceStorage(application))
     }
 
@@ -158,8 +153,8 @@ class NetworkModule {
     @Singleton
     fun provideForecastRepository(
         openWeatherApi: OpenWeatherApi,
-        localRepository: Repository
-    ): RepositoryInterface {
+        localRepository: LocalRepository
+    ): Repository {
         return ForecastRepository(openWeatherApi, localRepository)
     }
 }

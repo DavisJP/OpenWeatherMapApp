@@ -2,7 +2,7 @@ package com.davismiyashiro.weathermapapp.presentation
 
 import androidx.compose.runtime.*
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
-import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
+import com.davismiyashiro.weathermapapp.domain.Repository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -14,7 +14,7 @@ sealed interface ForecastListEvent {
 
 @Composable
 fun forecastListPresenter(
-    repo: RepositoryInterface,
+    repo: Repository,
     mapper: ForecastListItemMapper
 ): ForecastListState {
     var isLoading by remember { mutableStateOf(true) }
@@ -22,19 +22,15 @@ fun forecastListPresenter(
     var error by remember { mutableStateOf<Throwable?>(null) }
     val scope = rememberCoroutineScope()
 
-    fun CoroutineScope.load(isRefresh: Boolean) {
+    fun CoroutineScope.load() {
         launch {
             isLoading = true
+            error = null
             try {
-                if (isRefresh) {
-                    repo.refreshFromRemote()
-                }
                 repo.loadWeatherData()
                     .map { mapper.mapPlaceToForecastListItem(it) }
                     .catch { error = it }
-                    .collect {
-                        forecastItems = it
-                    }
+                    .collect { forecastItems = it }
             } finally {
                 isLoading = false
             }
@@ -42,13 +38,13 @@ fun forecastListPresenter(
     }
 
     LaunchedEffect(Unit) {
-        load(true)
+        load()
     }
 
     val eventSink: (ForecastListEvent) -> Unit = { event ->
         when (event) {
             is ForecastListEvent.Refresh -> {
-                scope.load(true)
+                scope.load()
             }
         }
     }

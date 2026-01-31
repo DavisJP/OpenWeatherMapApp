@@ -25,7 +25,7 @@
 package com.davismiyashiro.weathermapapp.data.storage
 
 import com.davismiyashiro.weathermapapp.data.entities.Place
-import com.davismiyashiro.weathermapapp.domain.Repository
+import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -40,7 +40,7 @@ import javax.inject.Inject
  */
 
 class ForecastLocalRepository @Inject constructor(private val storage: SharedPreferenceStorage) :
-    Repository {
+    LocalRepository {
 
     private val KEY_PLACE = "KEY_PLACE"
     private val gson = Gson()

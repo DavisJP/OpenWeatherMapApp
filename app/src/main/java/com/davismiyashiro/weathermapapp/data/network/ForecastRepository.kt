@@ -25,10 +25,9 @@
 package com.davismiyashiro.weathermapapp.data.network
 
 import com.davismiyashiro.weathermapapp.data.entities.Place
+import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.Repository
-import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 import javax.inject.Inject
@@ -37,58 +36,34 @@ import javax.inject.Inject
  * Created by Davis Miyashiro.
  */
 
-class ForecastRepository @Inject
-constructor(
+class ForecastRepository @Inject constructor(
     private val openWeatherApi: OpenWeatherApi,
-    private val localRepository: Repository
-) : RepositoryInterface {
+    private val localRepository: LocalRepository
+) : Repository {
 
     //TODO: Hardcoded for now, change later
     private val LONDON_ID = 2643743
 
-    private var localCache: Place? = null
-    @Volatile
-    internal var refreshFromRemote = true
-
     override fun loadWeatherData(): Flow<Place> = flow {
-        if (localCache != null && !refreshFromRemote) {
-            emit(localCache!!)
-            return@flow
-        }
-
-        if (!refreshFromRemote) {
-            try {
-                val localData = localRepository.loadData().first()
-                localCache = localData
-                emit(localData)
-                return@flow
-            } catch (e: NoSuchElementException) {
-                Timber.d("No local data available")
-            }
-        }
-
         try {
             val remoteData = getAndSaveRemoteData()
             emit(remoteData)
         } catch (e: Exception) {
-            Timber.e(e, "remote error")
-            throw e
+            Timber.e(e, "Remote data fetch failed, attempting to load from local.")
+            try {
+                localRepository.loadData().collect { localData ->
+                    emit(localData)
+                }
+            } catch (localException: Exception) {
+                Timber.e(localException, "Local data fetch also failed.")
+                throw e
+            }
         }
     }
 
     private suspend fun getAndSaveRemoteData(): Place {
         val placeRemote = openWeatherApi.getForecastById(LONDON_ID)
-        localCache = placeRemote
         localRepository.storeData(placeRemote)
-        refreshFromRemote = false
         return placeRemote
-    }
-
-    override suspend fun refreshFromRemote() {
-        refreshFromRemote = true
-    }
-
-    fun refreshCache(cache: Place?) {
-        localCache = cache
     }
 }

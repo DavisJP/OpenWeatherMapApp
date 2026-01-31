@@ -30,7 +30,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.davismiyashiro.weathermapapp.R
+import com.jakewharton.threetenabp.AndroidThreeTen
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,11 +43,21 @@ import org.junit.runner.RunWith
  * Created by Davis Miyashiro on 18/12/2017.
  */
 
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class ForecastListActivityTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
+    val hiltRule = HiltAndroidRule(this)
+
+    @get:Rule(order = 1)
     val composeTestRule = createAndroidComposeRule<ForecastListActivity>()
+
+    @Before
+    fun setUp() {
+        AndroidThreeTen.init(InstrumentationRegistry.getInstrumentation().targetContext)
+        hiltRule.inject()
+    }
 
     @Test
     @Throws(Exception::class)

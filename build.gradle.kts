@@ -1,9 +1,9 @@
 plugins {
-    id("com.android.application") version "8.11.1" apply false
-    id("org.jetbrains.kotlin.android") version "2.2.0" apply false
-    id("com.google.dagger.hilt.android") version "2.56.2" apply false
-    id("com.google.devtools.ksp") version "2.2.0-2.0.2" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.0" apply false
+    alias(libs.plugins.androidApplication) apply false
+    alias(libs.plugins.kotlinAndroid) apply false
+    alias(libs.plugins.kotlinCompose) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.hilt) apply false
 }
 
 tasks.register<Delete>("clean") {

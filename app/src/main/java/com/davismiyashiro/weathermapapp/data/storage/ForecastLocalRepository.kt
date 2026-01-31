@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
-
 import javax.inject.Inject
 
 /**
@@ -47,12 +46,13 @@ class ForecastLocalRepository @Inject constructor(private val storage: SharedPre
 
     override fun loadData(): Flow<Place> = flow {
         val value = storage.getString(KEY_PLACE)
-        var place: Place? = gson.fromJson(value, Place::class.java)
+        val place: Place? = gson.fromJson(value, Place::class.java)
 
-        if (place == null) {
-            place = Place()
+        if (place != null) {
+            emit(place)
+        } else {
+            throw NoSuchElementException("No local data found")
         }
-        emit(place)
     }.flowOn(Dispatchers.IO)
 
     override suspend fun storeData(place: Place) {

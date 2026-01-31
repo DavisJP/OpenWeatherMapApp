@@ -25,32 +25,48 @@
 package com.davismiyashiro.weathermapapp.presentation
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.viewinterop.AndroidViewBinding
-import com.davismiyashiro.weathermapapp.databinding.ActivityMainBinding
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.davismiyashiro.weathermapapp.designsystem.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
+
+object MainDestinations {
+    const val FORECAST_LIST_ROUTE = "forecast_list"
+}
 
 /**
  * Created by Davis Miyashiro.
  */
 @AndroidEntryPoint
-class ForecastListActivity : AppCompatActivity() {
+class ForecastListActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
-
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        setContentView(
-            ComposeView(this).apply {
-                consumeWindowInsets = false
-                setContent {
-                    AndroidViewBinding(ActivityMainBinding::inflate)
+        setContent {
+            AppTheme(dynamicColor = false) {
+                val navController = rememberNavController()
+                NavHost(
+                    navController = navController,
+                    startDestination = MainDestinations.FORECAST_LIST_ROUTE
+                ) {
+                    composable(MainDestinations.FORECAST_LIST_ROUTE) {
+                        val viewModel: ForecastListViewModel = hiltViewModel()
+                        val state = viewModel.state.collectAsStateWithLifecycle().value
+
+                        ForecastHomeScreen(
+                            forecastState = state,
+                        )
+                    }
                 }
             }
-        )
+        }
     }
 }

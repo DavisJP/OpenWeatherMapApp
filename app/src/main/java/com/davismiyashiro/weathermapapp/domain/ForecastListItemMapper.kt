@@ -31,19 +31,15 @@ import javax.inject.Inject
 open class ForecastListItemMapper @Inject constructor() {
     fun mapPlaceToForecastListItem(data: Place?): List<ForecastListItem> {
         return mutableListOf<ForecastListItem>().apply {
-            data?.let {
-                it.list?.let { conditions ->
-                    for (condition in conditions) {
-                        add(
-                            ForecastListItem(
-                                date = condition.dt ?: 0,
-                                main = condition.weather?.get(0)?.main ?: "",
-                                temp = condition.main?.temp ?: 0.0,
-                                icon = condition.weather?.get(0)?.icon?.plus(".png") ?: ""
-                            )
-                        )
-                    }
-                }
+            data?.list?.forEach { condition ->
+                add(
+                    ForecastListItem(
+                        date = condition.dt ?: 0L,
+                        main = condition.weather?.firstOrNull()?.main ?: "",
+                        temp = condition.main?.temp ?: 0.0,
+                        icon = condition.weather?.firstOrNull()?.icon ?: ""
+                    )
+                )
             }
         }
     }

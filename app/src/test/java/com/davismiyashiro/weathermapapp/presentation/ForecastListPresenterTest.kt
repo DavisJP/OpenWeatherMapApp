@@ -1,11 +1,13 @@
 package com.davismiyashiro.weathermapapp.presentation
 
-import android.os.Build
+import app.cash.molecule.RecompositionMode
+import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
 import com.davismiyashiro.weathermapapp.data.entities.Conditions
 import com.davismiyashiro.weathermapapp.data.entities.Main
 import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.data.entities.Weather
+import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.Repository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,19 +21,14 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import java.io.IOException
 
 @ExperimentalCoroutinesApi
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.P])
-class ForecastListViewModelTest {
+class ForecastListPresenterTest {
 
     @get:Rule
     val coroutineRule = MainCoroutineRule()
@@ -39,10 +36,9 @@ class ForecastListViewModelTest {
     @get:Rule
     val mockitoRule: MockitoRule = MockitoJUnit.rule()
 
-    private val repo = mock<Repository>()
+    private val repo: Repository = mock()
+    private val userPrefs: UserPreferencesRepository = mock()
     private val mapper = ForecastListItemMapper()
-
-    private lateinit var sut: ForecastListViewModel
 
     private val place = Place()
 
@@ -57,45 +53,49 @@ class ForecastListViewModelTest {
                 )
             )
         )
+        whenever(userPrefs.temperatureUnitFlow).thenReturn(flowOf(TEMPERATURE_DEFAULT))
     }
 
     @Test
-    fun `given repo returns valid response, state SUCCESS receives the forecast list`() = runTest {
+    fun `presenter starts loading then emits success`() = runTest {
         whenever(repo.loadWeatherData()).thenReturn(flowOf(place))
         val forecastListItemList = ForecastListItemMapper().mapPlaceToForecastListItem(place)
 
-        sut = ForecastListViewModel(repo, mapper)
+        moleculeFlow(RecompositionMode.Immediate) {
+            forecastListPresenter(repo, mapper, userPrefs)
+        }.test {
+            // Initial state is loading
+            val loadingState = awaitItem()
+            assertTrue(loadingState.isLoading)
+            assertTrue(loadingState.forecastItems.isEmpty())
+            assertNull(loadingState.error)
 
-        sut.state.test {
-            val initialState = awaitItem()
-            assertTrue(initialState.isLoading)
-            assertTrue(initialState.forecastItems.isEmpty())
-            assertNull(initialState.error)
-
-            val finalState = awaitItem()
-            assertFalse(finalState.isLoading)
-            assertEquals(forecastListItemList, finalState.forecastItems)
-            assertNull(finalState.error)
+            // Final state is success
+            val successState = awaitItem()
+            assertFalse(successState.isLoading)
+            assertEquals(forecastListItemList, successState.forecastItems)
+            assertNull(successState.error)
+            assertEquals(TEMPERATURE_DEFAULT, successState.temperatureUnit)
         }
     }
 
     @Test
-    fun `given repo returns valid error, state FAIL is set`() = runTest {
-        val exception = IOException("Random Error")
+    fun `presenter emits error when repository fails`() = runTest {
+        val exception = IOException("Network error")
         whenever(repo.loadWeatherData()).thenReturn(flow { throw exception })
 
-        sut = ForecastListViewModel(repo, mapper)
+        moleculeFlow(RecompositionMode.Immediate) {
+            forecastListPresenter(repo, mapper, userPrefs)
+        }.test {
+            // Initial state is loading
+            val loadingState = awaitItem()
+            assertTrue(loadingState.isLoading)
 
-        sut.state.test {
-            val initialState = awaitItem()
-            assertTrue(initialState.isLoading)
-            assertTrue(initialState.forecastItems.isEmpty())
-            assertNull(initialState.error)
-
-            val finalState = awaitItem()
-            assertFalse(finalState.isLoading)
-            assertTrue(finalState.forecastItems.isEmpty())
-            assertEquals(exception, finalState.error)
+            // Final state is error
+            val errorState = awaitItem()
+            assertFalse(errorState.isLoading)
+            assertTrue(errorState.forecastItems.isEmpty())
+            assertEquals(exception, errorState.error)
         }
     }
 }

@@ -1,6 +1,14 @@
 package com.davismiyashiro.weathermapapp.presentation
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.Repository
 import kotlinx.coroutines.CoroutineScope
@@ -10,16 +18,20 @@ import kotlinx.coroutines.launch
 
 sealed interface ForecastListEvent {
     data object Refresh : ForecastListEvent
+    data class UpdateTemperatureUnit(val unit: Int) : ForecastListEvent
 }
 
 @Composable
 fun forecastListPresenter(
     repo: Repository,
-    mapper: ForecastListItemMapper
+    mapper: ForecastListItemMapper,
+    userPrefs: UserPreferencesRepository
 ): ForecastListState {
     var isLoading by remember { mutableStateOf(true) }
     var forecastItems by remember { mutableStateOf(emptyList<ForecastListItem>()) }
     var error by remember { mutableStateOf<Throwable?>(null) }
+    val temperatureUnit by userPrefs.temperatureUnitFlow.collectAsState(initial = userPrefs.getTemperatureUnit())
+
     val scope = rememberCoroutineScope()
 
     fun CoroutineScope.load() {
@@ -46,12 +58,17 @@ fun forecastListPresenter(
             is ForecastListEvent.Refresh -> {
                 scope.load()
             }
+
+            is ForecastListEvent.UpdateTemperatureUnit -> {
+                userPrefs.setTemperatureUnit(event.unit)
+            }
         }
     }
 
     return ForecastListState(
         isLoading = isLoading,
         forecastItems = forecastItems,
+        temperatureUnit = temperatureUnit,
         error = error,
         eventSink = eventSink
     )

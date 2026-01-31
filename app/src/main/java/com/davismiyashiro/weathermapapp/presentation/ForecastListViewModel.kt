@@ -28,6 +28,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
+import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,10 +38,12 @@ import javax.inject.Inject
 @HiltViewModel
 class ForecastListViewModel @Inject constructor(
     private val repo: Repository,
-    private val mapper: ForecastListItemMapper
+    private val mapper: ForecastListItemMapper,
+    private val userPrefs: UserPreferencesRepository
 ) : ViewModel() {
 
-    val state: StateFlow<ForecastListState> = viewModelScope.launchMolecule(RecompositionMode.Immediate) {
-        forecastListPresenter(repo, mapper)
-    }
+    val state: StateFlow<ForecastListState> =
+        viewModelScope.launchMolecule(RecompositionMode.Immediate) {
+            forecastListPresenter(repo, mapper, userPrefs)
+        }
 }

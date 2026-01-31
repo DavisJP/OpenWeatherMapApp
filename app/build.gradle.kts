@@ -49,7 +49,7 @@ android {
     }
 
     buildFeatures {
-        viewBinding = true
+        viewBinding = false
         buildConfig = true
         compose = true
     }
@@ -75,12 +75,7 @@ android {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    implementation("androidx.appcompat:appcompat:1.7.1")
-    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
     implementation("androidx.preference:preference-ktx:1.2.1")
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation("com.google.android.material:material:1.12.0")
 
     // Jetpack Compose - Core
     val composeBom = platform("androidx.compose:compose-bom:2025.07.00")
@@ -91,28 +86,23 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview-android")
     debugImplementation("androidx.compose.ui:ui-tooling")
     implementation("androidx.activity:activity-compose")
-    implementation("androidx.compose.ui:ui-viewbinding")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Jetpack Compose - Material Design 3
     implementation("androidx.compose.material3:material3")
 
-    implementation("androidx.navigation:navigation-fragment-ktx:2.9.2")
-    implementation("androidx.navigation:navigation-ui-ktx:2.9.2")
-
+    // DI
     implementation("com.google.dagger:dagger:2.56.2")
     ksp("com.google.dagger:dagger-compiler:2.56.2")
     implementation("com.google.dagger:hilt-android:2.56.2")
     ksp("com.google.dagger:hilt-compiler:2.56.2")
+
+    // Network
     implementation("com.squareup.okhttp3:logging-interceptor:5.1.0")
     implementation("com.squareup.okhttp3:okhttp:5.1.0")
-
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
-    implementation("com.squareup.retrofit2:adapter-rxjava3:3.0.0")
-
-    implementation("io.reactivex.rxjava3:rxjava:3.1.11")
-    implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.8.0")
 
     implementation("com.jakewharton.timber:timber:5.0.1")
 
@@ -126,7 +116,6 @@ dependencies {
 
     testImplementation("org.mockito:mockito-core:5.21.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
-    testImplementation("io.mockk:mockk:1.14.4")
     testImplementation("app.cash.turbine:turbine:1.2.1")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     testImplementation("org.robolectric:robolectric:4.16.1")

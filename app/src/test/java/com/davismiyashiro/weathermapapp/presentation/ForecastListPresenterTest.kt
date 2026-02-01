@@ -11,12 +11,12 @@ import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.Repository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -39,6 +39,7 @@ class ForecastListPresenterTest {
     private val repo: Repository = mock()
     private val userPrefs: UserPreferencesRepository = mock()
     private val mapper = ForecastListItemMapper()
+    private var events = MutableSharedFlow<ForecastListEvent>()
 
     private val place = Place()
 
@@ -62,19 +63,19 @@ class ForecastListPresenterTest {
         val forecastListItemList = ForecastListItemMapper().mapPlaceToForecastListItem(place)
 
         moleculeFlow(RecompositionMode.Immediate) {
-            forecastListPresenter(repo, mapper, userPrefs)
+            forecastListPresenter(repo, mapper, userPrefs, events)
         }.test {
-            // Initial state is loading
             val loadingState = awaitItem()
-            assertTrue(loadingState.isLoading)
-            assertTrue(loadingState.forecastItems.isEmpty())
-            assertNull(loadingState.error)
+            assertTrue(loadingState is ForecastListState.Loading)
+            assertEquals(TEMPERATURE_DEFAULT, loadingState.temperatureUnit)
 
-            // Final state is success
             val successState = awaitItem()
-            assertFalse(successState.isLoading)
-            assertEquals(forecastListItemList, successState.forecastItems)
-            assertNull(successState.error)
+            assertTrue(successState is ForecastListState.Success)
+            assertEquals(
+                forecastListItemList,
+                (successState as ForecastListState.Success).forecastItems
+            )
+            assertFalse(successState.isRefreshing)
             assertEquals(TEMPERATURE_DEFAULT, successState.temperatureUnit)
         }
     }
@@ -85,16 +86,16 @@ class ForecastListPresenterTest {
         whenever(repo.loadWeatherData()).thenReturn(flow { throw exception })
 
         moleculeFlow(RecompositionMode.Immediate) {
-            forecastListPresenter(repo, mapper, userPrefs)
+            forecastListPresenter(repo, mapper, userPrefs, events)
         }.test {
-            // Initial state is loading
             val loadingState = awaitItem()
-            assertTrue(loadingState.isLoading)
+            assertTrue(loadingState is ForecastListState.Loading)
+            assertEquals(TEMPERATURE_DEFAULT, loadingState.temperatureUnit)
 
-            // Final state is error
             val errorState = awaitItem()
-            assertFalse(errorState.isLoading)
-            assertTrue(errorState.forecastItems.isEmpty())
+            assertTrue(errorState is ForecastListState.Error)
+            assertFalse((errorState as ForecastListState.Error).isRefreshing)
+            assertEquals(TEMPERATURE_DEFAULT, loadingState.temperatureUnit)
             assertEquals(exception, errorState.error)
         }
     }

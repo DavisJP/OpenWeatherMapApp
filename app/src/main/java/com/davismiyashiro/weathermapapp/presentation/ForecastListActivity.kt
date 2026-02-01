@@ -29,7 +29,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -59,10 +58,9 @@ class ForecastListActivity : ComponentActivity() {
                 ) {
                     composable(MainDestinations.FORECAST_LIST_ROUTE) {
                         val viewModel: ForecastListViewModel = hiltViewModel()
-                        val state = viewModel.state.collectAsStateWithLifecycle().value
 
                         ForecastHomeScreen(
-                            forecastState = state,
+                            viewModel = viewModel,
                         )
                     }
                 }

@@ -32,6 +32,7 @@ import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
@@ -42,8 +43,16 @@ class ForecastListViewModel @Inject constructor(
     private val userPrefs: UserPreferencesRepository,
 ) : ViewModel() {
 
+    private val events = MutableSharedFlow<ForecastListEvent>(
+        extraBufferCapacity = 1,
+    )
+
     val state: StateFlow<ForecastListState> =
         viewModelScope.launchMolecule(RecompositionMode.Immediate) {
-            forecastListPresenter(repo, mapper, userPrefs)
+            forecastListPresenter(repo, mapper, userPrefs, events)
         }
+
+    fun onEvent(event: ForecastListEvent) {
+        events.tryEmit(event)
+    }
 }

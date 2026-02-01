@@ -1,7 +1,6 @@
 package com.davismiyashiro.weathermapapp.presentation
 
 import android.content.Context
-import android.content.res.Resources
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +36,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +58,8 @@ import com.davismiyashiro.weathermapapp.domain.TEMPERATURE_CELSIUS
 import com.davismiyashiro.weathermapapp.domain.TEMPERATURE_FAHRENHEIT
 import com.davismiyashiro.weathermapapp.domain.convertKelvinToCelsius
 import com.davismiyashiro.weathermapapp.domain.convertKelvinToFahrenheit
+import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.Refresh
+import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.UpdateTemperatureUnit
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
@@ -68,29 +70,36 @@ const val TEMPERATURE_DEFAULT = TEMPERATURE_CELSIUS
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForecastHomeScreen(forecastState: ForecastListState) {
+fun ForecastHomeScreen(viewModel: ForecastListViewModel) {
     var showSettingsDialog by remember { mutableStateOf(false) }
+    val forecastState by viewModel.state.collectAsState()
 
-    if (forecastState.isLoading) {
-        ForecastLoadingScreen()
-    } else if (forecastState.error != null) {
-        ForecastErrorScreen(
-            isRefreshing = forecastState.isLoading,
-            onRefresh = { forecastState.eventSink(ForecastListEvent.Refresh) },
-        )
-    } else {
-        ForecastListScreen(
-            data = forecastState.forecastItems,
-            temperatureUnit = forecastState.temperatureUnit,
-            isRefreshing = forecastState.isLoading,
-            onRefresh = { forecastState.eventSink(ForecastListEvent.Refresh) },
-            showDialog = showSettingsDialog,
-            onShowDialogChange = { showSettingsDialog = it },
-            onDialogUnitSelected = {
-                forecastState.eventSink(ForecastListEvent.UpdateTemperatureUnit(it))
-                showSettingsDialog = false
-            },
-        )
+    when (forecastState) {
+        is ForecastListState.Loading -> {
+            ForecastLoadingScreen()
+        }
+
+        is ForecastListState.Success -> {
+            ForecastListScreen(
+                data = (forecastState as ForecastListState.Success).forecastItems,
+                temperatureUnit = (forecastState as ForecastListState.Success).temperatureUnit,
+                isRefreshing = (forecastState as ForecastListState.Success).isRefreshing,
+                onRefresh = { viewModel.onEvent(Refresh) },
+                showDialog = showSettingsDialog,
+                onShowDialogChange = { showSettingsDialog = it },
+                onDialogUnitSelected = {
+                    viewModel.onEvent(UpdateTemperatureUnit(it))
+                    showSettingsDialog = false
+                },
+            )
+        }
+
+        is ForecastListState.Error -> {
+            ForecastErrorScreen(
+                isRefreshing = (forecastState as ForecastListState.Error).isRefreshing,
+                onRefresh = { viewModel.onEvent(ForecastListEvent.Refresh) }
+            )
+        }
     }
 }
 
@@ -108,8 +117,10 @@ fun ForecastLoadingScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForecastErrorScreen(isRefreshing: Boolean, onRefresh: () -> Unit) {
-    val context = LocalContext.current
+fun ForecastErrorScreen(
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit
+) {
     val scrollState = rememberScrollState()
     AppTheme(dynamicColor = false) {
         PullToRefreshBox(
@@ -124,7 +135,7 @@ fun ForecastErrorScreen(isRefreshing: Boolean, onRefresh: () -> Unit) {
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = context.resources.getString(R.string.please_check_your_network_status_or_try_again_later),
+                    text = stringResource(R.string.please_check_your_network_status_or_try_again_later),
                     textAlign = TextAlign.Center,
                 )
             }
@@ -144,7 +155,6 @@ fun ForecastListScreen(
     onShowDialogChange: (Boolean) -> Unit,
     onDialogUnitSelected: (Int) -> Unit,
 ) {
-    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberLazyListState()
 
@@ -155,7 +165,7 @@ fun ForecastListScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(context.resources.getString(R.string.open_weather_map))
+                    Text(stringResource(R.string.open_weather_map))
                 },
                 scrollBehavior = scrollBehavior,
                 actions = {
@@ -191,7 +201,11 @@ fun ForecastListScreen(
 }
 
 @Composable
-private fun ForecastList(data: List<ForecastListItem>, temperatureUnit: Int, scrollState: LazyListState) {
+private fun ForecastList(
+    data: List<ForecastListItem>,
+    temperatureUnit: Int,
+    scrollState: LazyListState,
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -213,7 +227,7 @@ fun ForecastListItem(item: ForecastListItem, temperatureInt: Int, modifier: Modi
     val tempString =
         remember(item.temp, temperatureInt) { item.temp.toTemperatureUnit(temperatureInt, context) }
     val unitString =
-        remember(temperatureInt) { temperatureInt.toTemperatureUnit(context.resources) }
+        remember(temperatureInt) { temperatureInt.toTemperatureUnit(context) }
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -270,7 +284,7 @@ fun SettingsDialog(
             onDismissRequest = onDismissRequest,
             title = {
                 Text(
-                    text = context.getString(R.string.choose_temperature_unit),
+                    text = stringResource(R.string.choose_temperature_unit),
                 )
             },
             text = {
@@ -317,10 +331,10 @@ fun Double.toTemperatureUnit(temperatureUnit: Int, context: Context): String {
     return String.format(formatter, convertedTemp)
 }
 
-fun Int.toTemperatureUnit(resources: Resources): String {
+fun Int.toTemperatureUnit(context: Context): String {
     return when (this) {
-        TEMPERATURE_CELSIUS -> resources.getString(R.string.celsius)
-        TEMPERATURE_FAHRENHEIT -> resources.getString(R.string.fahrenheit)
+        TEMPERATURE_CELSIUS -> context.getString(R.string.celsius)
+        TEMPERATURE_FAHRENHEIT -> context.getString(R.string.fahrenheit)
         else -> "" // Default is Kelvin
     }
 }

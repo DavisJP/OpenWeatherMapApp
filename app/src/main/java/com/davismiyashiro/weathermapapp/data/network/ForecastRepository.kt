@@ -28,6 +28,8 @@ import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.Repository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 import javax.inject.Inject
@@ -43,22 +45,19 @@ class ForecastRepository @Inject constructor(
     private val localRepository: LocalRepository,
 ) : Repository {
 
-    override fun loadWeatherData(): Flow<Place> = flow {
-        try {
-            val remoteData = getAndSaveRemoteData()
-            emit(remoteData)
-        } catch (e: Exception) {
-            Timber.e(e, "Remote data fetch failed, attempting to load from local.")
-            try {
-                localRepository.loadData().collect { localData ->
-                    emit(localData)
-                }
-            } catch (localException: Exception) {
-                Timber.e(localException, "Local data fetch also failed.")
-                throw e
-            }
+    override fun loadWeatherData(): Flow<Place> =
+        flow {
+            emit(getAndSaveRemoteData())
+        }.catch { remoteError ->
+            Timber.e(remoteError, "Remote data fetch failed, attempting to load from local.")
+            emitAll(
+                localRepository.loadData()
+                    .catch { localError ->
+                        Timber.e(localError, "Local data fetch also failed.")
+                        throw remoteError
+                    }
+            )
         }
-    }
 
     private suspend fun getAndSaveRemoteData(): Place {
         val placeRemote = openWeatherApi.getForecastById(LONDON_ID)

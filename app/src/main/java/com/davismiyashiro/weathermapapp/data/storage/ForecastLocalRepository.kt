@@ -25,33 +25,39 @@
 package com.davismiyashiro.weathermapapp.data.storage
 
 import com.davismiyashiro.weathermapapp.data.entities.Place
-import com.davismiyashiro.weathermapapp.domain.Repository
+import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.google.gson.Gson
-
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
+private const val KEY_PLACE = "KEY_PLACE"
 
 /**
  * Created by Davis Miyashiro.
  */
-
 class ForecastLocalRepository @Inject constructor(private val storage: SharedPreferenceStorage) :
-    Repository {
+    LocalRepository {
 
-    private val KEY_PLACE = "KEY_PLACE"
     private val gson = Gson()
 
-    override fun loadData(): Observable<Place> {
+    override fun loadData(): Flow<Place> = flow {
         val value = storage.getString(KEY_PLACE)
-        var place: Place? = gson.fromJson(value, Place::class.java)
+        val place: Place? = gson.fromJson(value, Place::class.java)
 
-        if (place == null) {
-            place = Place()
+        if (place != null) {
+            emit(place)
+        } else {
+            throw NoSuchElementException("No local data found")
         }
-        return Observable.just(place)
-    }
+    }.flowOn(Dispatchers.IO)
 
-    override fun storeData(place: Place) {
-        storage.setString(KEY_PLACE, gson.toJson(place))
+    override suspend fun storeData(place: Place) {
+        withContext(Dispatchers.IO) {
+            storage.setString(KEY_PLACE, gson.toJson(place))
+        }
     }
 }

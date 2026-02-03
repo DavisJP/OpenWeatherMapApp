@@ -54,5 +54,5 @@ data class Conditions(
     var sys: Sys? = null,
     @SerializedName("dt_txt")
     @Expose
-    var dtTxt: String? = null
+    var dtTxt: String? = null,
 )

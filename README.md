@@ -2,7 +2,7 @@
 
 An app that displays 5 day weather forecast from http://openweathermap.org for London.
 
-This App was built to practice on MVVM architecture, Jetpack Compose, Dagger Hilt, RxJava and Retrofit.
+App built to practice on MVVM + Molecule architecture, Jetpack Compose, Dagger Hilt, Coroutines and Retrofit.
 
 ### What's the current status ? ###
 
@@ -24,10 +24,10 @@ This App was built to practice on MVVM architecture, Jetpack Compose, Dagger Hil
 ### Libraries Used ###
 
 - Dagger 2 + Hilt
-- Viewbinding
+- MVVM + Molecule
 - Jetpack Compose
 - Jetpack navigation
-- Rxjava 3
+- Coroutines
 - Retrofit 2
 - Gson
 - Coil

@@ -25,17 +25,21 @@
 package com.davismiyashiro.weathermapapp.domain
 
 import com.davismiyashiro.weathermapapp.data.entities.Place
+import com.davismiyashiro.weathermapapp.presentation.ForecastListItem
 import javax.inject.Inject
 
 open class ForecastListItemMapper @Inject constructor() {
-    fun mapPlaceToForecastListItem(data: Place?): List<ForecastListItemEntity> {
-        return mutableListOf<ForecastListItemEntity>().apply {
-            data?.let {
-                it.list?.let { conditions ->
-                    for (condition in conditions) {
-                        add(ForecastListItemEntity(condition))
-                    }
-                }
+    fun mapPlaceToForecastListItem(data: Place?): List<ForecastListItem> {
+        return mutableListOf<ForecastListItem>().apply {
+            data?.list?.forEach { condition ->
+                add(
+                    ForecastListItem(
+                        date = condition.dt ?: 0L,
+                        main = condition.weather?.firstOrNull()?.main ?: "",
+                        temp = condition.main?.temp ?: 0.0,
+                        icon = condition.weather?.firstOrNull()?.icon?.plus(".png") ?: "",
+                    ),
+                )
             }
         }
     }

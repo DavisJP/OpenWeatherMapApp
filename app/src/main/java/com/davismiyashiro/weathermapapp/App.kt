@@ -25,11 +25,8 @@
 package com.davismiyashiro.weathermapapp
 
 import android.app.Application
-import com.airbnb.mvrx.Mavericks
-
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
-
 import timber.log.Timber
 
 /**
@@ -45,7 +42,6 @@ open class App : Application() {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
-        Mavericks.initialize(this)
         AndroidThreeTen.init(this)
     }
 }

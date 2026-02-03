@@ -25,7 +25,7 @@
 package com.davismiyashiro.weathermapapp.injection
 
 import com.davismiyashiro.weathermapapp.data.storage.SharedPreferenceStorage
-import com.davismiyashiro.weathermapapp.data.storage.Storage
+import com.davismiyashiro.weathermapapp.domain.Storage
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

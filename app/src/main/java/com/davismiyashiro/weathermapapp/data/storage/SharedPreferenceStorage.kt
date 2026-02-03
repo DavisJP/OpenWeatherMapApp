@@ -3,6 +3,7 @@ package com.davismiyashiro.weathermapapp.data.storage
 import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
+import com.davismiyashiro.weathermapapp.domain.Storage
 import javax.inject.Inject
 
 class SharedPreferenceStorage @Inject constructor(context: Context) : Storage {

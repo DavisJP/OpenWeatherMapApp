@@ -36,5 +36,5 @@ data class Coord(
     var lon: Double? = null,
     @SerializedName("lat")
     @Expose
-    var lat: Double? = null
+    var lat: Double? = null,
 )

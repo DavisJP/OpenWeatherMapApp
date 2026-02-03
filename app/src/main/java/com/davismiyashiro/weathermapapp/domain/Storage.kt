@@ -1,4 +1,4 @@
-package com.davismiyashiro.weathermapapp.data.storage
+package com.davismiyashiro.weathermapapp.domain
 
 interface Storage {
     fun setString(key: String, value: String)

@@ -25,78 +25,43 @@
 package com.davismiyashiro.weathermapapp.data.network
 
 import com.davismiyashiro.weathermapapp.data.entities.Place
+import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.Repository
-import com.davismiyashiro.weathermapapp.domain.RepositoryInterface
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 import javax.inject.Inject
+
+// Hardcoded for testing, but api is deprecated, move to LAT/LONG
+private const val LONDON_ID = 2643743
 
 /**
  * Created by Davis Miyashiro.
  */
-
-class ForecastRepository @Inject
-constructor(
+class ForecastRepository @Inject constructor(
     private val openWeatherApi: OpenWeatherApi,
-    private val localRepository: Repository
-) : RepositoryInterface {
+    private val localRepository: LocalRepository,
+) : Repository {
 
-    //TODO: Hardcoded for now, change later
-    private val LONDON_ID = 2643743
-
-    private var localCache: Place? = null
-    internal var refreshFromRemote = true
-
-    override fun loadWeatherData(): Observable<Place> {
-        if (localCache != null && !refreshFromRemote) {
-            return Observable.just(localCache!!)
-        } else {
-            localCache = Place()
+    override fun loadWeatherData(): Flow<Place> =
+        flow {
+            emit(getAndSaveRemoteData())
+        }.catch { remoteError ->
+            Timber.e(remoteError, "Remote data fetch failed, attempting to load from local.")
+            emitAll(
+                localRepository.loadData()
+                    .catch { localError ->
+                        Timber.e(localError, "Local data fetch also failed.")
+                        throw remoteError
+                    }
+            )
         }
 
-        val remoteData = getAndSaveRemoteData()
-
-        return if (refreshFromRemote) {
-            remoteData
-        } else {
-            getAndCacheLocalData()
-                .publish { local -> Observable.merge(local, remoteData.takeUntil(local)) }
-                .firstOrError()
-                .doOnError { error ->
-                    Timber.e(error, "firstOrError chain")
-                    localCache = Place()
-                }
-                .toObservable()
-        }
-    }
-
-    private fun getAndCacheLocalData(): Observable<Place> {
-        return localRepository.loadData()
-            .map<Place> { placeParam ->
-                localCache = placeParam
-                placeParam
-            }
-    }
-
-    private fun getAndSaveRemoteData(): Observable<Place> {
-        return openWeatherApi.getForecastById(LONDON_ID)
-            .map { placeRemote ->
-                localCache = placeRemote
-                localRepository.storeData(placeRemote)
-                placeRemote
-            }
-            .doOnError { error ->
-                Timber.e(error, "remote error")
-                localCache = Place()
-            }
-            .doOnComplete { refreshFromRemote = false }
-    }
-
-    override fun refreshFromRemote() {
-        refreshFromRemote = true
-    }
-
-    fun refreshCache(cache: Place?) {
-        localCache = cache
+    private suspend fun getAndSaveRemoteData(): Place {
+        val placeRemote = openWeatherApi.getForecastById(LONDON_ID)
+        localRepository.storeData(placeRemote)
+        return placeRemote
     }
 }

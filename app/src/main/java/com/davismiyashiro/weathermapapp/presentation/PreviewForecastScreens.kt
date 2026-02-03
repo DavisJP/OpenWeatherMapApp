@@ -36,11 +36,11 @@ fun PreviewForecastList() {
                         main = "Weather",
                         description = "Clear",
                         icon = "icon",
-                    )
-                )
-            )
+                    ),
+                ),
+            ),
         ),
-        City()
+        City(),
     )
     val item = ForecastListItemMapper().mapPlaceToForecastListItem(place)
     AppTheme(dynamicColor = false) {

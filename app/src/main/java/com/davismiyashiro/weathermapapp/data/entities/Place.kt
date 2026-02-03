@@ -45,5 +45,5 @@ data class Place(
     var list: List<Conditions>? = null,
     @SerializedName("city")
     @Expose
-    var city: City? = null
+    var city: City? = null,
 )

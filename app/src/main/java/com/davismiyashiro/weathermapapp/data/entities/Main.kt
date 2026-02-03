@@ -54,5 +54,5 @@ data class Main(
     var humidity: Int? = null,
     @SerializedName("temp_kf")
     @Expose
-    var tempKf: Double? = null
+    var tempKf: Double? = null,
 )

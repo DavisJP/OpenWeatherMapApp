@@ -107,7 +107,9 @@ fun ForecastHomeScreen(viewModel: ForecastListViewModel) {
 fun ForecastLoadingScreen() {
     AppTheme(dynamicColor = false) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator()
@@ -126,6 +128,7 @@ fun ForecastErrorScreen(
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = onRefresh,
+            modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)
         ) {
             Box(
                 modifier = Modifier
@@ -162,12 +165,18 @@ fun ForecastListScreen(
         modifier = modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
         topBar = {
             TopAppBar(
                 title = {
                     Text(stringResource(R.string.open_weather_map))
                 },
                 scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
                 actions = {
                     IconButton(onClick = {
                         onShowDialogChange(true)

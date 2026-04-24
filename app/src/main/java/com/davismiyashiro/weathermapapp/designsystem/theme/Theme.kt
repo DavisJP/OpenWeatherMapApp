@@ -4,6 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Build
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -14,10 +17,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -268,8 +269,8 @@ fun AppTheme(
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content:
-    @Composable()
-    () -> Unit,
+    @Composable
+        () -> Unit,
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
@@ -284,17 +285,17 @@ fun AppTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val activity = view.context.findActivity()
-            activity?.window?.let { window ->
-                if (!darkTheme) {
-                    window.statusBarColor = colorScheme.primaryContainer.toArgb()
-                    window.navigationBarColor = colorScheme.primaryContainer.toArgb()
-                }
-                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
-                    !darkTheme
-                WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars =
-                    !darkTheme
-            }
+            val activity = view.context.findActivity() as? ComponentActivity ?: return@SideEffect
+            activity.enableEdgeToEdge(
+                statusBarStyle = SystemBarStyle.auto(
+                    android.graphics.Color.TRANSPARENT,
+                    android.graphics.Color.TRANSPARENT,
+                ) { darkTheme },
+                navigationBarStyle = SystemBarStyle.auto(
+                    android.graphics.Color.TRANSPARENT,
+                    android.graphics.Color.TRANSPARENT,
+                ) { darkTheme },
+            )
         }
     }
 

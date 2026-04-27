@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -53,7 +52,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.davismiyashiro.weathermapapp.R
-import com.davismiyashiro.weathermapapp.designsystem.theme.AppTheme
 import com.davismiyashiro.weathermapapp.domain.IMG_SRC_W_URL
 import com.davismiyashiro.weathermapapp.domain.TEMPERATURE_CELSIUS
 import com.davismiyashiro.weathermapapp.domain.TEMPERATURE_FAHRENHEIT
@@ -74,96 +72,10 @@ const val TEMPERATURE_DEFAULT = TEMPERATURE_CELSIUS
 fun ForecastHomeScreen(viewModel: ForecastListViewModel) {
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
     val forecastState by viewModel.state.collectAsStateWithLifecycle()
-
-    when (forecastState) {
-        is ForecastListState.Loading -> {
-            ForecastLoadingScreen()
-        }
-
-        is ForecastListState.Success -> {
-            ForecastListScreen(
-                data = (forecastState as ForecastListState.Success).forecastItems,
-                temperatureUnit = (forecastState as ForecastListState.Success).temperatureUnit,
-                isRefreshing = (forecastState as ForecastListState.Success).isRefreshing,
-                onRefresh = { viewModel.onEvent(Refresh) },
-                showDialog = showSettingsDialog,
-                onShowDialogChange = { showSettingsDialog = it },
-                onDialogUnitSelected = {
-                    viewModel.onEvent(UpdateTemperatureUnit(it))
-                    showSettingsDialog = false
-                },
-            )
-        }
-
-        is ForecastListState.Error -> {
-            ForecastErrorScreen(
-                isRefreshing = (forecastState as ForecastListState.Error).isRefreshing,
-                onRefresh = { viewModel.onEvent(ForecastListEvent.Refresh) }
-            )
-        }
-    }
-}
-
-@Composable
-fun ForecastLoadingScreen() {
-    AppTheme(dynamicColor = false) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center,
-        ) {
-            CircularProgressIndicator()
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ForecastErrorScreen(
-    isRefreshing: Boolean,
-    onRefresh: () -> Unit
-) {
-    val scrollState = rememberScrollState()
-    AppTheme(dynamicColor = false) {
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = onRefresh,
-            modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-                    .verticalScroll(scrollState),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = stringResource(R.string.please_check_your_network_status_or_try_again_later),
-                    textAlign = TextAlign.Center,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-fun ForecastListScreen(
-    data: List<ForecastListItem>,
-    temperatureUnit: Int,
-    isRefreshing: Boolean,
-    onRefresh: () -> Unit,
-    showDialog: Boolean,
-    onShowDialogChange: (Boolean) -> Unit,
-    onDialogUnitSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val scrollState = rememberLazyListState()
 
     Scaffold(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -180,7 +92,7 @@ fun ForecastListScreen(
                 ),
                 actions = {
                     IconButton(onClick = {
-                        onShowDialogChange(true)
+                        showSettingsDialog = true
                     }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
@@ -191,43 +103,115 @@ fun ForecastListScreen(
             )
         },
     ) { contentPadding ->
-        PullToRefreshBox(
-            modifier = Modifier.padding(contentPadding),
-            isRefreshing = isRefreshing,
-            onRefresh = onRefresh,
+        Box(
+            modifier = Modifier
+                .padding(contentPadding)
+                .fillMaxSize()
         ) {
-            ForecastList(data, temperatureUnit, scrollState)
+            when (forecastState) {
+                is ForecastListState.Loading -> {
+                    ForecastLoadingScreen()
+                }
+
+                is ForecastListState.Success -> {
+                    val successState = forecastState as ForecastListState.Success
+                    ForecastListContent(
+                        data = successState.forecastItems,
+                        temperatureUnit = successState.temperatureUnit,
+                        isRefreshing = successState.isRefreshing,
+                        onRefresh = { viewModel.onEvent(Refresh) },
+                    )
+                }
+
+                is ForecastListState.Error -> {
+                    val errorState = forecastState as ForecastListState.Error
+                    ForecastErrorScreen(
+                        isRefreshing = errorState.isRefreshing,
+                        onRefresh = { viewModel.onEvent(Refresh) }
+                    )
+                }
+            }
         }
     }
 
-    SettingsDialog(
-        showDialog = showDialog,
-        currentUnitIndexSelected = temperatureUnit,
-        onDismissRequest = { onShowDialogChange(false) },
-        onUnitSelected = { selectedIndex ->
-            onDialogUnitSelected(selectedIndex)
-        },
-    )
+    if (showSettingsDialog && forecastState is ForecastListState.Success) {
+        SettingsDialog(
+            showDialog = showSettingsDialog,
+            currentUnitIndexSelected = (forecastState as ForecastListState.Success).temperatureUnit,
+            onDismissRequest = { showSettingsDialog = false },
+            onUnitSelected = {
+                viewModel.onEvent(UpdateTemperatureUnit(it))
+                showSettingsDialog = false
+            },
+        )
+    }
 }
 
 @Composable
-private fun ForecastList(
+fun ForecastLoadingScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ForecastErrorScreen(
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit
+) {
+    val scrollState = rememberScrollState()
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = stringResource(R.string.please_check_your_network_status_or_try_again_later),
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun ForecastListContent(
     data: List<ForecastListItem>,
     temperatureUnit: Int,
-    scrollState: LazyListState,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
-        state = scrollState,
-        contentPadding = PaddingValues(16.dp),
+    val scrollState = rememberLazyListState()
+
+    PullToRefreshBox(
+        modifier = Modifier.fillMaxSize(),
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
     ) {
-        items(
-            items = data,
-            key = { it.date },
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+            state = scrollState,
+            contentPadding = PaddingValues(16.dp),
         ) {
-            ForecastListItem(it, temperatureUnit)
+            items(
+                items = data,
+                key = { it.date },
+            ) {
+                ForecastListItem(it, temperatureUnit)
+            }
         }
     }
 }

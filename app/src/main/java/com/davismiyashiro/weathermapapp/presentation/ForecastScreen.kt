@@ -36,7 +36,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +49,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.designsystem.theme.AppTheme
@@ -72,7 +72,7 @@ const val TEMPERATURE_DEFAULT = TEMPERATURE_CELSIUS
 @Composable
 fun ForecastHomeScreen(viewModel: ForecastListViewModel) {
     var showSettingsDialog by remember { mutableStateOf(false) }
-    val forecastState by viewModel.state.collectAsState()
+    val forecastState by viewModel.state.collectAsStateWithLifecycle()
 
     when (forecastState) {
         is ForecastListState.Loading -> {
@@ -213,7 +213,10 @@ private fun ForecastList(
         state = scrollState,
         contentPadding = PaddingValues(16.dp),
     ) {
-        items(data) {
+        items(
+            items = data,
+            key = { it.date },
+        ) {
             ForecastListItem(it, temperatureUnit)
         }
     }

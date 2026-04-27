@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.Repository
@@ -22,9 +22,13 @@ fun forecastListPresenter(
     events: Flow<ForecastListEvent>,
 ): ForecastListState {
     val temperatureUnit by userPrefs.temperatureUnitFlow.collectAsState(initial = userPrefs.getTemperatureUnit())
+    val currentTemperatureUnit by rememberUpdatedState(temperatureUnit)
 
     val state by produceState<ForecastListState>(
-        initialValue = ForecastListState.Loading(temperatureUnit)
+        initialValue = ForecastListState.Loading(temperatureUnit),
+        key1 = repo,
+        key2 = mapper,
+        key3 = events,
     ) {
         events
             .onStart { emit(ForecastListEvent.Refresh) }
@@ -37,11 +41,11 @@ fun forecastListPresenter(
                         }
 
                         value = if (previousItems.isEmpty()) {
-                            ForecastListState.Loading(temperatureUnit)
+                            ForecastListState.Loading(currentTemperatureUnit)
                         } else {
                             ForecastListState.Success(
                                 forecastItems = previousItems,
-                                temperatureUnit = temperatureUnit,
+                                temperatureUnit = currentTemperatureUnit,
                                 isRefreshing = true
                             )
                         }
@@ -51,13 +55,13 @@ fun forecastListPresenter(
                             .catch { error ->
                                 value = ForecastListState.Error(
                                     error = error,
-                                    temperatureUnit = temperatureUnit,
+                                    temperatureUnit = currentTemperatureUnit,
                                     isRefreshing = false
                                 )
                             }.collect { items ->
                                 value = ForecastListState.Success(
                                     forecastItems = items,
-                                    temperatureUnit = temperatureUnit,
+                                    temperatureUnit = currentTemperatureUnit,
                                     isRefreshing = false
                                 )
                             }
@@ -65,16 +69,15 @@ fun forecastListPresenter(
 
                     is ForecastListEvent.UpdateTemperatureUnit -> {
                         userPrefs.setTemperatureUnit(event.unit)
+                        value = when (val currentState = value) {
+                            is ForecastListState.Success -> currentState.copy(temperatureUnit = event.unit)
+                            is ForecastListState.Error -> currentState.copy(temperatureUnit = event.unit)
+                            is ForecastListState.Loading -> currentState.copy(temperatureUnit = event.unit)
+                        }
                     }
                 }
             }
     }
 
-    return remember(state, temperatureUnit) {
-        when (state) {
-            is ForecastListState.Success -> (state as ForecastListState.Success).copy(temperatureUnit = temperatureUnit)
-            is ForecastListState.Error -> (state as ForecastListState.Error).copy(temperatureUnit = temperatureUnit)
-            is ForecastListState.Loading -> (state as ForecastListState.Loading).copy(temperatureUnit = temperatureUnit)
-        }
-    }
+    return state
 }

@@ -40,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,7 +72,7 @@ const val TEMPERATURE_DEFAULT = TEMPERATURE_CELSIUS
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForecastHomeScreen(viewModel: ForecastListViewModel) {
-    var showSettingsDialog by remember { mutableStateOf(false) }
+    var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
     val forecastState by viewModel.state.collectAsStateWithLifecycle()
 
     when (forecastState) {
@@ -153,10 +154,10 @@ fun ForecastListScreen(
     temperatureUnit: Int,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
-    modifier: Modifier = Modifier,
     showDialog: Boolean,
     onShowDialogChange: (Boolean) -> Unit,
     onDialogUnitSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberLazyListState()

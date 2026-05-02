@@ -29,6 +29,7 @@ import com.davismiyashiro.weathermapapp.data.entities.City
 import com.davismiyashiro.weathermapapp.data.entities.Conditions
 import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
+import com.davismiyashiro.weathermapapp.domain.Repository
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -44,7 +45,7 @@ import java.io.IOException
 
 class ForecastRepositoryTest {
 
-    private lateinit var repository: ForecastRepository
+    private lateinit var repository: Repository
 
     private val openWeatherApi: OpenWeatherApi = mock()
     private val localRepository: LocalRepository = mock()

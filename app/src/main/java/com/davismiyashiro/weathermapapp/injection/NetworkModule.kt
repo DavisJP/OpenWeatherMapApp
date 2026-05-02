@@ -28,12 +28,10 @@ import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import com.davismiyashiro.weathermapapp.data.network.ForecastRepository
 import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
 import com.davismiyashiro.weathermapapp.data.storage.ForecastLocalRepository
 import com.davismiyashiro.weathermapapp.data.storage.SharedPreferenceStorage
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
-import com.davismiyashiro.weathermapapp.domain.Repository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -143,11 +141,5 @@ class NetworkModule {
     @Singleton
     fun provideLocalRepository(application: Application): LocalRepository {
         return ForecastLocalRepository(SharedPreferenceStorage(application))
-    }
-
-    @Provides
-    @Singleton
-    fun provideForecastRepository(openWeatherApi: OpenWeatherApi, localRepository: LocalRepository): Repository {
-        return ForecastRepository(openWeatherApi, localRepository)
     }
 }

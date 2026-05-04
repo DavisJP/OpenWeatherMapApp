@@ -26,7 +26,6 @@ package com.davismiyashiro.weathermapapp
 
 import android.app.Application
 import com.jakewharton.threetenabp.AndroidThreeTen
-import com.skydoves.compose.stability.runtime.ComposeStabilityAnalyzer
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 
@@ -43,7 +42,6 @@ open class App : Application() {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
-        ComposeStabilityAnalyzer.setEnabled(BuildConfig.ENABLE_RECOMPOSITION_TRACE)
         AndroidThreeTen.init(this)
     }
 }

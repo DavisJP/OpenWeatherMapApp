@@ -69,9 +69,24 @@ const val TEMPERATURE_DEFAULT = TEMPERATURE_CELSIUS
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForecastHomeScreen(viewModel: ForecastListViewModel) {
-    var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
+fun ForecastHomeRoute(viewModel: ForecastListViewModel) {
     val forecastState by viewModel.state.collectAsStateWithLifecycle()
+
+    ForecastHomeScreen(
+        forecastState = forecastState,
+        onRefresh = { viewModel.onEvent(Refresh) },
+        onTemperatureUnitSelected = { viewModel.onEvent(UpdateTemperatureUnit(it)) },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ForecastHomeScreen(
+    forecastState: ForecastListState,
+    onRefresh: () -> Unit,
+    onTemperatureUnitSelected: (Int) -> Unit,
+) {
+    var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(
@@ -114,20 +129,18 @@ fun ForecastHomeScreen(viewModel: ForecastListViewModel) {
                 }
 
                 is ForecastListState.Success -> {
-                    val successState = forecastState as ForecastListState.Success
                     ForecastListContent(
-                        data = successState.forecastItems,
-                        temperatureUnit = successState.temperatureUnit,
-                        isRefreshing = successState.isRefreshing,
-                        onRefresh = { viewModel.onEvent(Refresh) },
+                        data = forecastState.forecastItems,
+                        temperatureUnit = forecastState.temperatureUnit,
+                        isRefreshing = forecastState.isRefreshing,
+                        onRefresh = onRefresh,
                     )
                 }
 
                 is ForecastListState.Error -> {
-                    val errorState = forecastState as ForecastListState.Error
                     ForecastErrorScreen(
-                        isRefreshing = errorState.isRefreshing,
-                        onRefresh = { viewModel.onEvent(Refresh) }
+                        isRefreshing = forecastState.isRefreshing,
+                        onRefresh = onRefresh
                     )
                 }
             }
@@ -136,11 +149,10 @@ fun ForecastHomeScreen(viewModel: ForecastListViewModel) {
 
     if (showSettingsDialog && forecastState is ForecastListState.Success) {
         SettingsDialog(
-            showDialog = showSettingsDialog,
-            currentUnitIndexSelected = (forecastState as ForecastListState.Success).temperatureUnit,
+            currentUnitIndexSelected = forecastState.temperatureUnit,
             onDismissRequest = { showSettingsDialog = false },
             onUnitSelected = {
-                viewModel.onEvent(UpdateTemperatureUnit(it))
+                onTemperatureUnitSelected(it)
                 showSettingsDialog = false
             },
         )
@@ -262,60 +274,57 @@ fun ForecastListItem(item: ForecastListItem, temperatureInt: Int, modifier: Modi
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun SettingsDialog(
-    showDialog: Boolean,
     currentUnitIndexSelected: Int,
     onDismissRequest: () -> Unit,
     onUnitSelected: (Int) -> Unit,
 ) {
-    if (showDialog) {
-        val context = LocalContext.current
-        var tempSelectedOptionIndex by remember(currentUnitIndexSelected) {
-            mutableIntStateOf(
-                currentUnitIndexSelected,
-            )
-        }
-        val temperatureScales =
-            context.resources.getStringArray(R.array.pref_temperature_units)
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.background,
-            onDismissRequest = onDismissRequest,
-            title = {
-                Text(
-                    text = stringResource(R.string.choose_temperature_unit),
-                )
-            },
-            text = {
-                Column {
-                    temperatureScales.forEachIndexed { index, scale ->
-                        Row(
-                            modifier = Modifier
-                                .padding(PaddingValues(bottom = 8.dp))
-                                .selectable(
-                                    index == tempSelectedOptionIndex,
-                                    onClick = { tempSelectedOptionIndex = index },
-                                ),
-                        ) {
-                            RadioButton(
-                                selected = index == tempSelectedOptionIndex,
-                                onClick = null,
-                            )
-                            Spacer(Modifier.width(16.dp))
-                            Text(scale)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onUnitSelected(tempSelectedOptionIndex)
-                    },
-                ) {
-                    Text(stringResource(android.R.string.ok))
-                }
-            },
+    val context = LocalContext.current
+    var tempSelectedOptionIndex by remember(currentUnitIndexSelected) {
+        mutableIntStateOf(
+            currentUnitIndexSelected,
         )
     }
+    val temperatureScales =
+        context.resources.getStringArray(R.array.pref_temperature_units)
+    AlertDialog(
+        containerColor = MaterialTheme.colorScheme.background,
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(
+                text = stringResource(R.string.choose_temperature_unit),
+            )
+        },
+        text = {
+            Column {
+                temperatureScales.forEachIndexed { index, scale ->
+                    Row(
+                        modifier = Modifier
+                            .padding(PaddingValues(bottom = 8.dp))
+                            .selectable(
+                                index == tempSelectedOptionIndex,
+                                onClick = { tempSelectedOptionIndex = index },
+                            ),
+                    ) {
+                        RadioButton(
+                            selected = index == tempSelectedOptionIndex,
+                            onClick = null,
+                        )
+                        Spacer(Modifier.width(16.dp))
+                        Text(scale)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onUnitSelected(tempSelectedOptionIndex)
+                },
+            ) {
+                Text(stringResource(android.R.string.ok))
+            }
+        },
+    )
 }
 
 fun Double.toTemperatureUnit(temperatureUnit: Int, context: Context): String {

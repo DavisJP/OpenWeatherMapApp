@@ -28,12 +28,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,9 +51,23 @@ class ForecastListViewModel @Inject constructor(
         extraBufferCapacity = 1,
     )
 
+    private val temperatureUnit: StateFlow<Int> =
+        userPrefs.temperatureUnitFlow.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = userPrefs.getTemperatureUnit(),
+        )
+
     val state: StateFlow<ForecastListState> =
         viewModelScope.launchMolecule(RecompositionMode.Immediate) {
-            forecastListPresenter(repo, mapper, userPrefs, events)
+            val currentTemperatureUnit by temperatureUnit.collectAsState()
+            forecastListPresenter(
+                repo = repo,
+                mapper = mapper,
+                temperatureUnit = currentTemperatureUnit,
+                onTemperatureUnitSelected = userPrefs::setTemperatureUnit,
+                events = events,
+            )
         }
 
     fun onEvent(event: ForecastListEvent) {

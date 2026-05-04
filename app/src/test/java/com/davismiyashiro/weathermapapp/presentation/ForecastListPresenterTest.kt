@@ -7,7 +7,6 @@ import com.davismiyashiro.weathermapapp.data.entities.Conditions
 import com.davismiyashiro.weathermapapp.data.entities.Main
 import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.data.entities.Weather
-import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.Repository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,7 +36,6 @@ class ForecastListPresenterTest {
     val mockitoRule: MockitoRule = MockitoJUnit.rule()
 
     private val repo: Repository = mock()
-    private val userPrefs: UserPreferencesRepository = mock()
     private val mapper = ForecastListItemMapper()
     private var events = MutableSharedFlow<ForecastListEvent>()
 
@@ -54,7 +52,6 @@ class ForecastListPresenterTest {
                 ),
             ),
         )
-        whenever(userPrefs.temperatureUnitFlow).thenReturn(flowOf(TEMPERATURE_DEFAULT))
     }
 
     @Test
@@ -63,7 +60,13 @@ class ForecastListPresenterTest {
         val forecastListItemList = ForecastListItemMapper().mapPlaceToForecastListItem(place)
 
         moleculeFlow(RecompositionMode.Immediate) {
-            forecastListPresenter(repo, mapper, userPrefs, events)
+            forecastListPresenter(
+                repo = repo,
+                mapper = mapper,
+                temperatureUnit = TEMPERATURE_DEFAULT,
+                onTemperatureUnitSelected = {},
+                events = events,
+            )
         }.test {
             val loadingState = awaitItem()
             assertTrue(loadingState is ForecastListState.Loading)
@@ -86,7 +89,13 @@ class ForecastListPresenterTest {
         whenever(repo.loadWeatherData()).thenReturn(flow { throw exception })
 
         moleculeFlow(RecompositionMode.Immediate) {
-            forecastListPresenter(repo, mapper, userPrefs, events)
+            forecastListPresenter(
+                repo = repo,
+                mapper = mapper,
+                temperatureUnit = TEMPERATURE_DEFAULT,
+                onTemperatureUnitSelected = {},
+                events = events,
+            )
         }.test {
             val loadingState = awaitItem()
             assertTrue(loadingState is ForecastListState.Loading)

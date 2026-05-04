@@ -57,7 +57,7 @@ class ForecastListActivity : ComponentActivity() {
                     composable(MainDestinations.FORECAST_LIST_ROUTE) {
                         val viewModel: ForecastListViewModel = hiltViewModel()
 
-                        ForecastHomeScreen(
+                        ForecastHomeRoute(
                             viewModel = viewModel,
                         )
                     }

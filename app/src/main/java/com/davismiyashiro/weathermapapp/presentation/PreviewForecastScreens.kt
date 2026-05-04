@@ -54,7 +54,6 @@ fun ShowSettingsDialog() {
     AppTheme(dynamicColor = false) {
         SettingsDialog(
             onDismissRequest = { },
-            showDialog = true,
             currentUnitIndexSelected = 0,
             onUnitSelected = { },
         )

@@ -1,5 +1,7 @@
 package com.davismiyashiro.weathermapapp.presentation
 
+import kotlinx.collections.immutable.ImmutableList
+
 sealed interface ForecastListState {
     val temperatureUnit: Int
 
@@ -8,7 +10,7 @@ sealed interface ForecastListState {
     ) : ForecastListState
 
     data class Success(
-        val forecastItems: List<ForecastListItem>,
+        val forecastItems: ImmutableList<ForecastListItem>,
         override val temperatureUnit: Int = TEMPERATURE_DEFAULT,
         val isRefreshing: Boolean = false,
     ) : ForecastListState

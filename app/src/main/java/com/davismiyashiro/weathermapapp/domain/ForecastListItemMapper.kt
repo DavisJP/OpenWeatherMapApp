@@ -26,10 +26,12 @@ package com.davismiyashiro.weathermapapp.domain
 
 import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.presentation.ForecastListItem
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import javax.inject.Inject
 
 open class ForecastListItemMapper @Inject constructor() {
-    fun mapPlaceToForecastListItem(data: Place?): List<ForecastListItem> {
+    fun mapPlaceToForecastListItem(data: Place?): ImmutableList<ForecastListItem> {
         return mutableListOf<ForecastListItem>().apply {
             data?.list?.forEach { condition ->
                 add(
@@ -41,6 +43,6 @@ open class ForecastListItemMapper @Inject constructor() {
                     ),
                 )
             }
-        }
+        }.toImmutableList()
     }
 }

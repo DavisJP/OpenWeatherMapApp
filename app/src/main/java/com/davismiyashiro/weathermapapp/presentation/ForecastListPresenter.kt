@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun forecastListPresenter(
@@ -33,7 +34,7 @@ fun forecastListPresenter(
                     is ForecastListEvent.Refresh -> {
                         val previousItems = when (value) {
                             is ForecastListState.Success -> (value as ForecastListState.Success).forecastItems
-                            else -> emptyList()
+                            else -> persistentListOf()
                         }
 
                         value = if (previousItems.isEmpty()) {

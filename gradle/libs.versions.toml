@@ -31,6 +31,7 @@ threeTenAbp = "1.4.9"
 threeTenBpTest = "1.7.2"
 mockitoCore = "5.21.0"
 mockitoKotlin = "6.2.3"
+kotlinxCollectionsImmutable = "0.4.0"
 
 [libraries]
 # AndroidX - Compose
@@ -51,6 +52,7 @@ androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-ru
 
 # AndroidX - Other
 androidx-preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preferenceKtx" }
+kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
 
 # Hilt - DI
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }

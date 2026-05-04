@@ -63,6 +63,7 @@ import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.format.FormatStyle
+import kotlinx.collections.immutable.ImmutableList
 
 const val TEMPERATURE_KEY = "TEMPERATURE_KEY"
 const val TEMPERATURE_DEFAULT = TEMPERATURE_CELSIUS
@@ -199,7 +200,7 @@ fun ForecastErrorScreen(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun ForecastListContent(
-    data: List<ForecastListItem>,
+    data: ImmutableList<ForecastListItem>,
     temperatureUnit: Int,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,

@@ -104,6 +104,7 @@ dependencies {
     implementation(libs.coil.network.okhttp)
 
     implementation(libs.threeTenAbp)
+    implementation(libs.kotlinx.collections.immutable)
 
     implementation(libs.molecule.runtime)
 

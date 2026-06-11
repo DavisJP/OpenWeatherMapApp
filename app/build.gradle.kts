@@ -91,6 +91,7 @@ dependencies {
     // DI
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    ksp(libs.metadata.jvm)
 
     // Network
     implementation(libs.okhttp.logging.interceptor)
@@ -129,4 +130,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     androidTestImplementation(libs.hilt.android.testing)
     kspAndroidTest(libs.hilt.compiler)
+    kspAndroidTest(libs.metadata.jvm)
 }

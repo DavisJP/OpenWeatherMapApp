@@ -110,9 +110,10 @@ class NetworkModule {
 
     private fun isOnline(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = cm.activeNetwork ?: return false
-        val networkCapabilities = cm.getNetworkCapabilities(activeNetwork) ?: return false
+        val activeNetwork = cm.activeNetwork
+        val networkCapabilities = activeNetwork?.let(cm::getNetworkCapabilities)
         return when {
+            networkCapabilities == null -> false
             networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
             networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
             networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true

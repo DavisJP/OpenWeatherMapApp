@@ -3,6 +3,7 @@ package com.davismiyashiro.weathermapapp.presentation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.rememberUpdatedState
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.Repository
 import kotlinx.coroutines.flow.Flow
@@ -17,9 +18,10 @@ fun forecastListPresenter(
     repo: Repository,
     mapper: ForecastListItemMapper,
     temperatureUnit: Int,
-    onTemperatureUnitSelected: (Int) -> Unit,
+    onTemperatureUnitSelect: (Int) -> Unit,
     events: Flow<ForecastListEvent>,
 ): ForecastListState {
+    val currentOnTemperatureUnitSelect by rememberUpdatedState(onTemperatureUnitSelect)
     val state by produceState<ForecastListState>(
         initialValue = ForecastListState.Loading(temperatureUnit),
         repo,
@@ -65,7 +67,7 @@ fun forecastListPresenter(
                     }
 
                     is ForecastListEvent.UpdateTemperatureUnit -> {
-                        onTemperatureUnitSelected(event.unit)
+                        currentOnTemperatureUnitSelect(event.unit)
                         value = when (val currentState = value) {
                             is ForecastListState.Success -> currentState.copy(temperatureUnit = event.unit)
                             is ForecastListState.Error -> currentState.copy(temperatureUnit = event.unit)

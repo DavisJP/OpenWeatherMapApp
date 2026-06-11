@@ -18,7 +18,7 @@ private fun PreviewLoadingScreen() {
 @Preview(showBackground = true)
 @Composable
 private fun PreviewErrorScreen() {
-    ForecastErrorScreen(isRefreshing = false) {}
+    ForecastErrorScreen(isRefreshing = false, onRefresh = {})
 }
 
 @Preview("Preview Weather List", showBackground = true)
@@ -55,7 +55,7 @@ fun ShowSettingsDialog() {
         SettingsDialog(
             onDismissRequest = { },
             currentUnitIndexSelected = 0,
-            onUnitSelected = { },
+            onUnitSelect = { },
         )
     }
 }

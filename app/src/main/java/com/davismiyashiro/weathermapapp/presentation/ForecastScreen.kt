@@ -76,7 +76,7 @@ fun ForecastHomeRoute(viewModel: ForecastListViewModel) {
     ForecastHomeScreen(
         forecastState = forecastState,
         onRefresh = { viewModel.onEvent(Refresh) },
-        onTemperatureUnitSelected = { viewModel.onEvent(UpdateTemperatureUnit(it)) },
+        onTemperatureUnitSelect = { viewModel.onEvent(UpdateTemperatureUnit(it)) },
     )
 }
 
@@ -85,13 +85,14 @@ fun ForecastHomeRoute(viewModel: ForecastListViewModel) {
 fun ForecastHomeScreen(
     forecastState: ForecastListState,
     onRefresh: () -> Unit,
-    onTemperatureUnitSelected: (Int) -> Unit,
+    onTemperatureUnitSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -141,7 +142,7 @@ fun ForecastHomeScreen(
                 is ForecastListState.Error -> {
                     ForecastErrorScreen(
                         isRefreshing = forecastState.isRefreshing,
-                        onRefresh = onRefresh
+                        onRefresh = onRefresh,
                     )
                 }
             }
@@ -152,8 +153,8 @@ fun ForecastHomeScreen(
         SettingsDialog(
             currentUnitIndexSelected = forecastState.temperatureUnit,
             onDismissRequest = { showSettingsDialog = false },
-            onUnitSelected = {
-                onTemperatureUnitSelected(it)
+            onUnitSelect = {
+                onTemperatureUnitSelect(it)
                 showSettingsDialog = false
             },
         )
@@ -161,9 +162,9 @@ fun ForecastHomeScreen(
 }
 
 @Composable
-fun ForecastLoadingScreen() {
+fun ForecastLoadingScreen(modifier: Modifier = Modifier) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator()
@@ -174,13 +175,14 @@ fun ForecastLoadingScreen() {
 @Composable
 fun ForecastErrorScreen(
     isRefreshing: Boolean,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
-        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh)
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh),
     ) {
         Box(
             modifier = Modifier
@@ -277,7 +279,7 @@ fun ForecastListItem(item: ForecastListItem, temperatureInt: Int, modifier: Modi
 fun SettingsDialog(
     currentUnitIndexSelected: Int,
     onDismissRequest: () -> Unit,
-    onUnitSelected: (Int) -> Unit,
+    onUnitSelect: (Int) -> Unit,
 ) {
     val context = LocalContext.current
     var tempSelectedOptionIndex by remember(currentUnitIndexSelected) {
@@ -319,7 +321,7 @@ fun SettingsDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    onUnitSelected(tempSelectedOptionIndex)
+                    onUnitSelect(tempSelectedOptionIndex)
                 },
             ) {
                 Text(stringResource(android.R.string.ok))

@@ -64,7 +64,7 @@ class ForecastListPresenterTest {
                 repo = repo,
                 mapper = mapper,
                 temperatureUnit = TEMPERATURE_DEFAULT,
-                onTemperatureUnitSelected = {},
+                onTemperatureUnitSelect = {},
                 events = events,
             )
         }.test {
@@ -93,7 +93,7 @@ class ForecastListPresenterTest {
                 repo = repo,
                 mapper = mapper,
                 temperatureUnit = TEMPERATURE_DEFAULT,
-                onTemperatureUnitSelected = {},
+                onTemperatureUnitSelect = {},
                 events = events,
             )
         }.test {

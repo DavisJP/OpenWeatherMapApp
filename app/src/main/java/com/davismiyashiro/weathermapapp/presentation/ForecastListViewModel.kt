@@ -65,7 +65,7 @@ class ForecastListViewModel @Inject constructor(
                 repo = repo,
                 mapper = mapper,
                 temperatureUnit = currentTemperatureUnit,
-                onTemperatureUnitSelected = userPrefs::setTemperatureUnit,
+                onTemperatureUnitSelect = userPrefs::setTemperatureUnit,
                 events = events,
             )
         }

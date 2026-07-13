@@ -24,7 +24,7 @@
 
 package com.davismiyashiro.weathermapapp.data.network
 
-import com.davismiyashiro.weathermapapp.data.entities.Place
+import com.davismiyashiro.weathermapapp.data.dtos.Place
 import retrofit2.http.GET
 import retrofit2.http.Query
 

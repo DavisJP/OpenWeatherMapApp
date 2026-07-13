@@ -1,9 +1,10 @@
 package com.davismiyashiro.weathermapapp.data.network
 
-import com.davismiyashiro.weathermapapp.data.entities.Conditions
-import com.davismiyashiro.weathermapapp.data.entities.Main
-import com.davismiyashiro.weathermapapp.data.entities.Place
-import com.davismiyashiro.weathermapapp.data.entities.Weather
+import com.davismiyashiro.weathermapapp.data.dtos.Conditions
+import com.davismiyashiro.weathermapapp.data.dtos.Main
+import com.davismiyashiro.weathermapapp.data.dtos.Place
+import com.davismiyashiro.weathermapapp.data.dtos.Weather
+import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.Repository
 import kotlinx.coroutines.flow.flow
 
@@ -12,7 +13,7 @@ class FakeForecastRepository : Repository {
     var place: Place = fakePlace()
 
     override fun loadWeatherData() = flow {
-        emit(place)
+        emit(ForecastListItemMapper().mapPlaceToForecastListItem(place))
     }
 }
 

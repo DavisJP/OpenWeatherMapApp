@@ -28,6 +28,7 @@ import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
 import com.davismiyashiro.weathermapapp.data.storage.ForecastLocalRepository
 import com.davismiyashiro.weathermapapp.data.storage.SharedPreferenceStorage
@@ -36,13 +37,15 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
 import okhttp3.Cache
 import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.io.File
 import javax.inject.Singleton
 
@@ -94,7 +97,10 @@ class NetworkModule {
             .build()
     }
 
-    private fun addHttpClientHeader(application: Application, originalResponse: Response): Response {
+    private fun addHttpClientHeader(
+        application: Application,
+        originalResponse: Response
+    ): Response {
         return if (isOnline(application)) {
             val maxAge = 60 // read from cache for 1 minute
             originalResponse.newBuilder()
@@ -125,9 +131,16 @@ class NetworkModule {
     @Provides
     @Singleton
     fun provideRetrofit(client: OkHttpClient): Retrofit {
+        val json = Json {
+            ignoreUnknownKeys = true
+        }
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(
+                json.asConverterFactory(
+                    "application/json; charset=utf-8".toMediaType()
+                )
+            )
             .client(client)
             .build()
     }
@@ -141,6 +154,9 @@ class NetworkModule {
     @Provides
     @Singleton
     fun provideLocalRepository(application: Application): LocalRepository {
-        return ForecastLocalRepository(SharedPreferenceStorage(application))
+        return ForecastLocalRepository(
+            SharedPreferenceStorage(application),
+            ForecastListItemMapper(),
+        )
     }
 }

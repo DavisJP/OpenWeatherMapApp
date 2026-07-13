@@ -22,16 +22,18 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.data.entities
+package com.davismiyashiro.weathermapapp.data.dtos
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * Created by Davis Miyashiro.
  */
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
-
-data class Sys(
-    @SerializedName("pod")
-    @Expose
-    var pod: String? = null,
+@Serializable
+data class Coord(
+    @SerialName("lon")
+    var lon: Double? = null,
+    @SerialName("lat")
+    var lat: Double? = null,
 )

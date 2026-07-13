@@ -1,5 +1,6 @@
 package com.davismiyashiro.weathermapapp.presentation
 
+import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import kotlinx.collections.immutable.ImmutableList

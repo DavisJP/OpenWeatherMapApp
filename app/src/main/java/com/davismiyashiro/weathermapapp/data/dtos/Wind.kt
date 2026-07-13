@@ -22,16 +22,18 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.data.entities
+package com.davismiyashiro.weathermapapp.data.dtos
 
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * Created by Davis Miyashiro.
  */
-data class Clouds(
-    @SerializedName("all")
-    @Expose
-    var all: Int? = null,
+@Serializable
+data class Wind(
+    @SerialName("speed")
+    var speed: Double? = null,
+    @SerialName("deg")
+    var deg: Double? = null,
 )

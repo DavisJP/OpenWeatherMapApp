@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2021 Davis Miyashiro
+ * Copyright (c) 2018 Davis Miyashiro
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,22 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.data.entities
-
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
+package com.davismiyashiro.weathermapapp.data.dtos
 
 /**
  * Created by Davis Miyashiro.
  */
-data class City(
-    @SerializedName("id")
-    @Expose
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Weather(
+    @SerialName("id")
     var id: Int? = null,
-    @SerializedName("name")
-    @Expose
-    var name: String? = null,
-    @SerializedName("coord")
-    @Expose
-    var coord: Coord? = null,
-    @SerializedName("country")
-    @Expose
-    var country: String? = null,
-    @SerializedName("population")
-    @Expose
-    var population: Int? = null,
+    @SerialName("main")
+    var main: String? = null,
+    @SerialName("description")
+    var description: String? = null,
+    @SerialName("icon")
+    var icon: String? = null,
 )

@@ -27,7 +27,8 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlinCompose)
-    id("kotlin-parcelize")
+    alias(libs.plugins.kotlinParcelize)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 ksp {
@@ -40,10 +41,10 @@ kotlin {
 
 android {
     defaultConfig {
-        compileSdk = 36
+        compileSdk = 37
         applicationId = "com.davismiyashiro.weathermapapp"
         minSdk = 23
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 3
         versionName = "3.0"
         multiDexEnabled = true
@@ -52,6 +53,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -66,10 +68,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
     namespace = "com.davismiyashiro.weathermapapp"
-
-    ksp {
-        arg("circuit.codegen.mode", "HILT")
-    }
 
     testOptions {
         unitTests.isIncludeAndroidResources = true
@@ -103,7 +101,7 @@ dependencies {
     // Network
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.retrofit.core)
-    implementation(libs.retrofit.converter.gson)
+    implementation(libs.retrofit.converter.kotlin.serialization)
 
     implementation(libs.timber)
 
@@ -113,13 +111,13 @@ dependencies {
 
     implementation(libs.threeTenAbp)
     implementation(libs.kotlinx.collections.immutable)
+    implementation(libs.kotlinx.serialization.json)
 
     // Circuit
     implementation(libs.circuit.foundation)
     implementation(libs.circuit.codegen.annotations)
     ksp(libs.circuit.codegen)
     implementation(libs.circuit.hilt)
-    implementation(libs.anvil.annotations)
     testImplementation(libs.circuit.test)
 
     testImplementation(libs.mockito.core)

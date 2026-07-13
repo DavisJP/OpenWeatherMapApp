@@ -22,37 +22,24 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.data.entities
+package com.davismiyashiro.weathermapapp.data.dtos
 
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * Created by Davis Miyashiro.
  */
-data class Conditions(
-    @SerializedName("dt")
-    @Expose
-    var dt: Long? = null,
-    @SerializedName("main")
-    @Expose
-    var main: Main? = null,
-    @SerializedName("weather")
-    @Expose
-    var weather: List<Weather>? = null,
-    @SerializedName("clouds")
-    @Expose
-    var clouds: Clouds? = null,
-    @SerializedName("wind")
-    @Expose
-    var wind: Wind? = null,
-    @SerializedName("snow")
-    @Expose
-    var snow: Snow? = null,
-    @SerializedName("sys")
-    @Expose
-    var sys: Sys? = null,
-    @SerializedName("dt_txt")
-    @Expose
-    var dtTxt: String? = null,
+@Serializable
+data class City(
+    @SerialName("id")
+    var id: Int? = null,
+    @SerialName("name")
+    var name: String? = null,
+    @SerialName("coord")
+    var coord: Coord? = null,
+    @SerialName("country")
+    var country: String? = null,
+    @SerialName("population")
+    var population: Int? = null,
 )

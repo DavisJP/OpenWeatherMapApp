@@ -1,13 +1,15 @@
 package com.davismiyashiro.weathermapapp.presentation
 
-import com.davismiyashiro.weathermapapp.data.entities.Conditions
-import com.davismiyashiro.weathermapapp.data.entities.Main
-import com.davismiyashiro.weathermapapp.data.entities.Place
-import com.davismiyashiro.weathermapapp.data.entities.Weather
+import com.davismiyashiro.weathermapapp.data.dtos.Conditions
+import com.davismiyashiro.weathermapapp.data.dtos.Main
+import com.davismiyashiro.weathermapapp.data.dtos.Place
+import com.davismiyashiro.weathermapapp.data.dtos.Weather
+import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
-import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
+import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.slack.circuit.test.test
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -38,6 +40,7 @@ class ForecastListPresenterTest {
     private val userPrefs: UserPreferencesRepository = mock()
 
     private val place = Place()
+    private lateinit var localForecastListItem: ImmutableList<ForecastListItem>
 
     @Before
     fun setup() {
@@ -50,11 +53,12 @@ class ForecastListPresenterTest {
                 ),
             ),
         )
+        localForecastListItem = ForecastListItemMapper().mapPlaceToForecastListItem(place)
     }
 
     @Test
     fun `presenter starts loading then emits success`() = runTest {
-        whenever(repo.loadWeatherData()).thenReturn(flowOf(place))
+        whenever(repo.loadWeatherData()).thenReturn(flowOf(localForecastListItem))
         whenever(userPrefs.temperatureUnitFlow).thenReturn(flowOf(TEMPERATURE_DEFAULT))
         whenever(userPrefs.getTemperatureUnit()).thenReturn(TEMPERATURE_DEFAULT)
 

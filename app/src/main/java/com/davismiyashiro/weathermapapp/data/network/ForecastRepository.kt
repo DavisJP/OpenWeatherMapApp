@@ -24,13 +24,16 @@
 
 package com.davismiyashiro.weathermapapp.data.network
 
-import com.davismiyashiro.weathermapapp.data.entities.Place
+import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
+import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.Repository
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.json.Json
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -43,9 +46,12 @@ private const val LONDON_ID = 2643743
 class ForecastRepository @Inject constructor(
     private val openWeatherApi: OpenWeatherApi,
     private val localRepository: LocalRepository,
+    private val forecastListItemMapper: ForecastListItemMapper,
 ) : Repository {
 
-    override fun loadWeatherData(): Flow<Place> =
+    private val json = Json { ignoreUnknownKeys = true }
+
+    override fun loadWeatherData(): Flow<ImmutableList<ForecastListItem>> =
         flow {
             emit(getAndSaveRemoteData())
         }.catch { remoteError ->
@@ -59,9 +65,9 @@ class ForecastRepository @Inject constructor(
             )
         }
 
-    private suspend fun getAndSaveRemoteData(): Place {
+    private suspend fun getAndSaveRemoteData(): ImmutableList<ForecastListItem> {
         val placeRemote = openWeatherApi.getForecastById(LONDON_ID)
-        localRepository.storeData(placeRemote)
-        return placeRemote
+        localRepository.storeData(json.encodeToString(placeRemote))
+        return forecastListItemMapper.mapPlaceToForecastListItem(placeRemote)
     }
 }

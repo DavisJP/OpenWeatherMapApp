@@ -25,14 +25,18 @@
 package com.davismiyashiro.weathermapapp.data.network
 
 import app.cash.turbine.test
-import com.davismiyashiro.weathermapapp.data.entities.City
-import com.davismiyashiro.weathermapapp.data.entities.Conditions
-import com.davismiyashiro.weathermapapp.data.entities.Place
+import com.davismiyashiro.weathermapapp.data.dtos.City
+import com.davismiyashiro.weathermapapp.data.dtos.Conditions
+import com.davismiyashiro.weathermapapp.data.dtos.Place
+import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
+import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.Repository
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -51,12 +55,15 @@ class ForecastRepositoryTest {
     private val localRepository: LocalRepository = mock()
     private lateinit var remotePlace: Place
     private lateinit var localPlace: Place
+    private lateinit var localForecastListItem: ImmutableList<ForecastListItem>
+    private val json = Json { ignoreUnknownKeys = true }
 
     @Before
     fun setUp() {
         remotePlace = Place("remote", 10.0, 1, mutableListOf(Conditions()), City())
         localPlace = Place("local", 10.0, 1, mutableListOf(Conditions()), City())
-        repository = ForecastRepository(openWeatherApi, localRepository)
+        localForecastListItem = ForecastListItemMapper().mapPlaceToForecastListItem(localPlace)
+        repository = ForecastRepository(openWeatherApi, localRepository, ForecastListItemMapper())
     }
 
     @Test
@@ -64,21 +71,21 @@ class ForecastRepositoryTest {
         whenever(openWeatherApi.getForecastById(anyInt())).thenReturn(remotePlace)
 
         repository.loadWeatherData().test {
-            assertEquals(remotePlace, awaitItem())
+            assertEquals(localForecastListItem, awaitItem())
             awaitComplete()
         }
 
         verify(openWeatherApi, times(1)).getForecastById(anyInt())
-        verify(localRepository, times(1)).storeData(remotePlace)
+        verify(localRepository, times(1)).storeData(json.encodeToString(remotePlace))
     }
 
     @Test
     fun `loadWeatherData remote fails local succeeds returns local data`() = runTest {
         whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw IOException() }
-        whenever(localRepository.loadData()).thenReturn(flowOf(localPlace))
+        whenever(localRepository.loadData()).thenReturn(flowOf(localForecastListItem))
 
         repository.loadWeatherData().test {
-            assertEquals(localPlace, awaitItem())
+            assertEquals(localForecastListItem, awaitItem())
             awaitComplete()
         }
 

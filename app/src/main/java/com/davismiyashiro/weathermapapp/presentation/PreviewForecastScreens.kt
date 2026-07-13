@@ -2,12 +2,12 @@ package com.davismiyashiro.weathermapapp.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.davismiyashiro.weathermapapp.data.entities.City
-import com.davismiyashiro.weathermapapp.data.entities.Conditions
-import com.davismiyashiro.weathermapapp.data.entities.Place
-import com.davismiyashiro.weathermapapp.data.entities.Weather
+import com.davismiyashiro.weathermapapp.data.dtos.City
+import com.davismiyashiro.weathermapapp.data.dtos.Conditions
+import com.davismiyashiro.weathermapapp.data.dtos.Place
+import com.davismiyashiro.weathermapapp.data.dtos.Weather
 import com.davismiyashiro.weathermapapp.designsystem.theme.AppTheme
-import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
+import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 
 @Preview(showBackground = true)
 @Composable

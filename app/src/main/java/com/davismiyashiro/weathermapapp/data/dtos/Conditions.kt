@@ -22,27 +22,30 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.domain
+package com.davismiyashiro.weathermapapp.data.dtos
 
-import com.davismiyashiro.weathermapapp.data.entities.Place
-import com.davismiyashiro.weathermapapp.presentation.ForecastListItem
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
-import javax.inject.Inject
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-open class ForecastListItemMapper @Inject constructor() {
-    fun mapPlaceToForecastListItem(data: Place?): ImmutableList<ForecastListItem> {
-        return mutableListOf<ForecastListItem>().apply {
-            data?.list?.forEach { condition ->
-                add(
-                    ForecastListItem(
-                        date = condition.dt ?: 0L,
-                        main = condition.weather?.firstOrNull()?.main ?: "",
-                        temp = condition.main?.temp ?: 0.0,
-                        icon = condition.weather?.firstOrNull()?.icon?.plus(".png") ?: "",
-                    ),
-                )
-            }
-        }.toImmutableList()
-    }
-}
+/**
+ * Created by Davis Miyashiro.
+ */
+@Serializable
+data class Conditions(
+    @SerialName("dt")
+    var dt: Long? = null,
+    @SerialName("main")
+    var main: Main? = null,
+    @SerialName("weather")
+    var weather: List<Weather>? = null,
+    @SerialName("clouds")
+    var clouds: Clouds? = null,
+    @SerialName("wind")
+    var wind: Wind? = null,
+    @SerialName("snow")
+    var snow: Snow? = null,
+    @SerialName("sys")
+    var sys: Sys? = null,
+    @SerialName("dt_txt")
+    var dtTxt: String? = null,
+)

@@ -24,7 +24,7 @@
 
 package com.davismiyashiro.weathermapapp.domain
 
-import com.davismiyashiro.weathermapapp.data.entities.Place
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -32,7 +32,7 @@ import kotlinx.coroutines.flow.Flow
  */
 interface LocalRepository {
 
-    fun loadData(): Flow<Place>
+    fun loadData(): Flow<ImmutableList<ForecastListItem>>
 
-    suspend fun storeData(place: Place)
+    suspend fun storeData(jsonString: String)
 }

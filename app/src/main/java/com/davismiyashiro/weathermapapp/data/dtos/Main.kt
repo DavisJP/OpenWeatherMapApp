@@ -22,19 +22,30 @@
  * SOFTWARE.
  */
 
-package com.davismiyashiro.weathermapapp.data.entities
+package com.davismiyashiro.weathermapapp.data.dtos
 
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * Created by Davis Miyashiro.
  */
-data class Coord(
-    @SerializedName("lon")
-    @Expose
-    var lon: Double? = null,
-    @SerializedName("lat")
-    @Expose
-    var lat: Double? = null,
+@Serializable
+data class Main(
+    @SerialName("temp")
+    var temp: Double? = null,
+    @SerialName("temp_min")
+    var tempMin: Double? = null,
+    @SerialName("temp_max")
+    var tempMax: Double? = null,
+    @SerialName("pressure")
+    var pressure: Double? = null,
+    @SerialName("sea_level")
+    var seaLevel: Double? = null,
+    @SerialName("grnd_level")
+    var grndLevel: Double? = null,
+    @SerialName("humidity")
+    var humidity: Int? = null,
+    @SerialName("temp_kf")
+    var tempKf: Double? = null,
 )

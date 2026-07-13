@@ -32,8 +32,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
-import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
+import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.Refresh
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.UpdateTemperatureUnit
@@ -43,7 +44,6 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -59,7 +59,11 @@ class ForecastListPresenter @Inject constructor(
         val temperatureUnit by userPrefs.temperatureUnitFlow.collectAsState(initial = userPrefs.getTemperatureUnit())
         var isRefreshing by remember { mutableStateOf(false) }
         var error by remember { mutableStateOf<Throwable?>(null) }
-        var forecastItems by remember { mutableStateOf<ImmutableList<ForecastListItem>>(persistentListOf()) }
+        var forecastItems by remember {
+            mutableStateOf<ImmutableList<ForecastListItem>>(
+                persistentListOf()
+            )
+        }
         var isLoading by remember { mutableStateOf(true) }
 
         val scope = rememberCoroutineScope()
@@ -73,7 +77,6 @@ class ForecastListPresenter @Inject constructor(
                 }
                 error = null
                 repo.loadWeatherData()
-                    .map { mapper.mapPlaceToForecastListItem(it) }
                     .catch { e ->
                         error = e
                         isLoading = false
@@ -100,8 +103,19 @@ class ForecastListPresenter @Inject constructor(
 
         return when {
             isLoading -> ForecastListState.Loading(temperatureUnit, eventSink)
-            error != null -> ForecastListState.Error(error!!, temperatureUnit, isRefreshing, eventSink)
-            else -> ForecastListState.Success(forecastItems, temperatureUnit, isRefreshing, eventSink)
+            error != null -> ForecastListState.Error(
+                error!!,
+                temperatureUnit,
+                isRefreshing,
+                eventSink
+            )
+
+            else -> ForecastListState.Success(
+                forecastItems,
+                temperatureUnit,
+                isRefreshing,
+                eventSink
+            )
         }
     }
 }

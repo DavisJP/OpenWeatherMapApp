@@ -24,6 +24,7 @@
 
 package com.davismiyashiro.weathermapapp.injection
 
+import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.data.network.ForecastRepository
 import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
@@ -41,8 +42,9 @@ class RepositoryModule {
     @Singleton
     fun provideForecastRepository(
         openWeatherApi: OpenWeatherApi,
-        localRepository: LocalRepository
+        localRepository: LocalRepository,
+        forecastListItemMapper: ForecastListItemMapper,
     ): Repository {
-        return ForecastRepository(openWeatherApi, localRepository)
+        return ForecastRepository(openWeatherApi, localRepository, forecastListItemMapper)
     }
 }

@@ -16,8 +16,8 @@ App built to experiment with Circuit, Jetpack Compose, Dagger Hilt, Coroutines a
 
 ### Configuration ###
 
-- This project was build with Android Studio Panda
-- It targets SDK 36 and minimum API 23 (Marshmallow)
+- This project was build with Android Studio Quail
+- It targets SDK 37 and minimum API 23 (Marshmallow)
 
 ### What could be done with more time ###
 
@@ -32,7 +32,7 @@ App built to experiment with Circuit, Jetpack Compose, Dagger Hilt, Coroutines a
 - Jetpack Compose
 - Coroutines
 - Retrofit 2
-- Gson
+- Kotlin Serializer
 - Coil
 - ThreeTenABP
 - Timber

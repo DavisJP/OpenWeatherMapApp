@@ -27,6 +27,11 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlinCompose)
+    id("kotlin-parcelize")
+}
+
+ksp {
+    arg("circuit.codegen.mode", "HILT")
 }
 
 kotlin {
@@ -62,6 +67,10 @@ android {
     }
     namespace = "com.davismiyashiro.weathermapapp"
 
+    ksp {
+        arg("circuit.codegen.mode", "HILT")
+    }
+
     testOptions {
         unitTests.isIncludeAndroidResources = true
         unitTests.isReturnDefaultValues = true
@@ -81,8 +90,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
 
     // Jetpack Compose - Material Design 3
     implementation(libs.androidx.compose.material3)
@@ -107,7 +114,13 @@ dependencies {
     implementation(libs.threeTenAbp)
     implementation(libs.kotlinx.collections.immutable)
 
-    implementation(libs.molecule.runtime)
+    // Circuit
+    implementation(libs.circuit.foundation)
+    implementation(libs.circuit.codegen.annotations)
+    ksp(libs.circuit.codegen)
+    implementation(libs.circuit.hilt)
+    implementation(libs.anvil.annotations)
+    testImplementation(libs.circuit.test)
 
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)

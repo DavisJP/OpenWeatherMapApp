@@ -2,7 +2,7 @@
 
 An app that displays 5 day weather forecast from http://openweathermap.org for London.
 
-App built to practice on MVVM + Molecule architecture, Jetpack Compose, Dagger Hilt, Coroutines and Retrofit.
+App built to experiment with Circuit, Jetpack Compose, Dagger Hilt, Coroutines and Retrofit.
 
 | Main Screen |
 |:---:|
@@ -28,9 +28,8 @@ App built to practice on MVVM + Molecule architecture, Jetpack Compose, Dagger H
 ### Libraries Used ###
 
 - Dagger 2 + Hilt
-- MVVM + Molecule
+- Slack's Circuit
 - Jetpack Compose
-- Jetpack navigation
 - Coroutines
 - Retrofit 2
 - Gson

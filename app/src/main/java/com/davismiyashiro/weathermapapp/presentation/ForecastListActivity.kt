@@ -27,16 +27,14 @@ package com.davismiyashiro.weathermapapp.presentation
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.davismiyashiro.weathermapapp.designsystem.theme.AppTheme
+import com.slack.circuit.backstack.rememberSaveableBackStack
+import com.slack.circuit.foundation.Circuit
+import com.slack.circuit.foundation.CircuitCompositionLocals
+import com.slack.circuit.foundation.NavigableCircuitContent
+import com.slack.circuit.foundation.rememberCircuitNavigator
 import dagger.hilt.android.AndroidEntryPoint
-
-object MainDestinations {
-    const val FORECAST_LIST_ROUTE = "forecast_list"
-}
+import javax.inject.Inject
 
 /**
  * Created by Davis Miyashiro.
@@ -44,23 +42,19 @@ object MainDestinations {
 @AndroidEntryPoint
 class ForecastListActivity : ComponentActivity() {
 
+    @Inject
+    lateinit var circuit: Circuit
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             AppTheme(dynamicColor = false) {
-                val navController = rememberNavController()
-                NavHost(
-                    navController = navController,
-                    startDestination = MainDestinations.FORECAST_LIST_ROUTE,
-                ) {
-                    composable(MainDestinations.FORECAST_LIST_ROUTE) {
-                        val viewModel: ForecastListViewModel = hiltViewModel()
+                val backstack = rememberSaveableBackStack(ForecastListScreen)
+                val navigator = rememberCircuitNavigator(backstack)
 
-                        ForecastHomeRoute(
-                            viewModel = viewModel,
-                        )
-                    }
+                CircuitCompositionLocals(circuit) {
+                    NavigableCircuitContent(navigator, backstack)
                 }
             }
         }

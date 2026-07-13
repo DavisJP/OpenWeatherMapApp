@@ -1,16 +1,14 @@
 package com.davismiyashiro.weathermapapp.presentation
 
-import app.cash.molecule.RecompositionMode
-import app.cash.molecule.moleculeFlow
-import app.cash.turbine.test
 import com.davismiyashiro.weathermapapp.data.entities.Conditions
 import com.davismiyashiro.weathermapapp.data.entities.Main
 import com.davismiyashiro.weathermapapp.data.entities.Place
 import com.davismiyashiro.weathermapapp.data.entities.Weather
+import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
 import com.davismiyashiro.weathermapapp.domain.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.Repository
+import com.slack.circuit.test.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -37,7 +35,7 @@ class ForecastListPresenterTest {
 
     private val repo: Repository = mock()
     private val mapper = ForecastListItemMapper()
-    private var events = MutableSharedFlow<ForecastListEvent>()
+    private val userPrefs: UserPreferencesRepository = mock()
 
     private val place = Place()
 
@@ -57,17 +55,14 @@ class ForecastListPresenterTest {
     @Test
     fun `presenter starts loading then emits success`() = runTest {
         whenever(repo.loadWeatherData()).thenReturn(flowOf(place))
+        whenever(userPrefs.temperatureUnitFlow).thenReturn(flowOf(TEMPERATURE_DEFAULT))
+        whenever(userPrefs.getTemperatureUnit()).thenReturn(TEMPERATURE_DEFAULT)
+
         val forecastListItemList = ForecastListItemMapper().mapPlaceToForecastListItem(place)
 
-        moleculeFlow(RecompositionMode.Immediate) {
-            forecastListPresenter(
-                repo = repo,
-                mapper = mapper,
-                temperatureUnit = TEMPERATURE_DEFAULT,
-                onTemperatureUnitSelect = {},
-                events = events,
-            )
-        }.test {
+        val presenter = ForecastListPresenter(repo, mapper, userPrefs)
+
+        presenter.test {
             val loadingState = awaitItem()
             assertTrue(loadingState is ForecastListState.Loading)
             assertEquals(TEMPERATURE_DEFAULT, loadingState.temperatureUnit)
@@ -87,16 +82,12 @@ class ForecastListPresenterTest {
     fun `presenter emits error when repository fails`() = runTest {
         val exception = IOException("Network error")
         whenever(repo.loadWeatherData()).thenReturn(flow { throw exception })
+        whenever(userPrefs.temperatureUnitFlow).thenReturn(flowOf(TEMPERATURE_DEFAULT))
+        whenever(userPrefs.getTemperatureUnit()).thenReturn(TEMPERATURE_DEFAULT)
 
-        moleculeFlow(RecompositionMode.Immediate) {
-            forecastListPresenter(
-                repo = repo,
-                mapper = mapper,
-                temperatureUnit = TEMPERATURE_DEFAULT,
-                onTemperatureUnitSelect = {},
-                events = events,
-            )
-        }.test {
+        val presenter = ForecastListPresenter(repo, mapper, userPrefs)
+
+        presenter.test {
             val loadingState = awaitItem()
             assertTrue(loadingState is ForecastListState.Loading)
             assertEquals(TEMPERATURE_DEFAULT, loadingState.temperatureUnit)

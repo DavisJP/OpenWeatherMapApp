@@ -49,7 +49,6 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.domain.IMG_SRC_W_URL
@@ -59,24 +58,25 @@ import com.davismiyashiro.weathermapapp.domain.convertKelvinToCelsius
 import com.davismiyashiro.weathermapapp.domain.convertKelvinToFahrenheit
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.Refresh
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.UpdateTemperatureUnit
+import com.slack.circuit.codegen.annotations.CircuitInject
+import dagger.hilt.components.SingletonComponent
+import kotlinx.collections.immutable.ImmutableList
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.format.FormatStyle
-import kotlinx.collections.immutable.ImmutableList
 
 const val TEMPERATURE_KEY = "TEMPERATURE_KEY"
 const val TEMPERATURE_DEFAULT = TEMPERATURE_CELSIUS
 
-@OptIn(ExperimentalMaterial3Api::class)
+@CircuitInject(ForecastListScreen::class, SingletonComponent::class)
 @Composable
-fun ForecastHomeRoute(viewModel: ForecastListViewModel) {
-    val forecastState by viewModel.state.collectAsStateWithLifecycle()
-
+fun ForecastListUi(state: ForecastListState, modifier: Modifier = Modifier) {
     ForecastHomeScreen(
-        forecastState = forecastState,
-        onRefresh = { viewModel.onEvent(Refresh) },
-        onTemperatureUnitSelect = { viewModel.onEvent(UpdateTemperatureUnit(it)) },
+        forecastState = state,
+        onRefresh = { state.eventSink(Refresh) },
+        onTemperatureUnitSelect = { state.eventSink(UpdateTemperatureUnit(it)) },
+        modifier = modifier,
     )
 }
 

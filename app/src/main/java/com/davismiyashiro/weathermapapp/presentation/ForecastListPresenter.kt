@@ -32,74 +32,66 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
-import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.Refresh
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.UpdateTemperatureUnit
 import com.slack.circuit.codegen.annotations.CircuitInject
 import com.slack.circuit.runtime.presenter.Presenter
 import dagger.hilt.components.SingletonComponent
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @CircuitInject(ForecastListScreen::class, SingletonComponent::class)
 class ForecastListPresenter @Inject constructor(
     private val repo: Repository,
-    private val mapper: ForecastListItemMapper,
     private val userPrefs: UserPreferencesRepository,
 ) : Presenter<ForecastListState> {
 
     @Composable
     override fun present(): ForecastListState {
         val temperatureUnit by userPrefs.temperatureUnitFlow.collectAsState(initial = userPrefs.getTemperatureUnit())
+        val forecastItems by repo.weatherFlow.collectAsState(initial = persistentListOf())
+
         var isRefreshing by remember { mutableStateOf(false) }
         var error by remember { mutableStateOf<Throwable?>(null) }
-        var forecastItems by remember {
-            mutableStateOf<ImmutableList<ForecastListItem>>(
-                persistentListOf()
-            )
-        }
-        var isLoading by remember { mutableStateOf(true) }
-
         val scope = rememberCoroutineScope()
 
-        fun loadData() {
-            scope.launch {
-                if (forecastItems.isEmpty()) {
-                    isLoading = true
-                } else {
-                    isRefreshing = true
+        LaunchedEffect(Unit) {
+            try {
+                val items = repo.weatherFlow.firstOrNull()
+                if (items.isNullOrEmpty()) {
+                    repo.refresh()
                 }
                 error = null
-                repo.loadWeatherData()
-                    .catch { e ->
-                        error = e
-                        isLoading = false
-                        isRefreshing = false
-                    }
-                    .collect { items ->
-                        forecastItems = items
-                        isLoading = false
-                        isRefreshing = false
-                    }
+            } catch (e: Exception) {
+                error = e
             }
-        }
-
-        LaunchedEffect(Unit) {
-            loadData()
         }
 
         val eventSink: (ForecastListEvent) -> Unit = { event ->
             when (event) {
-                Refresh -> loadData()
+                Refresh -> {
+                    isRefreshing = true
+                    scope.launch {
+                        try {
+                            repo.refresh()
+                            error = null
+                        } catch (e: Exception) {
+                            error = e
+                        } finally {
+                            isRefreshing = false
+                        }
+                    }
+                }
+
                 is UpdateTemperatureUnit -> userPrefs.setTemperatureUnit(event.unit)
             }
         }
+
+        val isLoading = forecastItems.isEmpty() && error == null
 
         return when {
             isLoading -> ForecastListState.Loading(temperatureUnit, eventSink)

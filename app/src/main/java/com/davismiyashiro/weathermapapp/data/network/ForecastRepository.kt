@@ -29,13 +29,14 @@ import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.Repository
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
 // Hardcoded for testing, but api is deprecated, move to LAT/LONG
 private const val LONDON_ID = 2643743
@@ -43,6 +44,7 @@ private const val LONDON_ID = 2643743
 /**
  * Created by Davis Miyashiro.
  */
+@Singleton
 class ForecastRepository @Inject constructor(
     private val openWeatherApi: OpenWeatherApi,
     private val localRepository: LocalRepository,
@@ -51,19 +53,25 @@ class ForecastRepository @Inject constructor(
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    override fun loadWeatherData(): Flow<ImmutableList<ForecastListItem>> =
-        flow {
-            emit(getAndSaveRemoteData())
-        }.catch { remoteError ->
+    private val _weatherFlow = MutableStateFlow<ImmutableList<ForecastListItem>>(persistentListOf())
+    override val weatherFlow: Flow<ImmutableList<ForecastListItem>> = _weatherFlow.asStateFlow()
+
+    override suspend fun refresh() {
+        try {
+            val remoteData = getAndSaveRemoteData()
+            _weatherFlow.emit(remoteData)
+        } catch (remoteError: Exception) {
             Timber.e(remoteError, "Remote data fetch failed, attempting to load from local.")
-            emitAll(
-                localRepository.loadData()
-                    .catch { localError ->
-                        Timber.e(localError, "Local data fetch also failed.")
-                        throw remoteError
-                    }
-            )
+            try {
+                localRepository.loadData().collect { localData ->
+                    _weatherFlow.emit(localData)
+                }
+            } catch (localError: Exception) {
+                Timber.e(localError, "Local data fetch also failed.")
+                throw remoteError
+            }
         }
+    }
 
     private suspend fun getAndSaveRemoteData(): ImmutableList<ForecastListItem> {
         val placeRemote = openWeatherApi.getForecastById(LONDON_ID)

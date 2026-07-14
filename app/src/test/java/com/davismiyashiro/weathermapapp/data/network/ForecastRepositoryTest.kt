@@ -33,6 +33,7 @@ import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.Repository
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -67,12 +68,16 @@ class ForecastRepositoryTest {
     }
 
     @Test
-    fun `loadWeatherData remote succeeds returns remote data`() = runTest {
+    fun `weatherFlow remote succeeds returns remote data`() = runTest {
         whenever(openWeatherApi.getForecastById(anyInt())).thenReturn(remotePlace)
 
-        repository.loadWeatherData().test {
+        repository.weatherFlow.test {
+            assertEquals(persistentListOf<ForecastListItem>(), awaitItem()) // Initial state
+
+            repository.refresh()
+
             assertEquals(localForecastListItem, awaitItem())
-            awaitComplete()
+            cancelAndIgnoreRemainingEvents()
         }
 
         verify(openWeatherApi, times(1)).getForecastById(anyInt())
@@ -80,31 +85,48 @@ class ForecastRepositoryTest {
     }
 
     @Test
-    fun `loadWeatherData remote fails local succeeds returns local data`() = runTest {
+    fun `weatherFlow remote fails local succeeds returns local data`() = runTest {
         whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw IOException() }
         whenever(localRepository.loadData()).thenReturn(flowOf(localForecastListItem))
 
-        repository.loadWeatherData().test {
+        repository.weatherFlow.test {
+            assertEquals(persistentListOf<ForecastListItem>(), awaitItem()) // Initial state
+
+            repository.refresh()
+
             assertEquals(localForecastListItem, awaitItem())
-            awaitComplete()
+            cancelAndIgnoreRemainingEvents()
         }
 
         verify(openWeatherApi, times(1)).getForecastById(anyInt())
         verify(localRepository, times(1)).loadData()
     }
 
-    @Test
-    fun `loadWeatherData remote fails local fails throws exception`() = runTest {
+    @Test(expected = IOException::class)
+    fun `refresh remote fails local fails throws exception`() = runTest {
         val remoteException = IOException("Remote error")
         whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw remoteException }
         whenever(localRepository.loadData()).thenReturn(flow { throw IOException("Local error") })
 
-        repository.loadWeatherData().test {
-            val error = awaitError()
-            assertEquals(remoteException, error)
+        try {
+            repository.refresh()
+        } finally {
+            verify(openWeatherApi, times(1)).getForecastById(anyInt())
+            verify(localRepository, times(1)).loadData()
         }
+    }
 
-        verify(openWeatherApi, times(1)).getForecastById(anyInt())
-        verify(localRepository, times(1)).loadData()
+    @Test
+    fun `refresh performs work and updates flow`() = runTest {
+        whenever(openWeatherApi.getForecastById(anyInt())).thenReturn(remotePlace)
+
+        repository.weatherFlow.test {
+            assertEquals(persistentListOf<ForecastListItem>(), awaitItem()) // Initial state
+
+            repository.refresh()
+
+            assertEquals(localForecastListItem, awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 }

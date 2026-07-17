@@ -2,7 +2,7 @@
 
 An app that displays 5 day weather forecast from http://openweathermap.org for London.
 
-App built to experiment with Circuit, Jetpack Compose, Dagger Hilt, Coroutines and Retrofit.
+App built to experiment with Circuit, Jetpack Compose, Dagger Hilt, Coroutines and Ktor.
 
 | Main Screen |
 |:---:|
@@ -31,7 +31,7 @@ App built to experiment with Circuit, Jetpack Compose, Dagger Hilt, Coroutines a
 - Slack's Circuit
 - Jetpack Compose
 - Coroutines
-- Retrofit 2
+- Ktor
 - Kotlin Serializer
 - Coil
 - ThreeTenABP

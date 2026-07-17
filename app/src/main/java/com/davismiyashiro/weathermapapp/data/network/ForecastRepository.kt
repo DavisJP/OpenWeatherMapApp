@@ -27,7 +27,10 @@ package com.davismiyashiro.weathermapapp.data.network
 import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
+import com.davismiyashiro.weathermapapp.domain.NetworkConnectivity
 import com.davismiyashiro.weathermapapp.domain.Repository
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.ServerResponseException
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
@@ -49,6 +52,7 @@ class ForecastRepository @Inject constructor(
     private val openWeatherApi: OpenWeatherApi,
     private val localRepository: LocalRepository,
     private val forecastListItemMapper: ForecastListItemMapper,
+    private val networkConnectivity: NetworkConnectivity,
 ) : Repository {
 
     private val json = Json { ignoreUnknownKeys = true }
@@ -57,19 +61,26 @@ class ForecastRepository @Inject constructor(
     override val weatherFlow: Flow<ImmutableList<ForecastListItem>> = _weatherFlow.asStateFlow()
 
     override suspend fun refresh() {
+        if (!networkConnectivity.isOnline()) {
+            Timber.d("Offline: loading from local storage.")
+            localRepository.loadData().collect { localData ->
+                _weatherFlow.emit(localData)
+            }
+            return
+        }
+
         try {
             val remoteData = getAndSaveRemoteData()
             _weatherFlow.emit(remoteData)
-        } catch (remoteError: Exception) {
-            Timber.e(remoteError, "Remote data fetch failed, attempting to load from local.")
-            try {
-                localRepository.loadData().collect { localData ->
-                    _weatherFlow.emit(localData)
-                }
-            } catch (localError: Exception) {
-                Timber.e(localError, "Local data fetch also failed.")
-                throw remoteError
-            }
+        } catch (e: ClientRequestException) {
+            Timber.e("Client error: ${e.response.status}")
+            throw e
+        } catch (e: ServerResponseException) {
+            Timber.e("Server error: ${e.response.status}")
+            throw e
+        } catch (e: Exception) {
+            Timber.e(e, "Unexpected error")
+            throw e // Propagate error when online
         }
     }
 

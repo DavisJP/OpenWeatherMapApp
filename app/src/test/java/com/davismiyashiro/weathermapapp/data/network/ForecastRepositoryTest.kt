@@ -31,10 +31,17 @@ import com.davismiyashiro.weathermapapp.data.dtos.Place
 import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
+import com.davismiyashiro.weathermapapp.domain.NetworkConnectivity
 import com.davismiyashiro.weathermapapp.domain.Repository
+import io.ktor.client.call.HttpClientCall
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.ServerResponseException
+import io.ktor.client.request.HttpRequest
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
@@ -42,6 +49,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.mock
@@ -54,6 +63,7 @@ class ForecastRepositoryTest {
 
     private val openWeatherApi: OpenWeatherApi = mock()
     private val localRepository: LocalRepository = mock()
+    private val networkConnectivity: NetworkConnectivity = mock()
     private lateinit var remotePlace: Place
     private lateinit var localPlace: Place
     private lateinit var localForecastListItem: ImmutableList<ForecastListItem>
@@ -64,11 +74,17 @@ class ForecastRepositoryTest {
         remotePlace = Place("remote", 10.0, 1, mutableListOf(Conditions()), City())
         localPlace = Place("local", 10.0, 1, mutableListOf(Conditions()), City())
         localForecastListItem = ForecastListItemMapper().mapPlaceToForecastListItem(localPlace)
-        repository = ForecastRepository(openWeatherApi, localRepository, ForecastListItemMapper())
+        repository = ForecastRepository(
+            openWeatherApi,
+            localRepository,
+            ForecastListItemMapper(),
+            networkConnectivity
+        )
     }
 
     @Test
-    fun `weatherFlow remote succeeds returns remote data`() = runTest {
+    fun `refresh online remote succeeds updates weatherFlow and local storage`() = runTest {
+        whenever(networkConnectivity.isOnline()).thenReturn(true)
         whenever(openWeatherApi.getForecastById(anyInt())).thenReturn(remotePlace)
 
         repository.weatherFlow.test {
@@ -82,11 +98,12 @@ class ForecastRepositoryTest {
 
         verify(openWeatherApi, times(1)).getForecastById(anyInt())
         verify(localRepository, times(1)).storeData(json.encodeToString(remotePlace))
+        verify(localRepository, never()).loadData()
     }
 
     @Test
-    fun `weatherFlow remote fails local succeeds returns local data`() = runTest {
-        whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw IOException() }
+    fun `refresh offline loads from local storage`() = runTest {
+        whenever(networkConnectivity.isOnline()).thenReturn(false)
         whenever(localRepository.loadData()).thenReturn(flowOf(localForecastListItem))
 
         repository.weatherFlow.test {
@@ -98,35 +115,69 @@ class ForecastRepositoryTest {
             cancelAndIgnoreRemainingEvents()
         }
 
-        verify(openWeatherApi, times(1)).getForecastById(anyInt())
+        verify(openWeatherApi, never()).getForecastById(anyInt())
         verify(localRepository, times(1)).loadData()
+        verify(localRepository, never()).storeData(anyString())
     }
 
     @Test(expected = IOException::class)
-    fun `refresh remote fails local fails throws exception`() = runTest {
+    fun `refresh online remote fails propagates exception`() = runTest {
+        whenever(networkConnectivity.isOnline()).thenReturn(true)
         val remoteException = IOException("Remote error")
         whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw remoteException }
-        whenever(localRepository.loadData()).thenReturn(flow { throw IOException("Local error") })
 
         try {
             repository.refresh()
         } finally {
             verify(openWeatherApi, times(1)).getForecastById(anyInt())
-            verify(localRepository, times(1)).loadData()
+            verify(localRepository, never()).loadData()
+            verify(localRepository, never()).storeData(anyString())
         }
     }
 
-    @Test
-    fun `refresh performs work and updates flow`() = runTest {
-        whenever(openWeatherApi.getForecastById(anyInt())).thenReturn(remotePlace)
+    @Test(expected = ClientRequestException::class)
+    fun `refresh online client error propagates exception`() = runTest {
+        whenever(networkConnectivity.isOnline()).thenReturn(true)
+        val response: HttpResponse = mock()
+        val call: HttpClientCall = mock()
+        val request: HttpRequest = mock()
+        whenever(response.call).thenReturn(call)
+        whenever(call.request).thenReturn(request)
+        whenever(request.method).thenReturn(HttpMethod.Get)
+        whenever(response.status).thenReturn(HttpStatusCode.Unauthorized)
+        
+        val clientException = ClientRequestException(response, "Unauthorized")
+        whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw clientException }
 
-        repository.weatherFlow.test {
-            assertEquals(persistentListOf<ForecastListItem>(), awaitItem()) // Initial state
-
+        try {
             repository.refresh()
+        } finally {
+            verify(openWeatherApi, times(1)).getForecastById(anyInt())
+            verify(localRepository, never()).loadData()
+            verify(localRepository, never()).storeData(anyString())
+        }
+    }
 
-            assertEquals(localForecastListItem, awaitItem())
-            cancelAndIgnoreRemainingEvents()
+    @Test(expected = ServerResponseException::class)
+    fun `refresh online server error propagates exception`() = runTest {
+        whenever(networkConnectivity.isOnline()).thenReturn(true)
+        val response: HttpResponse = mock()
+        val call: HttpClientCall = mock()
+        val request: HttpRequest = mock()
+        whenever(response.call).thenReturn(call)
+        whenever(call.request).thenReturn(request)
+        whenever(request.method).thenReturn(HttpMethod.Get)
+        whenever(response.status).thenReturn(HttpStatusCode.InternalServerError)
+        
+        val serverException = ServerResponseException(response, "Internal Server Error")
+        whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw serverException }
+
+        try {
+            repository.refresh()
+        } finally {
+            verify(openWeatherApi, times(1)).getForecastById(anyInt())
+            verify(localRepository, never()).loadData()
+            verify(localRepository, never()).storeData(anyString())
         }
     }
 }

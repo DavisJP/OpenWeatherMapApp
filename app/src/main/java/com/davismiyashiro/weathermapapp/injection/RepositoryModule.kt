@@ -28,6 +28,7 @@ import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.data.network.ForecastRepository
 import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
+import com.davismiyashiro.weathermapapp.domain.NetworkConnectivity
 import com.davismiyashiro.weathermapapp.domain.Repository
 import dagger.Module
 import dagger.Provides
@@ -44,7 +45,13 @@ class RepositoryModule {
         openWeatherApi: OpenWeatherApi,
         localRepository: LocalRepository,
         forecastListItemMapper: ForecastListItemMapper,
+        networkConnectivity: NetworkConnectivity,
     ): Repository {
-        return ForecastRepository(openWeatherApi, localRepository, forecastListItemMapper)
+        return ForecastRepository(
+            openWeatherApi,
+            localRepository,
+            forecastListItemMapper,
+            networkConnectivity
+        )
     }
 }

@@ -25,31 +25,35 @@
 package com.davismiyashiro.weathermapapp.injection
 
 import android.app.Application
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
+import com.davismiyashiro.weathermapapp.data.network.AndroidNetworkConnectivity
 import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
+import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApiImpl
 import com.davismiyashiro.weathermapapp.data.storage.ForecastLocalRepository
 import com.davismiyashiro.weathermapapp.data.storage.SharedPreferenceStorage
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
+import com.davismiyashiro.weathermapapp.domain.NetworkConnectivity
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.cache.HttpCache
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.http.encodedPath
+import io.ktor.http.takeFrom
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import okhttp3.Cache
-import okhttp3.Interceptor
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Response
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
-import java.io.File
+import timber.log.Timber
 import javax.inject.Singleton
 
-private const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
+private const val API_HOST = "api.openweathermap.org"
+private const val BASE_URL = "https://$API_HOST/data/2.5/"
 private const val APP_ID_PARAM = "appid"
 private const val APP_ID = "3e29cf11d4eabe8eba6cf25d535eaac2"
 
@@ -62,93 +66,50 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(application: Application): OkHttpClient {
-        val httpCacheDirectory = File(application.cacheDir, "responses")
-        val cacheSize = 10 * 1024 * 1024 // 10MB
-        val cache = Cache(httpCacheDirectory, cacheSize.toLong())
-
-        val urlBuilder = Interceptor { chain ->
-            chain.proceed(
-                chain.request()
-                    .newBuilder()
-                    .url(
-                        chain.request()
-                            .url
-                            .newBuilder()
-                            .addQueryParameter(APP_ID_PARAM, APP_ID)
-                            .build(),
-                    )
-                    .build(),
-            )
-        }
-
-        return OkHttpClient.Builder()
-            .addNetworkInterceptor { chain ->
-                val originalResponse: Response = chain.proceed(chain.request())
-                addHttpClientHeader(application, originalResponse)
+    fun provideHttpClient(): HttpClient {
+        return HttpClient(Android) {
+            install(ContentNegotiation) {
+                json(Json {
+                    ignoreUnknownKeys = true
+                })
             }
-            .addInterceptor(urlBuilder)
-            .addInterceptor(
-                HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BODY
-                },
-            )
-            .cache(cache)
-            .build()
-    }
-
-    private fun addHttpClientHeader(
-        application: Application,
-        originalResponse: Response
-    ): Response {
-        return if (isOnline(application)) {
-            val maxAge = 60 // read from cache for 1 minute
-            originalResponse.newBuilder()
-                .header("Cache-Control", "public, max-age=$maxAge")
-                .build()
-        } else { // TODO: Check API to use right max-age and max-stale
-            val maxStale = 60 * 60 * 24 * 28 // tolerate 4-weeks stale
-            originalResponse.newBuilder()
-                .header("Cache-Control", "public, only-if-cached, max-stale=$maxStale")
-                .build()
-        }
-    }
-
-    private fun isOnline(context: Context): Boolean {
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = cm.activeNetwork
-        val networkCapabilities = activeNetwork?.let(cm::getNetworkCapabilities)
-        return when {
-            networkCapabilities == null -> false
-            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
-            else -> false
+            install(Logging) {
+                logger = object : Logger {
+                    override fun log(message: String) {
+                        Timber.tag("HttpClient").d(message)
+                    }
+                }
+                level = LogLevel.BODY
+                filter { request ->
+                    request.url.host == API_HOST
+                }
+            }
+            install(HttpCache)
+            defaultRequest {
+                if (url.host.isEmpty() || url.host == API_HOST) {
+                    val originalPath = url.encodedPath
+                    url.takeFrom(BASE_URL)
+                    url.encodedPath =
+                        (url.encodedPath.removeSuffix("/") + "/" + originalPath.removePrefix("/")).replace(
+                            "//",
+                            "/"
+                        )
+                    url.parameters.append(APP_ID_PARAM, APP_ID)
+                }
+            }
         }
     }
 
     @Provides
     @Singleton
-    fun provideRetrofit(client: OkHttpClient): Retrofit {
-        val json = Json {
-            ignoreUnknownKeys = true
-        }
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(
-                json.asConverterFactory(
-                    "application/json; charset=utf-8".toMediaType()
-                )
-            )
-            .client(client)
-            .build()
+    fun provideNetworkConnectivity(application: Application): NetworkConnectivity {
+        return AndroidNetworkConnectivity(application)
     }
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): OpenWeatherApi {
-        return retrofit.create(OpenWeatherApi::class.java)
+    fun provideApiService(client: HttpClient): OpenWeatherApi {
+        return OpenWeatherApiImpl(client)
     }
 
     @Provides

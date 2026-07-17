@@ -40,7 +40,6 @@ import com.slack.circuit.codegen.annotations.CircuitInject
 import com.slack.circuit.runtime.presenter.Presenter
 import dagger.hilt.components.SingletonComponent
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -61,10 +60,7 @@ class ForecastListPresenter @Inject constructor(
 
         LaunchedEffect(Unit) {
             try {
-                val items = repo.weatherFlow.firstOrNull()
-                if (items.isNullOrEmpty()) {
-                    repo.refresh()
-                }
+                repo.refresh()
                 error = null
             } catch (e: Exception) {
                 error = e

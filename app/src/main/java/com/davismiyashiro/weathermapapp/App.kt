@@ -25,16 +25,49 @@
 package com.davismiyashiro.weathermapapp
 
 import android.app.Application
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import coil3.annotation.ExperimentalCoilApi
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
+import coil3.network.ktor3.KtorNetworkFetcherFactory
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
+import io.ktor.client.HttpClient
+import okio.Path.Companion.toPath
 import timber.log.Timber
+import javax.inject.Inject
 
 /**
  * Created by Davis Miyashiro on 12/12/2017.
  */
 
 @HiltAndroidApp
-open class App : Application() {
+open class App : Application(), SingletonImageLoader.Factory {
+
+    @Inject
+    lateinit var httpClient: HttpClient
+
+    @OptIn(ExperimentalCoilApi::class)
+    override fun newImageLoader(context: PlatformContext): ImageLoader {
+        return ImageLoader.Builder(context)
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizePercent(context, 0.25)
+                    .build()
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(context.cacheDir.resolve("image_cache").path.toPath())
+                    .maxSizePercent(0.02) // 2% of disk space
+                    .build()
+            }
+            .components {
+                add(KtorNetworkFetcherFactory(httpClient))
+            }
+            .build()
+    }
 
     override fun onCreate() {
         super.onCreate()

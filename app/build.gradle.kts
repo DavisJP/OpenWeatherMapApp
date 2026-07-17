@@ -99,15 +99,17 @@ dependencies {
     ksp(libs.metadata.jvm)
 
     // Network
-    implementation(libs.okhttp.logging.interceptor)
-    implementation(libs.retrofit.core)
-    implementation(libs.retrofit.converter.kotlin.serialization)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.client.logging)
 
     implementation(libs.timber)
 
     implementation(libs.coil.core)
     implementation(libs.coil.compose)
-    implementation(libs.coil.network.okhttp)
+    implementation(libs.coil.network.ktor)
 
     implementation(libs.threeTenAbp)
     implementation(libs.kotlinx.collections.immutable)

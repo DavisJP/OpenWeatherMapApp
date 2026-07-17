@@ -25,13 +25,22 @@
 package com.davismiyashiro.weathermapapp.data.network
 
 import com.davismiyashiro.weathermapapp.data.dtos.Place
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
+import javax.inject.Inject
 
 /**
  * Created by Davis Miyashiro.
  */
+class OpenWeatherApiImpl @Inject constructor(
+    private val httpClient: HttpClient
+) : OpenWeatherApi {
 
-// http://api.openweathermap.org/data/2.5/forecast?q=London&appid=3e29cf11d4eabe8eba6cf25d535eaac2&cnt=5
-interface OpenWeatherApi {
-
-    suspend fun getForecastById(place: Int): Place
+    override suspend fun getForecastById(place: Int): Place {
+        return httpClient.get("forecast") {
+            parameter("id", place)
+        }.body()
+    }
 }

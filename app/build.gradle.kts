@@ -25,14 +25,14 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt)
+    alias(libs.plugins.metro)
     alias(libs.plugins.kotlinCompose)
     alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.kotlinSerialization)
 }
 
 ksp {
-    arg("circuit.codegen.mode", "HILT")
+    arg("circuit.codegen.mode", "METRO")
 }
 
 kotlin {
@@ -94,9 +94,8 @@ dependencies {
     implementation(libs.compose.material.icons)
 
     // DI
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    ksp(libs.metadata.jvm)
+    implementation(libs.metro.runtime)
+    implementation(libs.javax.inject)
 
     // Network
     implementation(libs.ktor.client.core)
@@ -141,7 +140,4 @@ dependencies {
     androidTestImplementation(composeBom)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    androidTestImplementation(libs.hilt.android.testing)
-    kspAndroidTest(libs.hilt.compiler)
-    kspAndroidTest(libs.metadata.jvm)
 }

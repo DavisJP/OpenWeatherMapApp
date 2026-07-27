@@ -29,6 +29,8 @@ import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.NetworkConnectivity
 import com.davismiyashiro.weathermapapp.domain.Repository
+import com.davismiyashiro.weathermapapp.injection.SingleInApp
+import dev.zacsweers.metro.Inject
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import kotlinx.collections.immutable.ImmutableList
@@ -38,8 +40,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.Json
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
 // Hardcoded for testing, but api is deprecated, move to LAT/LONG
 private const val LONDON_ID = 2643743
@@ -47,7 +47,7 @@ private const val LONDON_ID = 2643743
 /**
  * Created by Davis Miyashiro.
  */
-@Singleton
+@SingleInApp
 class ForecastRepository @Inject constructor(
     private val openWeatherApi: OpenWeatherApi,
     private val localRepository: LocalRepository,

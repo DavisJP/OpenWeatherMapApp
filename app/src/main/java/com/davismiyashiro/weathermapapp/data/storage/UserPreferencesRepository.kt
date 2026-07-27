@@ -6,16 +6,15 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.davismiyashiro.weathermapapp.presentation.TEMPERATURE_DEFAULT
 import com.davismiyashiro.weathermapapp.presentation.TEMPERATURE_KEY
-import dagger.hilt.android.qualifiers.ApplicationContext
+import com.davismiyashiro.weathermapapp.injection.SingleInApp
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
+@SingleInApp
 class UserPreferencesRepository @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+    private val context: Context,
 ) {
     private val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 

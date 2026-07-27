@@ -4,7 +4,7 @@ import com.davismiyashiro.weathermapapp.data.dtos.Place
 import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import javax.inject.Inject
+import dev.zacsweers.metro.Inject
 
 open class ForecastListItemMapper @Inject constructor() {
     fun mapPlaceToForecastListItem(data: Place?): ImmutableList<ForecastListItem> {

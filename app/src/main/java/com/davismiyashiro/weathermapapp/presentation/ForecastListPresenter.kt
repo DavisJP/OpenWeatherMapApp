@@ -36,14 +36,14 @@ import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.Refresh
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.UpdateTemperatureUnit
+import com.davismiyashiro.weathermapapp.injection.AppScope
 import com.slack.circuit.codegen.annotations.CircuitInject
 import com.slack.circuit.runtime.presenter.Presenter
-import dagger.hilt.components.SingletonComponent
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import dev.zacsweers.metro.Inject
 
-@CircuitInject(ForecastListScreen::class, SingletonComponent::class)
+@CircuitInject(ForecastListScreen::class, AppScope::class)
 class ForecastListPresenter @Inject constructor(
     private val repo: Repository,
     private val userPrefs: UserPreferencesRepository,

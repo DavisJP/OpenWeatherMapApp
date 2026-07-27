@@ -25,6 +25,7 @@
 package com.davismiyashiro.weathermapapp.injection
 
 import android.app.Application
+import android.content.Context
 import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.data.network.AndroidNetworkConnectivity
 import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
@@ -33,10 +34,9 @@ import com.davismiyashiro.weathermapapp.data.storage.ForecastLocalRepository
 import com.davismiyashiro.weathermapapp.data.storage.SharedPreferenceStorage
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.NetworkConnectivity
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
+import dev.zacsweers.metro.BindingContainer
+import dev.zacsweers.metro.ContributesTo
+import dev.zacsweers.metro.Provides
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.cache.HttpCache
@@ -50,22 +50,21 @@ import io.ktor.http.takeFrom
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import timber.log.Timber
-import javax.inject.Singleton
 
 private const val API_HOST = "api.openweathermap.org"
 private const val BASE_URL = "https://$API_HOST/data/2.5/"
 private const val APP_ID_PARAM = "appid"
 private const val APP_ID = "3e29cf11d4eabe8eba6cf25d535eaac2"
 
-/**
- * Created by Davis Miyashiro.
- */
-@InstallIn(SingletonComponent::class)
-@Module
-class NetworkModule {
+@BindingContainer
+@ContributesTo(AppScope::class)
+object NetworkModule {
 
     @Provides
-    @Singleton
+    fun provideContext(application: Application): Context = application
+
+    @Provides
+    @SingleInApp
     fun provideHttpClient(): HttpClient {
         return HttpClient(Android) {
             install(ContentNegotiation) {
@@ -101,19 +100,19 @@ class NetworkModule {
     }
 
     @Provides
-    @Singleton
+    @SingleInApp
     fun provideNetworkConnectivity(application: Application): NetworkConnectivity {
         return AndroidNetworkConnectivity(application)
     }
 
     @Provides
-    @Singleton
+    @SingleInApp
     fun provideApiService(client: HttpClient): OpenWeatherApi {
         return OpenWeatherApiImpl(client)
     }
 
     @Provides
-    @Singleton
+    @SingleInApp
     fun provideLocalRepository(application: Application): LocalRepository {
         return ForecastLocalRepository(
             SharedPreferenceStorage(application),

@@ -29,7 +29,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import javax.inject.Inject
+import dev.zacsweers.metro.Inject
 
 /**
  * Created by Davis Miyashiro.

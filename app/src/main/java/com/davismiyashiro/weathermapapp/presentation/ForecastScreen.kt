@@ -57,10 +57,10 @@ import com.davismiyashiro.weathermapapp.domain.TEMPERATURE_CELSIUS
 import com.davismiyashiro.weathermapapp.domain.TEMPERATURE_FAHRENHEIT
 import com.davismiyashiro.weathermapapp.domain.convertKelvinToCelsius
 import com.davismiyashiro.weathermapapp.domain.convertKelvinToFahrenheit
+import com.davismiyashiro.weathermapapp.injection.AppScope
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.Refresh
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.UpdateTemperatureUnit
 import com.slack.circuit.codegen.annotations.CircuitInject
-import dagger.hilt.components.SingletonComponent
 import kotlinx.collections.immutable.ImmutableList
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
@@ -70,7 +70,7 @@ import org.threeten.bp.format.FormatStyle
 const val TEMPERATURE_KEY = "TEMPERATURE_KEY"
 const val TEMPERATURE_DEFAULT = TEMPERATURE_CELSIUS
 
-@CircuitInject(ForecastListScreen::class, SingletonComponent::class)
+@CircuitInject(ForecastListScreen::class, AppScope::class)
 @Composable
 fun ForecastListUi(state: ForecastListState, modifier: Modifier = Modifier) {
     ForecastHomeScreen(

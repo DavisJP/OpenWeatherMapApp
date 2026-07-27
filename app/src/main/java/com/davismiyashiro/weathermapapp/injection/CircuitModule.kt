@@ -3,31 +3,22 @@ package com.davismiyashiro.weathermapapp.injection
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.runtime.presenter.Presenter
 import com.slack.circuit.runtime.ui.Ui
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import dagger.multibindings.Multibinds
+import dev.zacsweers.metro.BindingContainer
+import dev.zacsweers.metro.ContributesTo
+import dev.zacsweers.metro.Provides
 
-@Module
-@InstallIn(SingletonComponent::class)
-interface CircuitModule {
-    @Multibinds
-    fun presenterFactories(): Set<Presenter.Factory>
-
-    @Multibinds
-    fun uiFactories(): Set<Ui.Factory>
-
-    companion object {
-        @Provides
-        fun provideCircuit(
-            presenterFactories: Set<@JvmSuppressWildcards Presenter.Factory>,
-            uiFactories: Set<@JvmSuppressWildcards Ui.Factory>,
-        ): Circuit {
-            return Circuit.Builder()
-                .addPresenterFactories(presenterFactories)
-                .addUiFactories(uiFactories)
-                .build()
-        }
+@BindingContainer
+@ContributesTo(AppScope::class)
+object CircuitModule {
+    @Provides
+    @SingleInApp
+    fun provideCircuit(
+        presenterFactories: Set<Presenter.Factory>,
+        uiFactories: Set<Ui.Factory>,
+    ): Circuit {
+        return Circuit.Builder()
+            .addPresenterFactories(presenterFactories)
+            .addUiFactories(uiFactories)
+            .build()
     }
 }

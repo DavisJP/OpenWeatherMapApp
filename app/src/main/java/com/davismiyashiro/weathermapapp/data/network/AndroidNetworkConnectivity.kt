@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.davismiyashiro.weathermapapp.domain.NetworkConnectivity
-import javax.inject.Inject
+import dev.zacsweers.metro.Inject
 
 /**
  * Android implementation of [NetworkConnectivity].

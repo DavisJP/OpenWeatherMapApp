@@ -30,17 +30,15 @@ import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.NetworkConnectivity
 import com.davismiyashiro.weathermapapp.domain.Repository
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+import dev.zacsweers.metro.BindingContainer
+import dev.zacsweers.metro.ContributesTo
+import dev.zacsweers.metro.Provides
 
-@InstallIn(SingletonComponent::class)
-@Module
-class RepositoryModule {
+@BindingContainer
+@ContributesTo(AppScope::class)
+object RepositoryModule {
     @Provides
-    @Singleton
+    @SingleInApp
     fun provideForecastRepository(
         openWeatherApi: OpenWeatherApi,
         localRepository: LocalRepository,

@@ -35,7 +35,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import javax.inject.Inject
+import dev.zacsweers.metro.Inject
 
 private const val KEY_PLACE = "KEY_PLACE"
 

@@ -32,39 +32,34 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.davismiyashiro.weathermapapp.App
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.jakewharton.threetenabp.AndroidThreeTen
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import javax.inject.Inject
 
 /**
  * Created by Davis Miyashiro on 18/12/2017.
  */
 
-@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class ForecastListActivityTest {
 
-    @get:Rule(order = 0)
-    val hiltRule = HiltAndroidRule(this)
-
-    @get:Rule(order = 1)
+    @get:Rule
     val composeTestRule = createAndroidComposeRule<ForecastListActivity>()
 
-    @Inject
     lateinit var repository: Repository
 
     @Before
     fun setUp() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as App
+        repository = appContext.appGraph.repository
+        
         AndroidThreeTen.init(InstrumentationRegistry.getInstrumentation().targetContext)
-        hiltRule.inject()
     }
 
     @Test

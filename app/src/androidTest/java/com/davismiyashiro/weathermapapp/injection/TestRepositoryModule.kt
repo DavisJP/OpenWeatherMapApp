@@ -24,21 +24,14 @@
 
 package com.davismiyashiro.weathermapapp.injection
 
-import com.davismiyashiro.weathermapapp.data.storage.SharedPreferenceStorage
-import com.davismiyashiro.weathermapapp.domain.Storage
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
+import com.davismiyashiro.weathermapapp.data.network.FakeForecastRepository
+import com.davismiyashiro.weathermapapp.domain.Repository
+import dev.zacsweers.metro.BindingContainer
+import dev.zacsweers.metro.Provides
 
-/**
- * Created by Davis Miyashiro.
- */
-
-@InstallIn(SingletonComponent::class)
-@Module
-abstract class StorageModule {
-
-    @Binds
-    abstract fun provideDefaultSharedPref(storage: SharedPreferenceStorage): Storage
+@BindingContainer
+object TestRepositoryModule {
+    @Provides
+    @SingleInApp
+    fun provideRepository(): Repository = FakeForecastRepository()
 }

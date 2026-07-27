@@ -32,22 +32,19 @@ import coil3.annotation.ExperimentalCoilApi
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
+import com.davismiyashiro.weathermapapp.injection.AppGraph
 import com.jakewharton.threetenabp.AndroidThreeTen
-import dagger.hilt.android.HiltAndroidApp
-import io.ktor.client.HttpClient
+import dev.zacsweers.metro.createGraphFactory
 import okio.Path.Companion.toPath
 import timber.log.Timber
-import javax.inject.Inject
 
 /**
  * Created by Davis Miyashiro on 12/12/2017.
  */
 
-@HiltAndroidApp
 open class App : Application(), SingletonImageLoader.Factory {
 
-    @Inject
-    lateinit var httpClient: HttpClient
+    lateinit var appGraph: AppGraph
 
     @OptIn(ExperimentalCoilApi::class)
     override fun newImageLoader(context: PlatformContext): ImageLoader {
@@ -64,7 +61,7 @@ open class App : Application(), SingletonImageLoader.Factory {
                     .build()
             }
             .components {
-                add(KtorNetworkFetcherFactory(httpClient))
+                add(KtorNetworkFetcherFactory(appGraph.httpClient))
             }
             .build()
     }
@@ -72,9 +69,15 @@ open class App : Application(), SingletonImageLoader.Factory {
     override fun onCreate() {
         super.onCreate()
 
+        appGraph = createGraph()
+
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
         AndroidThreeTen.init(this)
+    }
+
+    open fun createGraph(): AppGraph {
+        return createGraphFactory<AppGraph.Factory>().create(this)
     }
 }

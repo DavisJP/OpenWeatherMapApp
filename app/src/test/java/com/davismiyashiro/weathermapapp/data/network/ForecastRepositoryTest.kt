@@ -33,25 +33,26 @@ import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.NetworkConnectivity
 import com.davismiyashiro.weathermapapp.domain.Repository
-import io.ktor.client.call.HttpClientCall
+import dev.mokkery.answering.returns
+import dev.mokkery.answering.throws
+import dev.mokkery.every
+import dev.mokkery.everySuspend
+import dev.mokkery.matcher.any
+import dev.mokkery.mock
+import dev.mokkery.verifySuspend
+import dev.mokkery.verify.VerifyMode.Companion.not
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
-import io.ktor.client.request.HttpRequest
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.HttpMethod
+import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito.never
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 import java.io.IOException
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -85,8 +86,9 @@ class ForecastRepositoryTest {
 
     @Test
     fun `refresh online remote succeeds updates weatherFlow and local storage`() = runTest {
-        whenever(networkConnectivity.isOnline()).thenReturn(true)
-        whenever(openWeatherApi.getForecastById(anyInt())).thenReturn(remotePlace)
+        every { networkConnectivity.isOnline() } returns true
+        everySuspend { openWeatherApi.getForecastById(any()) } returns remotePlace
+        everySuspend { localRepository.storeData(any()) } returns Unit
 
         repository.weatherFlow.test {
             assertEquals(persistentListOf<ForecastListItem>(), awaitItem()) // Initial state
@@ -97,18 +99,18 @@ class ForecastRepositoryTest {
             cancelAndIgnoreRemainingEvents()
         }
 
-        verify(openWeatherApi, times(1)).getForecastById(anyInt())
-        verify(localRepository, times(1)).storeData(json.encodeToString(remotePlace))
-        verify(localRepository, never()).loadData()
+        verifySuspend { openWeatherApi.getForecastById(any()) }
+        verifySuspend { localRepository.storeData(json.encodeToString(remotePlace)) }
+        verifySuspend(not) { localRepository.loadData() }
     }
 
     @Test
     fun `refresh offline loads from local storage`() = runTest {
-        whenever(networkConnectivity.isOnline()).thenReturn(false)
-        whenever(localRepository.loadData()).thenReturn(flowOf(localForecastListItem))
+        every { networkConnectivity.isOnline() } returns false
+        everySuspend { localRepository.loadData() } returns flowOf(localForecastListItem)
 
         repository.weatherFlow.test {
-            assertEquals(persistentListOf<ForecastListItem>(), awaitItem()) // Initial state
+            assertEquals(persistentListOf(), awaitItem()) // Initial state
 
             repository.refresh()
 
@@ -116,69 +118,81 @@ class ForecastRepositoryTest {
             cancelAndIgnoreRemainingEvents()
         }
 
-        verify(openWeatherApi, never()).getForecastById(anyInt())
-        verify(localRepository, times(1)).loadData()
-        verify(localRepository, never()).storeData(anyString())
+        verifySuspend(not) { openWeatherApi.getForecastById(any()) }
+        verifySuspend { localRepository.loadData() }
+        verifySuspend(not) { localRepository.storeData(any()) }
     }
 
     @Test
     fun `refresh online remote fails propagates exception`() = runTest {
-        whenever(networkConnectivity.isOnline()).thenReturn(true)
+        every { networkConnectivity.isOnline() } returns true
         val remoteException = IOException("Remote error")
-        whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw remoteException }
+        everySuspend { openWeatherApi.getForecastById(any()) } throws remoteException
 
         assertFailsWith<IOException> {
             repository.refresh()
         }
         
-        verify(openWeatherApi, times(1)).getForecastById(anyInt())
-        verify(localRepository, never()).loadData()
-        verify(localRepository, never()).storeData(anyString())
+        verifySuspend { openWeatherApi.getForecastById(any()) }
+        verifySuspend(not) { localRepository.loadData() }
+        verifySuspend(not) { localRepository.storeData(any()) }
     }
 
     @Test
     fun `refresh online client error propagates exception`() = runTest {
-        whenever(networkConnectivity.isOnline()).thenReturn(true)
-        val response: HttpResponse = mock()
-        val call: HttpClientCall = mock()
-        val request: HttpRequest = mock()
-        whenever(response.call).thenReturn(call)
-        whenever(call.request).thenReturn(request)
-        whenever(request.method).thenReturn(HttpMethod.Get)
-        whenever(response.status).thenReturn(HttpStatusCode.Unauthorized)
+        every { networkConnectivity.isOnline() } returns true
         
-        val clientException = ClientRequestException(response, "Unauthorized")
-        whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw clientException }
+        val clientException = createClientRequestException(HttpStatusCode.Unauthorized)
+        everySuspend { openWeatherApi.getForecastById(any()) } throws clientException
 
         assertFailsWith<ClientRequestException> {
             repository.refresh()
         }
 
-        verify(openWeatherApi, times(1)).getForecastById(anyInt())
-        verify(localRepository, never()).loadData()
-        verify(localRepository, never()).storeData(anyString())
+        verifySuspend { openWeatherApi.getForecastById(any()) }
+        verifySuspend(not) { localRepository.loadData() }
+        verifySuspend(not) { localRepository.storeData(any()) }
     }
 
     @Test
     fun `refresh online server error propagates exception`() = runTest {
-        whenever(networkConnectivity.isOnline()).thenReturn(true)
-        val response: HttpResponse = mock()
-        val call: HttpClientCall = mock()
-        val request: HttpRequest = mock()
-        whenever(response.call).thenReturn(call)
-        whenever(call.request).thenReturn(request)
-        whenever(request.method).thenReturn(HttpMethod.Get)
-        whenever(response.status).thenReturn(HttpStatusCode.InternalServerError)
+        every { networkConnectivity.isOnline() } returns true
         
-        val serverException = ServerResponseException(response, "Internal Server Error")
-        whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw serverException }
+        val serverException = createServerResponseException(HttpStatusCode.InternalServerError)
+        everySuspend { openWeatherApi.getForecastById(any()) } throws serverException
 
         assertFailsWith<ServerResponseException> {
             repository.refresh()
         }
 
-        verify(openWeatherApi, times(1)).getForecastById(anyInt())
-        verify(localRepository, never()).loadData()
-        verify(localRepository, never()).storeData(anyString())
+        verifySuspend { openWeatherApi.getForecastById(any()) }
+        verifySuspend(not) { localRepository.loadData() }
+        verifySuspend(not) { localRepository.storeData(any()) }
+    }
+
+    private suspend fun createClientRequestException(status: HttpStatusCode): ClientRequestException {
+        val engine = MockEngine { respond("", status) }
+        val httpClient = HttpClient(engine) {
+            expectSuccess = true
+        }
+        return try {
+            httpClient.get("https://localhost")
+            throw IllegalStateException("Should have thrown ClientRequestException")
+        } catch (e: ClientRequestException) {
+            e
+        }
+    }
+
+    private suspend fun createServerResponseException(status: HttpStatusCode): ServerResponseException {
+        val engine = MockEngine { respond("", status) }
+        val httpClient = HttpClient(engine) {
+            expectSuccess = true
+        }
+        return try {
+            httpClient.get("https://localhost")
+            throw IllegalStateException("Should have thrown ServerResponseException")
+        } catch (e: ServerResponseException) {
+            e
+        }
     }
 }

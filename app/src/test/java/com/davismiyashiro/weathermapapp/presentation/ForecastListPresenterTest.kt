@@ -6,19 +6,18 @@ import com.davismiyashiro.weathermapapp.data.dtos.Place
 import com.davismiyashiro.weathermapapp.data.dtos.Weather
 import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.data.network.FakeRepository
-import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
 import com.davismiyashiro.weathermapapp.domain.ForecastListItem
+import com.davismiyashiro.weathermapapp.domain.UserPreferences
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.Refresh
 import com.slack.circuit.test.test
+import dev.mokkery.answering.returns
+import dev.mokkery.every
+import dev.mokkery.mock
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,11 +30,8 @@ class ForecastListPresenterTest {
     @get:Rule
     val coroutineRule = MainCoroutineRule()
 
-    @get:Rule
-    val mockitoRule: MockitoRule = MockitoJUnit.rule()
-
     private val repo = FakeRepository()
-    private val userPrefs: UserPreferencesRepository = mock()
+    private val userPrefs: UserPreferences = mock()
 
     private val place = Place()
     private lateinit var localForecastListItem: ImmutableList<ForecastListItem>
@@ -57,8 +53,8 @@ class ForecastListPresenterTest {
     @Test
     fun `presenter starts loading then emits success`() = runTest {
         repo.emit(localForecastListItem)
-        whenever(userPrefs.temperatureUnitFlow).thenReturn(flowOf(TEMPERATURE_DEFAULT))
-        whenever(userPrefs.getTemperatureUnit()).thenReturn(TEMPERATURE_DEFAULT)
+        every { userPrefs.temperatureUnitFlow } returns flowOf(TEMPERATURE_DEFAULT)
+        every { userPrefs.getTemperatureUnit() } returns TEMPERATURE_DEFAULT
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
@@ -85,8 +81,8 @@ class ForecastListPresenterTest {
     fun `refresh event updates refreshing state`() = runTest {
         repo.emit(localForecastListItem)
         repo.refreshDelay = 50
-        whenever(userPrefs.temperatureUnitFlow).thenReturn(flowOf(TEMPERATURE_DEFAULT))
-        whenever(userPrefs.getTemperatureUnit()).thenReturn(TEMPERATURE_DEFAULT)
+        every { userPrefs.temperatureUnitFlow } returns flowOf(TEMPERATURE_DEFAULT)
+        every { userPrefs.getTemperatureUnit() } returns TEMPERATURE_DEFAULT
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
@@ -121,8 +117,8 @@ class ForecastListPresenterTest {
     @Test
     fun `initialization with error emits Error state`() = runTest {
         repo.shouldFail = true
-        whenever(userPrefs.temperatureUnitFlow).thenReturn(flowOf(TEMPERATURE_DEFAULT))
-        whenever(userPrefs.getTemperatureUnit()).thenReturn(TEMPERATURE_DEFAULT)
+        every { userPrefs.temperatureUnitFlow } returns flowOf(TEMPERATURE_DEFAULT)
+        every { userPrefs.getTemperatureUnit() } returns TEMPERATURE_DEFAULT
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
@@ -143,8 +139,8 @@ class ForecastListPresenterTest {
     @Test
     fun `refresh event failure emits Error state`() = runTest {
         repo.emit(localForecastListItem)
-        whenever(userPrefs.temperatureUnitFlow).thenReturn(flowOf(TEMPERATURE_DEFAULT))
-        whenever(userPrefs.getTemperatureUnit()).thenReturn(TEMPERATURE_DEFAULT)
+        every { userPrefs.temperatureUnitFlow } returns flowOf(TEMPERATURE_DEFAULT)
+        every { userPrefs.getTemperatureUnit() } returns TEMPERATURE_DEFAULT
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
@@ -189,8 +185,8 @@ class ForecastListPresenterTest {
     @Test
     fun `initialization always triggers refresh`() = runTest {
         repo.emit(localForecastListItem)
-        whenever(userPrefs.temperatureUnitFlow).thenReturn(flowOf(TEMPERATURE_DEFAULT))
-        whenever(userPrefs.getTemperatureUnit()).thenReturn(TEMPERATURE_DEFAULT)
+        every { userPrefs.temperatureUnitFlow } returns flowOf(TEMPERATURE_DEFAULT)
+        every { userPrefs.getTemperatureUnit() } returns TEMPERATURE_DEFAULT
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
@@ -212,8 +208,8 @@ class ForecastListPresenterTest {
 
     @Test
     fun `initialization offline triggers refresh and loads local data`() = runTest {
-        whenever(userPrefs.temperatureUnitFlow).thenReturn(flowOf(TEMPERATURE_DEFAULT))
-        whenever(userPrefs.getTemperatureUnit()).thenReturn(TEMPERATURE_DEFAULT)
+        every { userPrefs.temperatureUnitFlow } returns flowOf(TEMPERATURE_DEFAULT)
+        every { userPrefs.getTemperatureUnit() } returns TEMPERATURE_DEFAULT
 
         // Simulate repository loading local data when refresh() is called
         repo.emitOnRefresh = localForecastListItem

@@ -32,8 +32,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import com.davismiyashiro.weathermapapp.data.storage.UserPreferencesRepository
 import com.davismiyashiro.weathermapapp.domain.Repository
+import com.davismiyashiro.weathermapapp.domain.UserPreferences
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.Refresh
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.UpdateTemperatureUnit
 import com.davismiyashiro.weathermapapp.injection.AppScope
@@ -46,7 +46,7 @@ import dev.zacsweers.metro.Inject
 @CircuitInject(ForecastListScreen::class, AppScope::class)
 class ForecastListPresenter @Inject constructor(
     private val repo: Repository,
-    private val userPrefs: UserPreferencesRepository,
+    private val userPrefs: UserPreferences,
 ) : Presenter<ForecastListState> {
 
     @Composable

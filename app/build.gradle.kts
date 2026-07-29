@@ -26,6 +26,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.ksp)
     alias(libs.plugins.metro)
+    alias(libs.plugins.mokkery)
     alias(libs.plugins.kotlinCompose)
     alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.kotlinSerialization)
@@ -122,12 +123,10 @@ dependencies {
     testImplementation(libs.circuit.test)
 
     testImplementation(libs.kotlin.test.lib)
-    testImplementation(libs.mockito.core)
-    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mokkery.runtime)
+    testImplementation(libs.ktor.client.mock)
     testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.robolectric)
-    testImplementation(libs.junit)
     testImplementation(libs.threetenbp.test)
     testImplementation(composeBom)
 

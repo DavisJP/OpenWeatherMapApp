@@ -17,7 +17,8 @@ import kotlinx.coroutines.flow.callbackFlow
 
 @SingleInApp
 @ContributesBinding(AppScope::class)
-class UserPreferencesRepository @Inject constructor(
+@Inject
+class UserPreferencesRepository(
     private val context: Context,
 ) : UserPreferences {
     private val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)

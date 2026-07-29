@@ -44,7 +44,8 @@ import kotlinx.coroutines.launch
 import dev.zacsweers.metro.Inject
 
 @CircuitInject(ForecastListScreen::class, AppScope::class)
-class ForecastListPresenter @Inject constructor(
+@Inject
+class ForecastListPresenter(
     private val repo: Repository,
     private val userPrefs: UserPreferences,
 ) : Presenter<ForecastListState> {

@@ -34,7 +34,8 @@ import dev.zacsweers.metro.Inject
 /**
  * Created by Davis Miyashiro.
  */
-class OpenWeatherApiImpl @Inject constructor(
+@Inject
+class OpenWeatherApiImpl(
     private val httpClient: HttpClient
 ) : OpenWeatherApi {
 

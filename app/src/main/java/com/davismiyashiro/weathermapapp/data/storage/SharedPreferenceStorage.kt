@@ -11,7 +11,8 @@ import dev.zacsweers.metro.Inject
 
 @SingleInApp
 @ContributesBinding(AppScope::class)
-class SharedPreferenceStorage @Inject constructor(context: Context) : Storage {
+@Inject
+class SharedPreferenceStorage(context: Context) : Storage {
 
     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 

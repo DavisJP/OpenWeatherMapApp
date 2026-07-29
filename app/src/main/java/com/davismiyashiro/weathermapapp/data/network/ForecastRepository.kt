@@ -48,7 +48,8 @@ private const val LONDON_ID = 2643743
  * Created by Davis Miyashiro.
  */
 @SingleInApp
-class ForecastRepository @Inject constructor(
+@Inject
+class ForecastRepository(
     private val openWeatherApi: OpenWeatherApi,
     private val localRepository: LocalRepository,
     private val forecastListItemMapper: ForecastListItemMapper,

@@ -42,7 +42,8 @@ private const val KEY_PLACE = "KEY_PLACE"
 /**
  * Created by Davis Miyashiro.
  */
-class ForecastLocalRepository @Inject constructor(
+@Inject
+class ForecastLocalRepository(
     private val storage: SharedPreferenceStorage,
     private val mapper: ForecastListItemMapper,
 ) :

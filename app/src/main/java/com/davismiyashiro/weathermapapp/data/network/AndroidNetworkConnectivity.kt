@@ -9,7 +9,8 @@ import dev.zacsweers.metro.Inject
 /**
  * Android implementation of [NetworkConnectivity].
  */
-class AndroidNetworkConnectivity @Inject constructor(
+@Inject
+class AndroidNetworkConnectivity(
     private val context: Context
 ) : NetworkConnectivity {
 

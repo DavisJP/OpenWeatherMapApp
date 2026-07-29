@@ -121,6 +121,7 @@ dependencies {
     implementation(libs.circuit.hilt)
     testImplementation(libs.circuit.test)
 
+    testImplementation(libs.kotlin.test.lib)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.turbine)
@@ -131,6 +132,7 @@ dependencies {
     testImplementation(composeBom)
 
     // Instrumented Testing
+    androidTestImplementation(libs.kotlin.test.lib)
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.test.runner)

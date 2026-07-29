@@ -45,9 +45,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Test
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.never
@@ -56,6 +53,10 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.io.IOException
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class ForecastRepositoryTest {
 
@@ -69,7 +70,7 @@ class ForecastRepositoryTest {
     private lateinit var localForecastListItem: ImmutableList<ForecastListItem>
     private val json = Json { ignoreUnknownKeys = true }
 
-    @Before
+    @BeforeTest
     fun setUp() {
         remotePlace = Place("remote", 10.0, 1, mutableListOf(Conditions()), City())
         localPlace = Place("local", 10.0, 1, mutableListOf(Conditions()), City())
@@ -120,22 +121,22 @@ class ForecastRepositoryTest {
         verify(localRepository, never()).storeData(anyString())
     }
 
-    @Test(expected = IOException::class)
+    @Test
     fun `refresh online remote fails propagates exception`() = runTest {
         whenever(networkConnectivity.isOnline()).thenReturn(true)
         val remoteException = IOException("Remote error")
         whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw remoteException }
 
-        try {
+        assertFailsWith<IOException> {
             repository.refresh()
-        } finally {
-            verify(openWeatherApi, times(1)).getForecastById(anyInt())
-            verify(localRepository, never()).loadData()
-            verify(localRepository, never()).storeData(anyString())
         }
+        
+        verify(openWeatherApi, times(1)).getForecastById(anyInt())
+        verify(localRepository, never()).loadData()
+        verify(localRepository, never()).storeData(anyString())
     }
 
-    @Test(expected = ClientRequestException::class)
+    @Test
     fun `refresh online client error propagates exception`() = runTest {
         whenever(networkConnectivity.isOnline()).thenReturn(true)
         val response: HttpResponse = mock()
@@ -149,16 +150,16 @@ class ForecastRepositoryTest {
         val clientException = ClientRequestException(response, "Unauthorized")
         whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw clientException }
 
-        try {
+        assertFailsWith<ClientRequestException> {
             repository.refresh()
-        } finally {
-            verify(openWeatherApi, times(1)).getForecastById(anyInt())
-            verify(localRepository, never()).loadData()
-            verify(localRepository, never()).storeData(anyString())
         }
+
+        verify(openWeatherApi, times(1)).getForecastById(anyInt())
+        verify(localRepository, never()).loadData()
+        verify(localRepository, never()).storeData(anyString())
     }
 
-    @Test(expected = ServerResponseException::class)
+    @Test
     fun `refresh online server error propagates exception`() = runTest {
         whenever(networkConnectivity.isOnline()).thenReturn(true)
         val response: HttpResponse = mock()
@@ -172,12 +173,12 @@ class ForecastRepositoryTest {
         val serverException = ServerResponseException(response, "Internal Server Error")
         whenever(openWeatherApi.getForecastById(anyInt())).thenAnswer { throw serverException }
 
-        try {
+        assertFailsWith<ServerResponseException> {
             repository.refresh()
-        } finally {
-            verify(openWeatherApi, times(1)).getForecastById(anyInt())
-            verify(localRepository, never()).loadData()
-            verify(localRepository, never()).storeData(anyString())
         }
+
+        verify(openWeatherApi, times(1)).getForecastById(anyInt())
+        verify(localRepository, never()).loadData()
+        verify(localRepository, never()).storeData(anyString())
     }
 }

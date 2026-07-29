@@ -36,11 +36,11 @@ import com.davismiyashiro.weathermapapp.App
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.jakewharton.threetenabp.AndroidThreeTen
-import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
 import org.junit.runner.RunWith
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 /**
  * Created by Davis Miyashiro on 18/12/2017.
@@ -54,7 +54,7 @@ class ForecastListActivityTest {
 
     lateinit var repository: Repository
 
-    @Before
+    @BeforeTest
     fun setUp() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as App
         repository = appContext.appGraph.repository
@@ -63,7 +63,6 @@ class ForecastListActivityTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun useAppContext() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
 

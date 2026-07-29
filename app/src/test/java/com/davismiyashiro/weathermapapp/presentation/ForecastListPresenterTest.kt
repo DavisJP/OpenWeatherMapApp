@@ -14,16 +14,16 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @ExperimentalCoroutinesApi
 class ForecastListPresenterTest {
@@ -40,7 +40,7 @@ class ForecastListPresenterTest {
     private val place = Place()
     private lateinit var localForecastListItem: ImmutableList<ForecastListItem>
 
-    @Before
+    @BeforeTest
     fun setup() {
         place.list = listOf(
             Conditions(
@@ -70,10 +70,10 @@ class ForecastListPresenterTest {
             }
 
             assertTrue(
-                "Expected Success state but was ${state::class.simpleName}",
-                state is ForecastListState.Success
+                state is ForecastListState.Success,
+                "Expected Success state but was ${state::class.simpleName}"
             )
-            assertEquals(localForecastListItem, (state as ForecastListState.Success).forecastItems)
+            assertEquals(localForecastListItem, state.forecastItems)
             assertFalse(state.isRefreshing)
             assertEquals(TEMPERATURE_DEFAULT, state.temperatureUnit)
         }
@@ -97,7 +97,7 @@ class ForecastListPresenterTest {
             }
 
             assertTrue(state is ForecastListState.Success)
-            val successInitial = state as ForecastListState.Success
+            val successInitial = state
             assertFalse(successInitial.isRefreshing)
 
             successInitial.eventSink(Refresh)
@@ -105,15 +105,15 @@ class ForecastListPresenterTest {
             val refreshingState = awaitItem()
             assertTrue(refreshingState is ForecastListState.Success)
             assertTrue(
-                "Expected isRefreshing to be true",
-                (refreshingState as ForecastListState.Success).isRefreshing
+                refreshingState.isRefreshing,
+                "Expected isRefreshing to be true"
             )
 
             val finishedState = awaitItem()
             assertTrue(finishedState is ForecastListState.Success)
             assertFalse(
-                "Expected isRefreshing to be false",
-                (finishedState as ForecastListState.Success).isRefreshing
+                finishedState.isRefreshing,
+                "Expected isRefreshing to be false"
             )
         }
     }
@@ -133,10 +133,10 @@ class ForecastListPresenterTest {
             }
 
             assertTrue(
-                "Expected Error state but was ${state::class.simpleName}",
-                state is ForecastListState.Error
+                state is ForecastListState.Error,
+                "Expected Error state but was ${state::class.simpleName}"
             )
-            assertEquals("Initial fetch failed", (state as ForecastListState.Error).error.message)
+            assertEquals("Initial fetch failed", state.error.message)
         }
     }
 
@@ -155,7 +155,7 @@ class ForecastListPresenterTest {
             }
 
             assertTrue(state is ForecastListState.Success)
-            val successInitial = state as ForecastListState.Success
+            val successInitial = state
 
             // Setup failure for the next refresh call
             repo.shouldFail = true
@@ -178,11 +178,11 @@ class ForecastListPresenterTest {
             }
 
             assertTrue(
-                "Expected Error state but was ${errorState::class.simpleName}",
-                errorState is ForecastListState.Error
+                errorState is ForecastListState.Error,
+                "Expected Error state but was ${errorState::class.simpleName}"
             )
-            assertEquals("Refresh failed", (errorState as ForecastListState.Error).error.message)
-            assertFalse("Expected isRefreshing to be false after error", errorState.isRefreshing)
+            assertEquals("Refresh failed", errorState.error.message)
+            assertFalse(errorState.isRefreshing, "Expected isRefreshing to be false after error")
         }
     }
 
@@ -201,10 +201,10 @@ class ForecastListPresenterTest {
             }
 
             assertTrue(
-                "Expected Success state but was ${state::class.simpleName}",
-                state is ForecastListState.Success
+                state is ForecastListState.Success,
+                "Expected Success state but was ${state::class.simpleName}"
             )
-            assertEquals(localForecastListItem, (state as ForecastListState.Success).forecastItems)
+            assertEquals(localForecastListItem, state.forecastItems)
         }
 
         assertEquals(1, repo.refreshCount)
@@ -230,7 +230,7 @@ class ForecastListPresenterTest {
             assertTrue(successState is ForecastListState.Success)
             assertEquals(
                 localForecastListItem,
-                (successState as ForecastListState.Success).forecastItems
+                successState.forecastItems
             )
         }
 

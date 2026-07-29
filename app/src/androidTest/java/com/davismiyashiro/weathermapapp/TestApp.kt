@@ -30,6 +30,6 @@ import dev.zacsweers.metro.createDynamicGraphFactory
 
 class TestApp : App() {
     override fun createGraph(): AppGraph {
-        return createDynamicGraphFactory<AppGraph.Factory>(TestRepositoryModule).create(this)
+        return createDynamicGraphFactory<AppGraph.Factory>(TestRepositoryModule()).create(this)
     }
 }

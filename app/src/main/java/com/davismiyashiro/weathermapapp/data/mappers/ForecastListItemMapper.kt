@@ -7,7 +7,7 @@ import kotlinx.collections.immutable.toImmutableList
 import dev.zacsweers.metro.Inject
 
 @Inject
-open class ForecastListItemMapper() {
+open class ForecastListItemMapper {
     fun mapPlaceToForecastListItem(data: Place?): ImmutableList<ForecastListItem> {
         return mutableListOf<ForecastListItem>().apply {
             data?.list?.forEach { condition ->

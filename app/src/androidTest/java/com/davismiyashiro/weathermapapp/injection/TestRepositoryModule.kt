@@ -30,7 +30,7 @@ import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.Provides
 
 @BindingContainer
-object TestRepositoryModule {
+class TestRepositoryModule {
     @Provides
     @SingleInApp
     fun provideRepository(): Repository = FakeForecastRepository()

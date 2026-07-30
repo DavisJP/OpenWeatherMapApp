@@ -28,11 +28,12 @@ import com.davismiyashiro.weathermapapp.data.dtos.Place
 import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
+import com.davismiyashiro.weathermapapp.domain.Storage
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import dev.zacsweers.metro.Inject
@@ -44,21 +45,21 @@ private const val KEY_PLACE = "KEY_PLACE"
  */
 @Inject
 class ForecastLocalRepository(
-    private val storage: SharedPreferenceStorage,
+    private val storage: Storage,
     private val mapper: ForecastListItemMapper,
 ) :
     LocalRepository {
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    override fun loadData(): Flow<ImmutableList<ForecastListItem>> = flow {
-        val jsonString = storage.getString(KEY_PLACE)
-        if (jsonString.isNotEmpty()) {
-            emit(mapper.mapPlaceToForecastListItem(json.decodeFromString<Place>(jsonString)))
-        } else {
-            throw NoSuchElementException("No local data found")
-        }
-    }.flowOn(Dispatchers.IO)
+    override fun loadData(): Flow<ImmutableList<ForecastListItem>> = storage.getStringFlow(KEY_PLACE)
+        .map { jsonString ->
+            if (jsonString.isNotEmpty()) {
+                mapper.mapPlaceToForecastListItem(json.decodeFromString<Place>(jsonString))
+            } else {
+                throw NoSuchElementException("No local data found")
+            }
+        }.flowOn(Dispatchers.IO)
 
     override suspend fun storeData(jsonString: String) {
         withContext(Dispatchers.IO) {

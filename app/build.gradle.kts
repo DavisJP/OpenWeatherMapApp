@@ -77,7 +77,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.preference.ktx)
+    implementation(libs.androidx.datastore.preferences)
 
     // Jetpack Compose - Core
     val composeBom = platform(libs.androidx.compose.bom)

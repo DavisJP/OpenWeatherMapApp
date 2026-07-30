@@ -54,7 +54,6 @@ class ForecastListPresenterTest {
     fun `presenter starts loading then emits success`() = runTest {
         repo.emit(localForecastListItem)
         every { userPrefs.temperatureUnitFlow } returns flowOf(TEMPERATURE_DEFAULT)
-        every { userPrefs.getTemperatureUnit() } returns TEMPERATURE_DEFAULT
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
@@ -82,7 +81,6 @@ class ForecastListPresenterTest {
         repo.emit(localForecastListItem)
         repo.refreshDelay = 50
         every { userPrefs.temperatureUnitFlow } returns flowOf(TEMPERATURE_DEFAULT)
-        every { userPrefs.getTemperatureUnit() } returns TEMPERATURE_DEFAULT
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
@@ -118,7 +116,6 @@ class ForecastListPresenterTest {
     fun `initialization with error emits Error state`() = runTest {
         repo.shouldFail = true
         every { userPrefs.temperatureUnitFlow } returns flowOf(TEMPERATURE_DEFAULT)
-        every { userPrefs.getTemperatureUnit() } returns TEMPERATURE_DEFAULT
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
@@ -140,7 +137,6 @@ class ForecastListPresenterTest {
     fun `refresh event failure emits Error state`() = runTest {
         repo.emit(localForecastListItem)
         every { userPrefs.temperatureUnitFlow } returns flowOf(TEMPERATURE_DEFAULT)
-        every { userPrefs.getTemperatureUnit() } returns TEMPERATURE_DEFAULT
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
@@ -186,7 +182,6 @@ class ForecastListPresenterTest {
     fun `initialization always triggers refresh`() = runTest {
         repo.emit(localForecastListItem)
         every { userPrefs.temperatureUnitFlow } returns flowOf(TEMPERATURE_DEFAULT)
-        every { userPrefs.getTemperatureUnit() } returns TEMPERATURE_DEFAULT
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
@@ -209,7 +204,6 @@ class ForecastListPresenterTest {
     @Test
     fun `initialization offline triggers refresh and loads local data`() = runTest {
         every { userPrefs.temperatureUnitFlow } returns flowOf(TEMPERATURE_DEFAULT)
-        every { userPrefs.getTemperatureUnit() } returns TEMPERATURE_DEFAULT
 
         // Simulate repository loading local data when refresh() is called
         repo.emitOnRefresh = localForecastListItem

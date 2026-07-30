@@ -13,8 +13,8 @@ metro = "1.3.2"
 mokkery = "3.4.2"
 junitExt = "1.3.0"
 circuit = "0.34.0"
+datastore = "1.1.2"
 ktor = "3.5.1"
-preferenceKtx = "1.2.1"
 testCore = "1.7.0"
 testRules = "1.7.0"
 testRunner = "1.7.0"
@@ -42,7 +42,7 @@ compose-material-icons = { group = "androidx.compose.material", name = "material
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose" }
 
 # AndroidX - Other
-androidx-preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preferenceKtx" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 

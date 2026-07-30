@@ -52,7 +52,7 @@ class ForecastListPresenter(
 
     @Composable
     override fun present(): ForecastListState {
-        val temperatureUnit by userPrefs.temperatureUnitFlow.collectAsState(initial = userPrefs.getTemperatureUnit())
+        val temperatureUnit by userPrefs.temperatureUnitFlow.collectAsState(initial = null)
         val forecastItems by repo.weatherFlow.collectAsState(initial = persistentListOf())
 
         var isRefreshing by remember { mutableStateOf(false) }
@@ -84,24 +84,28 @@ class ForecastListPresenter(
                     }
                 }
 
-                is UpdateTemperatureUnit -> userPrefs.setTemperatureUnit(event.unit)
+                is UpdateTemperatureUnit -> {
+                    scope.launch {
+                        userPrefs.setTemperatureUnit(event.unit)
+                    }
+                }
             }
         }
 
-        val isLoading = forecastItems.isEmpty() && error == null
+        val isLoading = (temperatureUnit == null || (forecastItems.isEmpty() && error == null))
 
         return when {
-            isLoading -> ForecastListState.Loading(temperatureUnit, eventSink)
+            isLoading -> ForecastListState.Loading(temperatureUnit ?: TEMPERATURE_DEFAULT, eventSink)
             error != null -> ForecastListState.Error(
                 error!!,
-                temperatureUnit,
+                temperatureUnit ?: TEMPERATURE_DEFAULT,
                 isRefreshing,
                 eventSink
             )
 
             else -> ForecastListState.Success(
                 forecastItems,
-                temperatureUnit,
+                temperatureUnit ?: TEMPERATURE_DEFAULT,
                 isRefreshing,
                 eventSink
             )

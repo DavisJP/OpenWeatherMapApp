@@ -26,14 +26,18 @@ package com.davismiyashiro.weathermapapp.injection
 
 import android.app.Application
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStoreFile
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.data.network.AndroidNetworkConnectivity
 import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApi
 import com.davismiyashiro.weathermapapp.data.network.OpenWeatherApiImpl
 import com.davismiyashiro.weathermapapp.data.storage.ForecastLocalRepository
-import com.davismiyashiro.weathermapapp.data.storage.SharedPreferenceStorage
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
 import com.davismiyashiro.weathermapapp.domain.NetworkConnectivity
+import com.davismiyashiro.weathermapapp.domain.Storage
 import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
@@ -55,6 +59,7 @@ private const val API_HOST = "api.openweathermap.org"
 private const val BASE_URL = "https://$API_HOST/data/2.5/"
 private const val APP_ID_PARAM = "appid"
 private const val APP_ID = "3e29cf11d4eabe8eba6cf25d535eaac2"
+private const val DATASTORE_NAME = "weather_settings"
 
 @BindingContainer
 @ContributesTo(AppScope::class)
@@ -113,9 +118,17 @@ object NetworkModule {
 
     @Provides
     @SingleInApp
-    fun provideLocalRepository(application: Application): LocalRepository {
+    fun provideDataStore(application: Application): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            produceFile = { application.preferencesDataStoreFile(DATASTORE_NAME) }
+        )
+    }
+
+    @Provides
+    @SingleInApp
+    fun provideLocalRepository(storage: Storage): LocalRepository {
         return ForecastLocalRepository(
-            SharedPreferenceStorage(application),
+            storage,
             ForecastListItemMapper(),
         )
     }

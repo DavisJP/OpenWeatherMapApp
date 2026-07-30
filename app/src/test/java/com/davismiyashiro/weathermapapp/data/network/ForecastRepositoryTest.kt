@@ -39,6 +39,7 @@ import dev.mokkery.every
 import dev.mokkery.everySuspend
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
+import dev.mokkery.verify
 import dev.mokkery.verifySuspend
 import dev.mokkery.verify.VerifyMode.Companion.not
 import io.ktor.client.HttpClient
@@ -91,7 +92,7 @@ class ForecastRepositoryTest {
         everySuspend { localRepository.storeData(any()) } returns Unit
 
         repository.weatherFlow.test {
-            assertEquals(persistentListOf<ForecastListItem>(), awaitItem()) // Initial state
+            assertEquals(persistentListOf(), awaitItem()) // Initial state
 
             repository.refresh()
 
@@ -107,7 +108,7 @@ class ForecastRepositoryTest {
     @Test
     fun `refresh offline loads from local storage`() = runTest {
         every { networkConnectivity.isOnline() } returns false
-        everySuspend { localRepository.loadData() } returns flowOf(localForecastListItem)
+        every { localRepository.loadData() } returns flowOf(localForecastListItem)
 
         repository.weatherFlow.test {
             assertEquals(persistentListOf(), awaitItem()) // Initial state
@@ -119,7 +120,7 @@ class ForecastRepositoryTest {
         }
 
         verifySuspend(not) { openWeatherApi.getForecastById(any()) }
-        verifySuspend { localRepository.loadData() }
+        verify { localRepository.loadData() }
         verifySuspend(not) { localRepository.storeData(any()) }
     }
 

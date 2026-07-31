@@ -24,6 +24,7 @@
 
 package com.davismiyashiro.weathermapapp.data.network
 
+import co.touchlab.kermit.Logger
 import com.davismiyashiro.weathermapapp.data.mappers.ForecastListItemMapper
 import com.davismiyashiro.weathermapapp.domain.ForecastListItem
 import com.davismiyashiro.weathermapapp.domain.LocalRepository
@@ -39,7 +40,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.Json
-import timber.log.Timber
 
 // Hardcoded for testing, but api is deprecated, move to LAT/LONG
 private const val LONDON_ID = 2643743
@@ -63,7 +63,7 @@ class ForecastRepository(
 
     override suspend fun refresh() {
         if (!networkConnectivity.isOnline()) {
-            Timber.d("Offline: loading from local storage.")
+            Logger.d("Offline: loading from local storage.")
             localRepository.loadData().collect { localData ->
                 _weatherFlow.emit(localData)
             }
@@ -74,13 +74,13 @@ class ForecastRepository(
             val remoteData = getAndSaveRemoteData()
             _weatherFlow.emit(remoteData)
         } catch (e: ClientRequestException) {
-            Timber.e("Client error: ${e.response.status}")
+            Logger.e("Client error: ${e.response.status}")
             throw e
         } catch (e: ServerResponseException) {
-            Timber.e("Server error: ${e.response.status}")
+            Logger.e("Server error: ${e.response.status}")
             throw e
         } catch (e: Exception) {
-            Timber.e(e, "Unexpected error")
+            Logger.e(e) { "Unexpected error" }
             throw e // Propagate error when online
         }
     }

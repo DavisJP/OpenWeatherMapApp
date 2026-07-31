@@ -32,11 +32,12 @@ import coil3.annotation.ExperimentalCoilApi
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
 import com.davismiyashiro.weathermapapp.injection.AppGraph
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dev.zacsweers.metro.createGraphFactory
 import okio.Path.Companion.toPath
-import timber.log.Timber
 
 /**
  * Created by Davis Miyashiro on 12/12/2017.
@@ -69,12 +70,17 @@ open class App : Application(), SingletonImageLoader.Factory {
     override fun onCreate() {
         super.onCreate()
 
+        setupLogging()
+
         appGraph = createGraph()
 
-        if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
-        }
         AndroidThreeTen.init(this)
+    }
+
+    private fun setupLogging() {
+        if (!BuildConfig.DEBUG) {
+            Logger.setMinSeverity(Severity.Error)
+        }
     }
 
     open fun createGraph(): AppGraph {

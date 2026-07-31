@@ -53,7 +53,7 @@ import io.ktor.http.encodedPath
 import io.ktor.http.takeFrom
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import timber.log.Timber
+import co.touchlab.kermit.Logger as KermitLogger
 
 private const val API_HOST = "api.openweathermap.org"
 private const val BASE_URL = "https://$API_HOST/data/2.5/"
@@ -80,7 +80,7 @@ object NetworkModule {
             install(Logging) {
                 logger = object : Logger {
                     override fun log(message: String) {
-                        Timber.tag("HttpClient").d(message)
+                        KermitLogger.withTag("HttpClient").d(message)
                     }
                 }
                 level = LogLevel.BODY

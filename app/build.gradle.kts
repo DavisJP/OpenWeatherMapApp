@@ -105,7 +105,7 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.client.logging)
 
-    implementation(libs.timber)
+    implementation(libs.kermit)
 
     implementation(libs.coil.core)
     implementation(libs.coil.compose)

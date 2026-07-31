@@ -48,6 +48,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -71,6 +72,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -119,7 +121,6 @@ fun ForecastHomeScreen(
         modifier = modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
         topBar = {
             TopAppBar(
                 title = {
@@ -127,9 +128,9 @@ fun ForecastHomeScreen(
                 },
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
                 actions = {
                     IconButton(onClick = {
@@ -205,7 +206,7 @@ fun ForecastErrorScreen(
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
-        modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh),
+        modifier = modifier.background(MaterialTheme.colorScheme.surface),
     ) {
         Box(
             modifier = Modifier
@@ -240,7 +241,7 @@ private fun ForecastListContent(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                .background(MaterialTheme.colorScheme.surface),
             state = scrollState,
             contentPadding = PaddingValues(16.dp),
         ) {
@@ -249,6 +250,10 @@ private fun ForecastListContent(
                 key = { it.date },
             ) {
                 ForecastListItem(it, temperatureUnit)
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                )
             }
         }
     }
@@ -270,9 +275,8 @@ fun ForecastListItem(item: ForecastListItem, temperatureInt: Int, modifier: Modi
     ) {
         AsyncImage(
             modifier = Modifier
-                .size(48.dp)
-                .padding(4.dp)
-                .background(MaterialTheme.colorScheme.primaryContainer),
+                .size(64.dp)
+                .padding(4.dp),
             model = IMG_SRC_W_URL + item.icon,
             contentDescription = item.main,
         )
@@ -283,15 +287,33 @@ fun ForecastListItem(item: ForecastListItem, temperatureInt: Int, modifier: Modi
             Column(
                 modifier = Modifier.weight(1f),
             ) {
-                Text(text = readableDate)
-                Text(text = item.main)
+                Text(
+                    text = readableDate,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = item.main,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Row(
                 horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.Bottom,
             ) {
-                Text(text = tempString)
-                Text(text = unitString)
+                Text(
+                    text = tempString,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = unitString,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(bottom = 2.dp),
+                )
             }
         }
     }
@@ -346,7 +368,11 @@ fun SettingsDialog(
                     onUnitSelect(tempSelectedOptionIndex)
                 },
             ) {
-                Text(stringResource(android.R.string.ok))
+                Text(
+                    text = stringResource(id = android.R.string.ok),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                )
             }
         },
     )

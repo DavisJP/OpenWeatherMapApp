@@ -1,7 +1,9 @@
 [versions]
 androidGradlePlugin = "9.2.1"
+androidDesugarJdkLibs = "2.1.5"
 kotlin = "2.4.10"
 kotlinx-serialization = "1.11.0"
+kotlinxDatetime = "0.8.0"
 ksp = "2.3.7"
 jvm = "21"
 
@@ -22,13 +24,12 @@ testRunner = "1.7.0"
 coroutinesTest = "1.11.0"
 turbine = "1.2.1"
 coil = "3.5.0"
-threeTenAbp = "1.4.9"
-threeTenBpTest = "1.7.3"
 kotlinxCollectionsImmutable = "0.5.1"
 
 [libraries]
 # AndroidX - Compose
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+android-desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "androidDesugarJdkLibs" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
@@ -44,6 +45,7 @@ androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-ru
 # AndroidX - Other
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 # DI
@@ -71,13 +73,11 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" 
 coil-core = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
-threeTenAbp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threeTenAbp" }
 
 # Unit Testing
 kotlin-test-lib = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutinesTest" }
-threetenbp-test = { module = "org.threeten:threetenbp", version.ref = "threeTenBpTest" }
 
 # Instrumented Testing
 androidx-test-core = { module = "androidx.test:core", version.ref = "testCore" }

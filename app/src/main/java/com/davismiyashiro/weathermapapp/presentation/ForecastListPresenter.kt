@@ -43,6 +43,9 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import dev.zacsweers.metro.Inject
 
+const val TEMPERATURE_KEY = "TEMPERATURE_UNIT"
+const val TEMPERATURE_DEFAULT = 0 // Celsius
+
 @CircuitInject(ForecastListScreen::class, AppScope::class)
 @Inject
 class ForecastListPresenter(

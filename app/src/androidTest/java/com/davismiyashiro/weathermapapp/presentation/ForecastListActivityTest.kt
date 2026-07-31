@@ -35,7 +35,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.davismiyashiro.weathermapapp.App
 import com.davismiyashiro.weathermapapp.R
 import com.davismiyashiro.weathermapapp.domain.Repository
-import com.jakewharton.threetenabp.AndroidThreeTen
 import org.junit.Rule
 import org.junit.runner.RunWith
 import kotlin.test.BeforeTest
@@ -58,8 +57,6 @@ class ForecastListActivityTest {
     fun setUp() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as App
         repository = appContext.appGraph.repository
-        
-        AndroidThreeTen.init(InstrumentationRegistry.getInstrumentation().targetContext)
     }
 
     @Test

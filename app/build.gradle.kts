@@ -67,6 +67,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+        isCoreLibraryDesugaringEnabled = true
     }
     namespace = "com.davismiyashiro.weathermapapp"
 
@@ -77,6 +78,7 @@ android {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.android.desugar.jdk.libs)
     implementation(libs.androidx.datastore.preferences)
 
     // Jetpack Compose - Core
@@ -111,7 +113,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.ktor)
 
-    implementation(libs.threeTenAbp)
+    implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.kotlinx.serialization.json)
 
@@ -127,7 +129,6 @@ dependencies {
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.threetenbp.test)
     testImplementation(composeBom)
 
     // Instrumented Testing

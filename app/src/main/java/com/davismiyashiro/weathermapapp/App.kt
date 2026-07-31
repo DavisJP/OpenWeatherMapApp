@@ -35,7 +35,6 @@ import coil3.network.ktor3.KtorNetworkFetcherFactory
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.Severity
 import com.davismiyashiro.weathermapapp.injection.AppGraph
-import com.jakewharton.threetenabp.AndroidThreeTen
 import dev.zacsweers.metro.createGraphFactory
 import okio.Path.Companion.toPath
 
@@ -73,8 +72,6 @@ open class App : Application(), SingletonImageLoader.Factory {
         setupLogging()
 
         appGraph = createGraph()
-
-        AndroidThreeTen.init(this)
     }
 
     private fun setupLogging() {

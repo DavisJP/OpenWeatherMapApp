@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2021 Davis Miyashiro
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.davismiyashiro.weathermapapp.presentation
 
 import android.content.Context
@@ -62,13 +86,12 @@ import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.Refresh
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.UpdateTemperatureUnit
 import com.slack.circuit.codegen.annotations.CircuitInject
 import kotlinx.collections.immutable.ImmutableList
-import org.threeten.bp.Instant
-import org.threeten.bp.ZoneId
-import org.threeten.bp.format.DateTimeFormatter
-import org.threeten.bp.format.FormatStyle
-
-const val TEMPERATURE_KEY = "TEMPERATURE_KEY"
-const val TEMPERATURE_DEFAULT = TEMPERATURE_CELSIUS
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toLocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import kotlin.time.Instant
 
 @CircuitInject(ForecastListScreen::class, AppScope::class)
 @Composable
@@ -172,7 +195,6 @@ fun ForecastLoadingScreen(modifier: Modifier = Modifier) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForecastErrorScreen(
     isRefreshing: Boolean,
@@ -276,7 +298,6 @@ fun ForecastListItem(item: ForecastListItem, temperatureInt: Int, modifier: Modi
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 fun SettingsDialog(
     currentUnitIndexSelected: Int,
     onDismissRequest: () -> Unit,
@@ -349,15 +370,17 @@ fun Int.toTemperatureUnit(context: Context): String {
     }
 }
 
-fun getReadableDate(dateMilli: Long, isPreview: Boolean): String {
+fun getReadableDate(dateSeconds: Long, isPreview: Boolean): String {
     if (isPreview) {
         return "Mon - 10:30 AM (Preview)"
     }
-    val localDateTime =
-        Instant.ofEpochSecond(dateMilli).atZone(ZoneId.systemDefault()).toLocalDateTime()
+    val instant = Instant.fromEpochSeconds(dateSeconds)
+    val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+
+    val javaLocalDateTime = localDateTime.toJavaLocalDateTime()
 
     val formatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
-    val dayOfWeek = localDateTime.dayOfWeek
+    val dayOfWeek = javaLocalDateTime.dayOfWeek.name
 
-    return dayOfWeek.name + " - " + localDateTime.format(formatter)
+    return "$dayOfWeek - ${javaLocalDateTime.format(formatter)}"
 }

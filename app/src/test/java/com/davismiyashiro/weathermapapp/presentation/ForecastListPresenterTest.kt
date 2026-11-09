@@ -1,5 +1,9 @@
 package com.davismiyashiro.weathermapapp.presentation
 
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.davismiyashiro.weathermapapp.data.dtos.Conditions
 import com.davismiyashiro.weathermapapp.data.dtos.Main
 import com.davismiyashiro.weathermapapp.data.dtos.Place
@@ -32,6 +36,11 @@ class ForecastListPresenterTest {
 
     private val repo = FakeRepository()
     private val userPrefs: UserPreferences = mock()
+    private val lifecycleOwner = object : LifecycleOwner {
+        override val lifecycle = LifecycleRegistry.createUnsafe(this).apply {
+            currentState = Lifecycle.State.RESUMED
+        }
+    }
 
     private val place = Place()
     private lateinit var localForecastListItem: ImmutableList<ForecastListItem>
@@ -57,7 +66,7 @@ class ForecastListPresenterTest {
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
-        presenter.test {
+        presenter.test(LocalLifecycleOwner provides lifecycleOwner) {
             // Might see Loading briefly while LaunchEffect runs
             var state = awaitItem()
             if (state is ForecastListState.Loading) {
@@ -84,7 +93,7 @@ class ForecastListPresenterTest {
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
-        presenter.test {
+        presenter.test(LocalLifecycleOwner provides lifecycleOwner) {
             var state = awaitItem()
             if (state is ForecastListState.Loading) {
                 state = awaitItem()
@@ -119,7 +128,7 @@ class ForecastListPresenterTest {
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
-        presenter.test {
+        presenter.test(LocalLifecycleOwner provides lifecycleOwner) {
             var state = awaitItem()
             if (state is ForecastListState.Loading) {
                 state = awaitItem()
@@ -140,7 +149,7 @@ class ForecastListPresenterTest {
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
-        presenter.test {
+        presenter.test(LocalLifecycleOwner provides lifecycleOwner) {
             var state = awaitItem()
             if (state is ForecastListState.Loading) {
                 state = awaitItem()
@@ -185,7 +194,7 @@ class ForecastListPresenterTest {
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
-        presenter.test {
+        presenter.test(LocalLifecycleOwner provides lifecycleOwner) {
             var state = awaitItem()
             if (state is ForecastListState.Loading) {
                 state = awaitItem()
@@ -210,7 +219,7 @@ class ForecastListPresenterTest {
 
         val presenter = ForecastListPresenter(repo, userPrefs)
 
-        presenter.test {
+        presenter.test(LocalLifecycleOwner provides lifecycleOwner) {
             // Should start in Loading
             val loadingState = awaitItem()
             assertTrue(loadingState is ForecastListState.Loading)

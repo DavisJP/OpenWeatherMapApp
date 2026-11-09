@@ -26,12 +26,12 @@ package com.davismiyashiro.weathermapapp.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.davismiyashiro.weathermapapp.domain.Repository
 import com.davismiyashiro.weathermapapp.domain.UserPreferences
 import com.davismiyashiro.weathermapapp.presentation.ForecastListEvent.Refresh
@@ -55,8 +55,12 @@ class ForecastListPresenter(
 
     @Composable
     override fun present(): ForecastListState {
-        val temperatureUnit by userPrefs.temperatureUnitFlow.collectAsState(initial = null)
-        val forecastItems by repo.weatherFlow.collectAsState(initial = persistentListOf())
+        val temperatureUnit by userPrefs.temperatureUnitFlow.collectAsStateWithLifecycle(
+            initialValue = null,
+        )
+        val forecastItems by repo.weatherFlow.collectAsStateWithLifecycle(
+            initialValue = persistentListOf(),
+        )
 
         var isRefreshing by remember { mutableStateOf(false) }
         var error by remember { mutableStateOf<Throwable?>(null) }

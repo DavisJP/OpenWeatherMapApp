@@ -248,6 +248,7 @@ private fun ForecastListContent(
             items(
                 items = data,
                 key = { it.date },
+                contentType = { "forecast" },
             ) {
                 ForecastListItem(it, temperatureUnit)
                 HorizontalDivider(
@@ -265,9 +266,11 @@ fun ForecastListItem(item: ForecastListItem, temperatureInt: Int, modifier: Modi
     val isPreview = LocalInspectionMode.current
     val readableDate = remember(item.date, isPreview) { getReadableDate(item.date, isPreview) }
     val tempString =
-        remember(item.temp, temperatureInt) { item.temp.toTemperatureUnit(temperatureInt, context) }
+        remember(item.temp, temperatureInt, context) {
+            item.temp.toTemperatureUnit(temperatureInt, context)
+        }
     val unitString =
-        remember(temperatureInt) { temperatureInt.toTemperatureUnit(context) }
+        remember(temperatureInt, context) { temperatureInt.toTemperatureUnit(context) }
 
     Row(
         modifier = modifier.fillMaxWidth(),

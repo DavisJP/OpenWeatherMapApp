@@ -34,5 +34,5 @@ App built to experiment with Circuit, Metro, Jetpack Compose, Coroutines and Kto
 - Ktor
 - Kotlin Serializer
 - Coil
-- ThreeTenABP
-- Timber
+- Datetime
+- Kermit

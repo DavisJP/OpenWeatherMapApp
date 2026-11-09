@@ -47,10 +47,10 @@ class ForecastListActivity : ComponentActivity() {
 
         setContent {
             AppTheme(dynamicColor = false) {
-                val backstack = rememberSaveableBackStack(ForecastListScreen)
-                val navigator = rememberCircuitNavigator(backstack)
-
                 CircuitCompositionLocals(circuit) {
+                    val backstack = rememberSaveableBackStack(ForecastListScreen)
+                    val navigator = rememberCircuitNavigator(backstack)
+
                     NavigableCircuitContent(navigator, backstack)
                 }
             }

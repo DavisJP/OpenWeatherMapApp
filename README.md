@@ -17,7 +17,7 @@ App built to experiment with Circuit, Metro, Jetpack Compose, Coroutines and Kto
 ### Configuration ###
 
 - This project was build with Android Studio Quail
-- It targets SDK 37 and minimum API 23 (Marshmallow)
+- It targets SDK 37 and minimum API 24 (7, Nougat)
 
 ### What could be done with more time ###
 

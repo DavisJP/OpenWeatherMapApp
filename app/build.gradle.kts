@@ -44,11 +44,10 @@ android {
     defaultConfig {
         compileSdk = 37
         applicationId = "com.davismiyashiro.weathermapapp"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 37
         versionCode = 3
         versionName = "3.0"
-        multiDexEnabled = true
         testInstrumentationRunner = "com.davismiyashiro.weathermapapp.CustomTestRunner"
     }
     buildTypes {
@@ -80,6 +79,8 @@ android {
 dependencies {
     coreLibraryDesugaring(libs.android.desugar.jdk.libs)
     implementation(libs.androidx.datastore.preferences)
+    // Keep the app and instrumented test classpaths aligned with AndroidX Test.
+    implementation(libs.androidx.concurrent.futures)
 
     // Jetpack Compose - Core
     val composeBom = platform(libs.androidx.compose.bom)

@@ -25,8 +25,23 @@
 package com.davismiyashiro.weathermapapp.presentation
 
 import android.os.Bundle
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.tappableElement
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import com.davismiyashiro.weathermapapp.App
 import com.davismiyashiro.weathermapapp.designsystem.theme.AppTheme
 import com.slack.circuit.backstack.rememberSaveableBackStack
@@ -41,17 +56,34 @@ class ForecastListActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
 
         val appGraph = (application as App).appGraph
         val circuit = appGraph.circuit
 
         setContent {
-            AppTheme(dynamicColor = false) {
-                CircuitCompositionLocals(circuit) {
-                    val backstack = rememberSaveableBackStack(ForecastListScreen)
-                    val navigator = rememberCircuitNavigator(backstack)
+            val darkTheme = isSystemInDarkTheme()
+            AppTheme(darkTheme = darkTheme, dynamicColor = false) {
+                Box(Modifier.fillMaxSize()) {
+                    CircuitCompositionLocals(circuit) {
+                        val backstack = rememberSaveableBackStack(ForecastListScreen)
+                        val navigator = rememberCircuitNavigator(backstack)
 
-                    NavigableCircuitContent(navigator, backstack)
+                        NavigableCircuitContent(navigator, backstack)
+                    }
+
+                    if (WindowInsets.tappableElement.getBottom(LocalDensity.current) > 0) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                                .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                        )
+                    }
                 }
             }
         }

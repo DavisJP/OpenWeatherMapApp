@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -286,13 +285,6 @@ fun AppTheme(
         SideEffect {
             val activity = view.context.findActivity()
             activity?.window?.let { window ->
-                if (!darkTheme) {
-                    window.statusBarColor = colorScheme.primaryContainer.toArgb()
-                    window.navigationBarColor = colorScheme.primaryContainer.toArgb()
-                } else {
-                    window.statusBarColor = colorScheme.surface.toArgb()
-                    window.navigationBarColor = colorScheme.surface.toArgb()
-                }
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
                     !darkTheme
                 WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars =

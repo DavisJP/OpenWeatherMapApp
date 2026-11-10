@@ -68,6 +68,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -128,7 +129,8 @@ fun ForecastHomeScreen(
                 },
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    scrolledContainerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     actionIconContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
